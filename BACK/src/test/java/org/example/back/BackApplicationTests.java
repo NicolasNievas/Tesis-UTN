@@ -1,10 +1,10 @@
-package org.example.back_tesis;
+package org.example.back;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class BackTesisApplicationTests {
+class BackApplicationTests {
 
     @Test
     void contextLoads() {

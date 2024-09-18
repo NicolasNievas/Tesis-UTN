@@ -1,13 +1,13 @@
-package org.example.back_tesis;
+package org.example.back;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class BackTesisApplication {
+public class BackApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(BackTesisApplication.class, args);
+        SpringApplication.run(BackApplication.class, args);
     }
 
 }
