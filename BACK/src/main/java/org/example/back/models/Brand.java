@@ -1,4 +1,4 @@
-package org.example.backtesis.models;
+package org.example.back.models;
 
 import lombok.*;
 
@@ -10,4 +10,5 @@ import lombok.*;
 public class Brand {
     private Long id;
     private String name;
+    private boolean active;
 }

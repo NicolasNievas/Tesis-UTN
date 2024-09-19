@@ -22,4 +22,7 @@ public class CategoryEntity {
     @ManyToOne
     @JoinColumn(name = "brand_id", nullable = false)
     private BrandEntity brand;
+
+    @Column(nullable = false)
+    private boolean active;
 }
