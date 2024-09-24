@@ -7,6 +7,8 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { fetchCategoriesByBrand } from "@/services/brandService";
 import { fetchProductByBrand, fetchProductByCategory } from "@/services/ProductService";
 import { IProductData, ICategoryData } from "@/interfaces/data.interfaces";
+import Button from "@/components/Button";
+
 
 const BrandProductsPage: React.FC = () => {
   const { id } = useParams();
@@ -56,10 +58,32 @@ const BrandProductsPage: React.FC = () => {
     }
   }, [selectedCategory]);
 
+  const handleShowAllProducts = async () => {
+    if (id) {
+      try {
+        setLoading(true);
+        const data = await fetchProductByBrand(Number(id));
+        setProducts(data);
+        setSelectedCategory(null);
+      } catch (err) {
+        setError("Error fetching products by brand.");
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   return (
     <main className="m-20 flex min-h-screen">
       <aside className="w-1/4 p-4 bg-gray-bg rounded-lg shadow-lg">
-        <h2 className="font-bold text-lg mb-4">Categories</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="font-bold text-lg">Categories</h2>
+          <Button
+            name="Show All"
+            onClick={handleShowAllProducts}
+            className="w-auto p-2 h-auto text-sm bg-black-btn hover:bg-black-hover hover:text-white text-gray-bg-light"
+          />
+        </div>
         <ul>
           {categories.map((category) => (
             <li key={category.id} className="mb-2">
