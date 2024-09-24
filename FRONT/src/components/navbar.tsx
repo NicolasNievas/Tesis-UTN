@@ -63,7 +63,7 @@ const Navbar = () => {
                   <p className='p-2 text-red-500'>{error}</p>
                 ) : (
                   brands.map((brand) => (
-                    <Link key={brand.id} className='block p-2 hover:bg-gray-200' href={`/products/brand/${brand.id}`}>
+                    <Link key={brand.id} className='block p-2 hover:bg-gray-200' href={`/product/brand/${brand.id}`}>
                       {brand.name}
                     </Link>
                   ))

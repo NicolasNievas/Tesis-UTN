@@ -13,3 +13,13 @@ export const fetchActiveProducts = async () => {
         throw error;
     }
 };
+
+export const fetchProductByBrand = async (brand: number): Promise<IProductData[]> => {
+    try {
+      const response = await axios.get<IProductData[]>(`${$URL}/allProductsByBrand/${brand}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching product by brand:", error);
+      throw error;
+    }
+  };
