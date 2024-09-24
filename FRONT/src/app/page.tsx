@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { IProductData, IBrandData } from '@/interfaces/data.interfaces';
 import { getAllActiveBrands } from '@/services/brandService';
 import { fetchActiveProducts } from '@/services/ProductService';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import ProductPreview from '@/components/ProductPreview';
 
 export default function Home() {
   const [products, setProducts] = useState<IProductData[]>([]);
@@ -52,43 +52,41 @@ export default function Home() {
   };
 
   return (
-    <main className="m-20 flex min-h-screen flex-col items-center justify-between">
-      {loading ? (
-        <LoadingSpinner />
-      ) : error ? (
-        <p className="text-center py-10 text-red-500">{error}</p>
+    <main className="container mx-auto px-4 py-8">
+  {loading ? (
+    <LoadingSpinner />
+  ) : error ? (
+    <p className="text-center py-10 text-red-500">{error}</p>
+  ) : (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+      {products.length > 0 ? (
+        products.map((product) => (
+          <ProductPreview key={product.id} product={product} />
+        ))
       ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {products.length > 0 ? (
-              products.map((product) => (
-                <div key={product.id} className="border p-4 rounded-lg shadow-lg bg-white max-w-xs overflow-hidden relative">
-                  <div className="h-48 w-full relative">
-                    <img
-                      src={product.imageUrls[0]}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="px-4 py-2 flex items-center justify-between bg-white">
-                    <div className="font-bold text-lg mb-1">{product.name}</div>
-                    <p className="text-gray-700">${product.price}</p>
-                  </div>
-                  {/* <p className="text-gray-600 mb-4 px-4">{product.description}</p> */}
-                  <Link
-                    href={`/product/${product.id}`}
-                    className="block text-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-300"
-                  >
-                    Ver detalles
-                  </Link>
-                </div>
-              ))
-            ) : (
-              <p className="text-center col-span-3 text-gray-600">No hay productos disponibles.</p>
-            )}
-          </div>
-        </>
+        <p className="text-center col-span-3 text-gray-600">No hay productos disponibles.</p>
       )}
-    </main>
+    </div>
+  )}
+</main>
+    
+/* <main className="m-20 flex min-h-screen flex-col items-center justify-between w-full">
+  {loading ? (
+    <LoadingSpinner />
+  ) : error ? (
+    <p className="text-center py-10 text-red-500">{error}</p>
+  ) : (
+    <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-2 w-full">
+      {products.length > 0 ? (
+        products.map((product) => (
+          <ProductPreview key={product.id} product={product} />
+        ))
+      ) : (
+        <p className="text-center col-span-3 text-gray-600">No hay productos disponibles.</p>
+      )}
+    </div>
+  )}
+</main> */
+
   );
 }
