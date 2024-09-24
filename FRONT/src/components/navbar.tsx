@@ -1,12 +1,33 @@
-"use client"
+"use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { IBrandData } from '@/interfaces/data.interfaces';
+import { getAllActiveBrands } from '@/services/brandService';
 
 const Navbar = () => {
   const [isHoverAccount, setIsHoverAccount] = useState<boolean>(false);
   const [isHoverProducts, setIsHoverProducts] = useState<boolean>(false);
+  const [brands, setBrands] = useState<IBrandData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllActiveBrands();
+        setBrands(data);
+      } catch (error) {
+        setError('Error fetching brands');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBrands();
+  }, []);
 
   return (
     <nav id='navbar' className="w-full bg-white text-black shadow-md">
@@ -27,24 +48,26 @@ const Navbar = () => {
             onMouseOver={() => setIsHoverProducts(true)}
             onMouseLeave={() => setIsHoverProducts(false)}
           >
-            <Link href="/pages/products" >
-            <button className="flex items-center gap-2 p-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-list"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-              Products
-            </button>
+            <Link href="/pages/products">
+              <button className="flex items-center gap-2 p-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-list"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+                Products
+              </button>
             </Link>
 
             {isHoverProducts && (
               <div className='absolute z-50 w-48 top-[102%] border rounded-lg border-gray-300 bg-white text-sm'>
-                <Link className='block p-2 hover:bg-gray-200' href="/products/category1">
-                  Category 1
-                </Link>
-                <Link className='block p-2 hover:bg-gray-200' href="/products/category2">
-                  Category 2
-                </Link>
-                <Link className='block p-2 hover:bg-gray-200' href="/products/category3">
-                  Category 3
-                </Link>
+                {loading ? (
+                  <p className='p-2'>Loading...</p>
+                ) : error ? (
+                  <p className='p-2 text-red-500'>{error}</p>
+                ) : (
+                  brands.map((brand) => (
+                    <Link key={brand.id} className='block p-2 hover:bg-gray-200' href={`/products/brand/${brand.id}`}>
+                      {brand.name}
+                    </Link>
+                  ))
+                )}
               </div>
             )}
           </div>
