@@ -8,6 +8,7 @@ import { fetchCategoriesByBrand } from "@/services/brandService";
 import { fetchProductByBrand, fetchProductByCategory } from "@/services/ProductService";
 import { IProductData, ICategoryData } from "@/interfaces/data.interfaces";
 import Button from "@/components/Button";
+import { toast } from "react-toastify";
 
 
 const BrandProductsPage: React.FC = () => {
@@ -30,7 +31,7 @@ const BrandProductsPage: React.FC = () => {
           setProducts(productData);
           setCategories(categoryData);
         } catch (err) {
-          setError("Error fetching data.");
+          toast.error("Error fetching initial data.");
         } finally {
           setLoading(false);
         }
@@ -46,9 +47,13 @@ const BrandProductsPage: React.FC = () => {
         try {
           setLoading(true);
           const data = await fetchProductByCategory(selectedCategory);
-          setProducts(data);
+          if (data.length === 0) {
+            toast.error("No products available for this category.");
+          } else{
+            setProducts(data);
+          }
         } catch (err) {
-          setError("Error fetching products by category.");
+            toast.error("Error fetching products by category.");
         } finally {
           setLoading(false);
         }
@@ -66,7 +71,7 @@ const BrandProductsPage: React.FC = () => {
         setProducts(data);
         setSelectedCategory(null);
       } catch (err) {
-        setError("Error fetching products by brand.");
+        toast.error("Error fetching products.");
       } finally {
         setLoading(false);
       }
