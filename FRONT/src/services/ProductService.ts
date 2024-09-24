@@ -23,3 +23,13 @@ export const fetchProductByBrand = async (brand: number): Promise<IProductData[]
       throw error;
     }
   };
+
+  export const fetchProductByCategory = async (category: number): Promise<IProductData[]> => {
+    try {
+      const response = await axios.get<IProductData[]>(`${$URL}/allProductsByCategory/${category}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching product by category:", error);
+      throw error;
+    }
+  };
