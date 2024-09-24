@@ -42,6 +42,23 @@ const Navbar = () => {
         </Link>
 
         <div className="flex items-center gap-4">
+
+          {/* About Us Button */}
+          <Link href="/about-us">
+            <button className="flex items-center gap-2 p-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-info"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              About Us
+            </button>
+          </Link>
+
+          {/* Contact Us Button */}
+          <Link href="/contact-us">
+            <button className="flex items-center gap-2 p-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail"><path d="M22 12a10 10 0 1 0-20 0 10 10 0 0 0 20 0z"/><path d="M22 12L12 17 2 12"/><path d="M2 12l10 5 10-5"/></svg>
+              Contact Us
+            </button>
+          </Link>
+
           {/* Products Dropdown */}
           <div
             className='relative m-4'
