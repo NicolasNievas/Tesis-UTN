@@ -53,7 +53,7 @@ const BrandProductsPage: React.FC = () => {
             setProducts(data);
           }
         } catch (err) {
-            toast.error("Error fetching products by category.");
+            toast.error("Products not found.");
         } finally {
           setLoading(false);
         }
@@ -86,7 +86,7 @@ const BrandProductsPage: React.FC = () => {
           <Button
             name="Show All"
             onClick={handleShowAllProducts}
-            className="w-auto p-2 h-auto text-sm bg-black-btn hover:bg-black-hover hover:text-white text-gray-bg-light"
+            className="w-32 p-2 h-auto text-sm bg-black-btn hover:bg-black-hover hover:text-white text-gray-bg-light"
           />
         </div>
         <ul>

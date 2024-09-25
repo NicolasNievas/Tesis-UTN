@@ -65,7 +65,7 @@ const Navbar = () => {
             onMouseOver={() => setIsHoverProducts(true)}
             onMouseLeave={() => setIsHoverProducts(false)}
           >
-            <Link href="">
+            <Link href="/">
               <button className="flex items-center gap-2 p-3">
                 <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-list"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
                 Products
