@@ -42,7 +42,6 @@ const Navbar = () => {
         </Link>
 
         <div className="flex items-center gap-4">
-
           {/* About Us Button */}
           <Link href="/about-us">
             <button className="flex items-center gap-2 p-3">

@@ -1,25 +1,22 @@
 "use client";
 import { useState, useEffect } from "react";
-import { IProductData, IBrandData } from "@/interfaces/data.interfaces";
-import { getAllActiveBrands } from "@/services/brandService";
+import { IProductData } from "@/interfaces/data.interfaces";
 import { fetchActiveProducts } from "@/services/ProductService";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ProductPreview from "@/components/ProductPreview";
 
 export default function Home() {
   const [products, setProducts] = useState<IProductData[]>([]);
-  const [brands, setBrands] = useState<IBrandData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [skip, setSkip] = useState(0);
-  const limit = 18;
 
   useEffect(() => {
     const initializeData = async () => {
       try {
         setLoading(true);
         setError(null);
-        await Promise.all([loadProducts(), loadBrands()]);
+        await Promise.all([loadProducts()]);
       } catch (err) {
         setError(
           "Error al cargar los datos. Por favor, intente de nuevo más tarde."
@@ -38,16 +35,6 @@ export default function Home() {
       setProducts(data);
     } catch (error) {
       console.error("Error loading products:", error);
-      throw error;
-    }
-  };
-
-  const loadBrands = async () => {
-    try {
-      const data = await getAllActiveBrands();
-      setBrands(data);
-    } catch (error) {
-      console.error("Error loading brands:", error);
       throw error;
     }
   };
