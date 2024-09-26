@@ -5,7 +5,7 @@ const AboutUs = () => {
     <section className="relative h-[calc(100vh-80px)] flex items-center justify-center">
       <div className="absolute inset-0 z-0 overflow-hidden">
         <img
-          src={'/aboutUs/coffeelogo.png'}
+          src={'/coffeebg.png'}
           alt="coffee background"
           className="w-full h-full object-cover"
         />
