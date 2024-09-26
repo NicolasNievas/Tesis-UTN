@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ProductPreview from "@/components/ProductPreview";
+import NewProductModal from "@/components/NewProductModal";
 import { IProductData, IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
 import { fetchActiveProducts, fetchProductByBrand, fetchProductByCategory } from "@/services/ProductService";
 import { getAllActiveBrands, fetchCategoriesByBrand } from "@/services/brandService";
@@ -14,6 +15,7 @@ const AdminProductsPage: React.FC = () => {
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         const initializeData = async () => {
@@ -111,15 +113,23 @@ const AdminProductsPage: React.FC = () => {
         setSelectedCategory(categoryId || null);
     };
 
+    const handleNewProduct = (newProduct: Partial<IProductData>) => {
+        // Aquí deberías implementar la lógica para guardar el nuevo producto
+        console.log("Nuevo producto:", newProduct);
+        // Después de guardar, podrías recargar la lista de productos
+        loadProducts();
+    };
+
     return (
         <main className="container mx-auto px-4 py-8" style={{ minHeight: "100vh" }}>
-            <div className="mb-6 flex space-x-4">
+            <h1 className="text-3xl flex justify-center font-semibold text-gray-800 mb-6">Admin Products</h1>
+            <div className="mb-6 flex items-center space-x-4">
                 <select
                     value={selectedBrand?.toString() || ""}
                     onChange={handleBrandChange}
                     className="w-1/3 p-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 >
-                    <option value="">Todas las marcas</option>
+                    <option value="">All brands</option>
                     {brands.map((brand) => (
                         <option key={brand.id} value={brand.id.toString()}>
                             {brand.name}
@@ -132,13 +142,23 @@ const AdminProductsPage: React.FC = () => {
                     className="w-1/3 p-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                     disabled={!selectedBrand}
                 >
-                    <option value="">Todas las categorías</option>
+                    <option value="">All categories</option>
                     {categories.map((category) => (
                         <option key={category.id} value={category.id.toString()}>
                             {category.name}
                         </option>
                     ))}
                 </select>
+                <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="p-2 bg-green-500 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-circle-plus">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M8 12h8"/>
+                        <path d="M12 8v8"/>
+                    </svg>
+                </button>
             </div>
 
             {loading ? (
@@ -158,6 +178,12 @@ const AdminProductsPage: React.FC = () => {
                     )}
                 </div>
             )}
+
+            <NewProductModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSubmit={handleNewProduct}
+            />
         </main>
     );
 };
