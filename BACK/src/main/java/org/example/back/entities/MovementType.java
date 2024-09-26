@@ -1,6 +1,6 @@
 package org.example.back.entities;
 
-public enum MovementTypeEntity {
+public enum MovementType {
     INCOME,
     EXPENSE
 }

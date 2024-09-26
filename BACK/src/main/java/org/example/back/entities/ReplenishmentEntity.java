@@ -29,5 +29,5 @@ public class ReplenishmentEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MovementTypeEntity movementType; // INCOME or EXPENSE
+    private MovementType movementType; // INCOME or EXPENSE
 }

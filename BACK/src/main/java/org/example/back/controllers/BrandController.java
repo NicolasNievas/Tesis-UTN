@@ -12,13 +12,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/brands")
 @CrossOrigin(origins = "http://localhost:3000")
 public class BrandController {
 
     @Autowired
     private BrandService brandService;
 
-    @PostMapping("/brand")
+    @PostMapping("/create")
     public ResponseEntity<Brand> createBrand(@RequestBody BrandDTO brandDTO) {
         Brand createdBrand = brandService.createBrand(brandDTO);
         return ResponseEntity.ok(createdBrand);
@@ -30,7 +31,7 @@ public class BrandController {
         return ResponseEntity.ok(createdCategory);
     }
 
-    @PutMapping("/brand")
+    @PutMapping("/update")
     public ResponseEntity<Brand> updateBrand(@RequestBody Brand brand) {
         Brand updatedBrand = brandService.updateBrand(brand);
         return ResponseEntity.ok(updatedBrand);
@@ -43,7 +44,7 @@ public class BrandController {
         return ResponseEntity.ok(updatedCategory);
     }
 
-    @GetMapping("/brands/active")
+    @GetMapping("/active")
     public ResponseEntity<List<Brand>> getAllBrandsActive() {
         List<Brand> brands = brandService.getAllBrandsActive();
         return ResponseEntity.ok(brands);
@@ -61,13 +62,13 @@ public class BrandController {
         return ResponseEntity.ok(categories);
     }
 
-    @PutMapping("/brand/{brandId}/deactivate")
+    @PutMapping("/{brandId}/deactivate")
     public ResponseEntity<Brand> deactivateBrand(@PathVariable Long brandId) {
         Brand deactivatedBrand = brandService.deleteBrand(brandId);
         return ResponseEntity.ok(deactivatedBrand);
     }
 
-    @PutMapping("brand/{brandId}/reactivate")
+    @PutMapping("/{brandId}/reactivate")
     public ResponseEntity<Brand> reactivateBrand(@PathVariable Long brandId) {
         Brand reactivatedBrand = brandService.reactivateBrand(brandId);
         return ResponseEntity.ok(reactivatedBrand);
