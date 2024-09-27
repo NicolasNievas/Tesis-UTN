@@ -50,21 +50,21 @@ public class BrandServiceImp implements BrandService{
     }
 
     @Override
-    public Brand updateBrand(Brand brand) {
-        if (brand == null || brand.getId() == null) {
-            throw new IllegalArgumentException("Brand or Brand ID cannot be null");
+    public Brand updateBrand(Long brandId, BrandDTO brandDTO) {
+        if (brandId == null) {
+            throw new IllegalArgumentException("Brand ID cannot be null");
         }
-
-        BrandEntity entity = brandRepository.findById(brand.getId())
+    
+        BrandEntity entity = brandRepository.findById(brandId)
                 .orElseThrow(() -> new IllegalArgumentException("Brand not found"));
-
-        if (brand.getName() != null && !brand.getName().isEmpty()) {
-            if (brandRepository.existsByName(brand.getName())) {
+    
+        if (brandDTO.getName() != null && !brandDTO.getName().isEmpty()) {
+            if (brandRepository.existsByName(brandDTO.getName())) {
                 throw new IllegalArgumentException("Brand with the same name already exists");
             }
-            entity.setName(brand.getName());
+            entity.setName(brandDTO.getName());
         }
-
+    
         BrandEntity updatedEntity = brandRepository.save(entity);
         Brand updatedBrand = modelMapper.map(updatedEntity, Brand.class);
         return updatedBrand;

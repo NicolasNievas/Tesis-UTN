@@ -22,3 +22,43 @@ export const fetchCategoriesByBrand = async (brand: number): Promise<ICategoryDa
       throw error;
     }
   };
+
+  export const createBrand = async (brand: IBrandData) => {
+    try {
+        const response = await axios.post(`${$URL}/create`, brand);
+        return response.data;
+    } catch (error) {
+        console.error("Error creating brand:", error);
+        throw error;
+    }
+};
+
+export const updateBrand = async (brandId: number, brand: IBrandData) => {
+    try {
+        const response = await axios.put(`${$URL}/update/${brandId}`, brand);
+        return response.data;
+    } catch (error) {
+        console.error("Error updating brand:", error);
+        throw error;
+    }
+};
+
+export const deactivateBrand = async (brandId: number) => {
+    try {
+        const response = await axios.put(`${$URL}/${brandId}/deactivate`);
+        return response.data;
+    } catch (error) {
+        console.error("Error deactivating brand:", error);
+        throw error;
+    }
+};
+
+export const reactivateBrand = async (brandId: number) => {
+    try {
+        const response = await axios.put(`${$URL}/${brandId}/reactivate`);
+        return response.data;
+    } catch (error) {
+        console.error("Error reactivating brand:", error);
+        throw error;
+    }
+};

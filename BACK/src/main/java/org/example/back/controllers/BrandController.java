@@ -31,9 +31,9 @@ public class BrandController {
         return ResponseEntity.ok(createdCategory);
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<Brand> updateBrand(@RequestBody Brand brand) {
-        Brand updatedBrand = brandService.updateBrand(brand);
+    @PutMapping("/update/{brandId}")
+    public ResponseEntity<Brand> updateBrand(@PathVariable Long brandId, @RequestBody BrandDTO brandDTO) {
+        Brand updatedBrand = brandService.updateBrand(brandId, brandDTO);
         return ResponseEntity.ok(updatedBrand);
     }
 

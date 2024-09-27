@@ -11,7 +11,7 @@ import java.util.List;
 @Service
 public interface BrandService {
     Brand createBrand(BrandDTO brandDTO);
-    Brand updateBrand(Brand brand);
+    Brand updateBrand(Long brandId, BrandDTO brandDTO);
     List<Brand> getAllBrandsActive();
     List<Brand> getAllBrands();
     Category createCategory(Long brandId, CategoryDTO categoryDTO);
