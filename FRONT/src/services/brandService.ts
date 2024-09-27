@@ -13,6 +13,16 @@ export const getAllActiveBrands = async () => {
     }
 }
 
+export const getAllBrands = async () => {
+    try {
+        const response = await axios.get<IBrandData[]>(`${$URL}/allBrands`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching all brands:", error);
+        throw error;
+    }
+}
+
 export const fetchCategoriesByBrand = async (brand: number): Promise<ICategoryData[]> => {
     try {
       const response = await axios.get<ICategoryData[]>(`${$URL}/${brand}/categories`);
@@ -23,7 +33,7 @@ export const fetchCategoriesByBrand = async (brand: number): Promise<ICategoryDa
     }
   };
 
-  export const createBrand = async (brand: IBrandData) => {
+export const createBrand = async (brand: Partial<IBrandData>) => {
     try {
         const response = await axios.post(`${$URL}/create`, brand);
         return response.data;
@@ -31,7 +41,7 @@ export const fetchCategoriesByBrand = async (brand: number): Promise<ICategoryDa
         console.error("Error creating brand:", error);
         throw error;
     }
-};
+  };
 
 export const updateBrand = async (brandId: number, brand: IBrandData) => {
     try {
