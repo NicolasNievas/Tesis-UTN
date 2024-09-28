@@ -45,6 +45,7 @@ const NewProductModal: React.FC<NewProductModalProps> = ({ isOpen, onClose, onSu
       if (selectedBrand !== null) {
         try {
           const activeCategories = await fetchCategoriesByBrand(selectedBrand);
+          console.log('Categorías obtenidas para la marca seleccionada:', activeCategories);
           if (activeCategories.length === 0) {
             setError("No categories available for this brand.");
             setCategories([]);
@@ -68,7 +69,7 @@ const NewProductModal: React.FC<NewProductModalProps> = ({ isOpen, onClose, onSu
   }, [selectedBrand]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault();    
     
     if (selectedBrand === null) {
       toast.error("Por favor, seleccione una marca");
@@ -85,13 +86,21 @@ const NewProductModal: React.FC<NewProductModalProps> = ({ isOpen, onClose, onSu
       return;
     }
 
+    if(selectedBrand && selectedCategory ){
+       const selectedCategoryData = categories.find(categories => categories.id === selectedCategory);
+       if(!selectedCategoryData || selectedCategoryData.brandId !== selectedBrand){
+         toast.error("La categoría seleccionada no pertenece a la marca seleccionada.");
+         return;
+       }
+     }
+
     onSubmit({
       name: productName,
       description: productDescription,
       price: parseFloat(productPrice),
       stock: parseInt(productStock, 10),
       imageUrls: productImageURL.split(',').map((url) => url.trim()),
-      brandId: selectedBrand,
+      brandId: selectedBrand!,
       categoryId: selectedCategory!,
     });
     toast.success("Product created successfully.");

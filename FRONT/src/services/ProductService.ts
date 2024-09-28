@@ -33,3 +33,13 @@ export const fetchProductByBrand = async (brand: number): Promise<IProductData[]
       throw error;
     }
   };
+
+export const postProduct = async (productData: Partial<IProductData>) => {
+  try {
+    const response = await axios.post(`${$URL}/create`, productData);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating product:", error);
+    throw error;
+  }
+};

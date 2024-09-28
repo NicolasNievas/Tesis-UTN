@@ -110,7 +110,7 @@ public class BrandServiceImp implements BrandService{
 
         Category category = new Category();
         category.setName(categoryDTO.getName());
-        category.setBrand(modelMapper.map(brandEntity, Brand.class));
+        category.setBrandId(brandId);
 
         CategoryEntity entity = modelMapper.map(category, CategoryEntity.class);
         entity.setBrand(brandEntity);

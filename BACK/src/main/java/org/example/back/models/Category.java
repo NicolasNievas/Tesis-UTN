@@ -11,5 +11,5 @@ public class Category {
     private Long id;
     private String name;
     private boolean active;
-    private Brand brand;
+    private Long brandId;
 }

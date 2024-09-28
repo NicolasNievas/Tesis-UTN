@@ -4,8 +4,9 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import ProductPreview from "@/components/ProductPreview";
 import NewProductModal from "@/components/NewProductModal";
 import { IProductData, IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
-import { fetchActiveProducts, fetchProductByBrand, fetchProductByCategory } from "@/services/ProductService";
+import { fetchActiveProducts, fetchProductByBrand, fetchProductByCategory, postProduct } from "@/services/ProductService";
 import { getAllActiveBrands, fetchCategoriesByBrand } from "@/services/brandService";
+import { toast } from "react-toastify";
 
 const AdminProductsPage: React.FC = () => {
     const [products, setProducts] = useState<IProductData[]>([]);
@@ -113,11 +114,15 @@ const AdminProductsPage: React.FC = () => {
         setSelectedCategory(categoryId || null);
     };
 
-    const handleNewProduct = (newProduct: Partial<IProductData>) => {
-        // Aquí deberías implementar la lógica para guardar el nuevo producto
-        console.log("Nuevo producto:", newProduct);
-        // Después de guardar, podrías recargar la lista de productos
-        loadProducts();
+    const handleNewProduct = async (newProduct: Partial<IProductData>) => {
+        try{
+            await postProduct(newProduct);
+            toast.success("Product created successfully.");
+            loadProducts();
+            setIsModalOpen(false);
+        } catch (error) {
+            toast.error("Error creating the product. Please try again later.");
+        }
     };
 
     return (

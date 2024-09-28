@@ -18,6 +18,6 @@ public class Product {
     private List<String> imageUrls;
     private Integer stock;
     private boolean active;
-    private Brand brand;
-    private Category category;
+    private Long brandId;
+    private Long categoryId;
 }

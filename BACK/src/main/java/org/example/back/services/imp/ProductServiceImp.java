@@ -33,7 +33,6 @@ public class ProductServiceImp implements ProductService{
 
     @Override
     public Product createProduct(Product product) {
-        // Validar los campos requeridos del producto
         if (product == null) {
             throw new IllegalArgumentException("Product cannot be null");
         }
@@ -42,12 +41,12 @@ public class ProductServiceImp implements ProductService{
             throw new IllegalArgumentException("Product name cannot be empty");
         }
 
-        if (product.getBrand() == null || product.getBrand().getName() == null || product.getBrand().getName().isEmpty()) {
-            throw new IllegalArgumentException("Brand name cannot be empty");
+        if (product.getBrandId() == null || product.getBrandId() <= 0) {
+            throw new IllegalArgumentException("Brand ID cannot be null");
         }
 
-        if (product.getCategory() == null || product.getCategory().getName() == null || product.getCategory().getName().isEmpty()) {
-            throw new IllegalArgumentException("Category name cannot be empty");
+        if (product.getCategoryId() == null || product.getCategoryId() <= 0) {
+            throw new IllegalArgumentException("Category ID cannot be null");
         }
 
         if (product.getPrice() == null || product.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
@@ -56,16 +55,27 @@ public class ProductServiceImp implements ProductService{
 
         if (product.getStock() == null || product.getStock() < 0) {
             throw new IllegalArgumentException("Stock cannot be negative");
-        }
+        }   
 
         // Verificar si ya existe un producto con el mismo nombre
         if (productRepository.existsByNameIgnoreCase(product.getName())) {
             throw new IllegalArgumentException("Product with the same name already exists");
         }
 
-        // Mapear el producto a la entidad y guardar la entidad
+        // Obtener las entidades BrandEntity y CategoryEntity a partir de los IDs
+        BrandEntity brand = brandRepository.findById(product.getBrandId())
+                .orElseThrow(() -> new IllegalArgumentException("Brand not found with ID: " + product.getBrandId()));
+
+        CategoryEntity category = categoryRepository.findById(product.getCategoryId())
+                .orElseThrow(() -> new IllegalArgumentException("Category not found with ID: " + product.getCategoryId()));
+
+        //  Mapear el producto a la entidad ProductEntity y asignar las entidades Brand y Category
         ProductEntity entity = modelMapper.map(product, ProductEntity.class);
+        entity.setBrand(brand);
+        entity.setCategory(category);
         entity.setActive(true);
+
+        // Guardar la entidad en la base de datos
         ProductEntity savedEntity = productRepository.save(entity);
 
         // Mapear la entidad guardada al modelo y devolverlo
@@ -75,8 +85,7 @@ public class ProductServiceImp implements ProductService{
 
     @Override
     public Product updateProduct(Long productId, Product product) {
-        // Validar los campos requeridos del producto
-        if (product == null || product.getId() == null) {
+        if (product == null || productId == null) {
             throw new IllegalArgumentException("Product or Product ID cannot be null");
         }
 
@@ -84,12 +93,12 @@ public class ProductServiceImp implements ProductService{
             throw new IllegalArgumentException("Product name cannot be empty");
         }
 
-        if (product.getBrand() == null || product.getBrand().getName() == null || product.getBrand().getName().isEmpty()) {
-            throw new IllegalArgumentException("Brand name cannot be empty");
+        if (product.getBrandId() == null || product.getBrandId() <= 0) {
+            throw new IllegalArgumentException("Brand ID cannot be null or invalid");
         }
 
-        if (product.getCategory() == null || product.getCategory().getName() == null || product.getCategory().getName().isEmpty()) {
-            throw new IllegalArgumentException("Category name cannot be empty");
+        if (product.getCategoryId() == null || product.getCategoryId() <= 0) {
+            throw new IllegalArgumentException("Category ID cannot be null or invalid");
         }
 
         if (product.getPrice() == null || product.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
@@ -102,21 +111,28 @@ public class ProductServiceImp implements ProductService{
 
         // Verificar si el producto existe
         ProductEntity entity = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + productId));
 
-        // Mapear los campos actualizables del producto a la entidad
+        BrandEntity brand = brandRepository.findById(product.getBrandId())
+                .orElseThrow(() -> new IllegalArgumentException("Brand not found with ID: " + product.getBrandId()));
+
+        CategoryEntity category = categoryRepository.findById(product.getCategoryId())
+                .orElseThrow(() -> new IllegalArgumentException("Category not found with ID: " + product.getCategoryId()));
+
+        if(!category.getBrand().getId().equals(product.getId())) {
+            throw new IllegalArgumentException("Brand and Category do not match");
+        }
+
         entity.setName(product.getName());
         entity.setDescription(product.getDescription());
         entity.setPrice(product.getPrice());
         entity.setImageUrls(product.getImageUrls());
         entity.setStock(product.getStock());
-        entity.setBrand(modelMapper.map(product.getBrand(), BrandEntity.class));
-        entity.setCategory(modelMapper.map(product.getCategory(), CategoryEntity.class));
+        entity.setBrand(brand);  
+        entity.setCategory(category);  
 
-        // Guardar la entidad actualizada
         ProductEntity updatedEntity = productRepository.save(entity);
 
-        // Mapear la entidad actualizada al modelo y devolverlo
         Product updatedProduct = modelMapper.map(updatedEntity, Product.class);
         return updatedProduct;
     }

@@ -1,13 +1,15 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { getAllBrands, createBrand, updateBrand, deactivateBrand, reactivateBrand } from "@/services/brandService";
-import { IBrandData } from "@/interfaces/data.interfaces";
+import { getAllBrands, createBrand, updateBrand, deactivateBrand, reactivateBrand, fetchCategoriesByBrand, createCategory } from "@/services/brandService";
+import { IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
 import { toast } from 'react-toastify';
-import Swal from 'sweetalert2';
 
 const BrandsPage: React.FC = () => {
   const [brands, setBrands] = useState<IBrandData[]>([]);
+  const [categories, setCategories] = useState<ICategoryData[]>([]);
+  const [selectedBrand, setSelectedBrand] = useState<number | null>(null);
   const [newBrandName, setNewBrandName] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState('');
 
   useEffect(() => {
     fetchBrands();
@@ -22,15 +24,40 @@ const BrandsPage: React.FC = () => {
     }
   };
 
+  const fetchCategories = async (brandId: number) => {
+    try {
+      const data = await fetchCategoriesByBrand(brandId);
+      setCategories(data);
+    } catch (error) {
+      toast.error("Error fetching categories");
+    }
+  };
+
   const handleCreateBrand = async () => {
     try {
-      const newBrand: Partial<IBrandData> = { name: newBrandName }; // Omite 'id' y 'active'
+      const newBrand: Partial<IBrandData> = { name: newBrandName };
       await createBrand(newBrand);
       toast.success("Brand created successfully");
       setNewBrandName('');
       fetchBrands();
     } catch (error) {
       toast.error("Error creating brand");
+    }
+  };
+
+  const handleCreateCategory = async () => {
+    if (selectedBrand === null) {
+      toast.error("Please select a brand first");
+      return;
+    }
+    try {
+      const newCategory: Partial<ICategoryData> = { name: newCategoryName, brandId: selectedBrand };
+      await createCategory(newCategory);
+      toast.success("Category created successfully");
+      setNewCategoryName('');
+      fetchCategories(selectedBrand);
+    } catch (error) {
+      toast.error("Error creating category");
     }
   };
 
@@ -46,49 +73,23 @@ const BrandsPage: React.FC = () => {
   };
 
   const handleDeactivateBrand = async (brandId: number) => {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, deactivate it!'
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await deactivateBrand(brandId);
-          //Swal.fire('Deactivated!', 'The brand has been deactivated.', 'success');
-            toast.success("Brand deactivated successfully");
-          fetchBrands();
-        } catch (error) {
-          toast.error("Error deactivating brand");
-        }
-      }
-    });
+    try {
+      await deactivateBrand(brandId);
+      toast.success("Brand deactivated successfully");
+      fetchBrands();
+    } catch (error) {
+      toast.error("Error deactivating brand");
+    }
   };
 
   const handleReactivateBrand = async (brandId: number) => {
-    Swal.fire({
-      title: 'Reactivate Brand?',
-      text: "Do you want to reactivate this brand?",
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#28a745',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, reactivate it!'
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await reactivateBrand(brandId);
-          //Swal.fire('Reactivated!', 'The brand has been reactivated.', 'success');
-          toast.success("Brand reactivated successfully");
-          fetchBrands();
-        } catch (error) {
-          toast.error("Error reactivating brand");
-        }
-      }
-    });
+    try {
+      await reactivateBrand(brandId);
+      toast.success("Brand reactivated successfully");
+      fetchBrands();
+    } catch (error) {
+      toast.error("Error reactivating brand");
+    }
   };
 
   return (
@@ -113,31 +114,43 @@ const BrandsPage: React.FC = () => {
               <td className="py-2">{brand.active ? 'Yes' : 'No'}</td>
               <td className="py-2 flex justify-center space-x-2">
                 <button onClick={() => handleUpdateBrand(brand.id, { ...brand, name: prompt("New name:", brand.name) || brand.name })} className="bg-yellow-500 p-2 rounded-md hover:bg-yellow-600">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-pencil-square" viewBox="0 0 16 16">
-                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
-                    <path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
-                  </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/><path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/></svg>
                 </button>
                 <button onClick={() => handleDeactivateBrand(brand.id)} className="bg-red-500 p-2 rounded-md hover:bg-red-600">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-trash" viewBox="0 0 16 16">
-                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-                  </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>
                 </button>
                 <button onClick={() => handleReactivateBrand(brand.id)} className="bg-green-500 p-2 rounded-md hover:bg-green-600">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
-                    <path fillRule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 1 0-.908-.418A6 6 0 1 0 8 2v1z"/>
-                    <path d="M8 1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0v-4A.5.5 0 0 1 8 1z"/>
-                    <path fillRule="evenodd" d="M8 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0v-4A.5.5 0 0 1 8 0z"/>
-                  </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-arrow-counterclockwise" viewBox="0 0 16 16"><path fillRule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 1 0-.908-.418A6 6 0 1 0 8 2v1z"/><path d="M8 1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0v-4A.5.5 0 0 1 8 1z"/><path fillRule="evenodd" d="M8 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0v-4A.5.5 0 0 1 8 0z"/></svg>
+                </button>
+                <button onClick={() => { setSelectedBrand(brand.id); fetchCategories(brand.id); }} className="bg-blue-500 p-2 rounded-md hover:bg-blue-600">
+                  View Categories
                 </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      <div className="mt-6">
+        <input type="text" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="New Category Name" className="p-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+        <button onClick={handleCreateCategory} className="ml-2 p-2 bg-green-500 text-white rounded-full hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">Create</button>
+      </div>
+      <table className="min-w-full bg-white mt-6">
+        <thead>
+          <tr>
+            <th className="py-2">Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          {categories.map((category) => (
+            <tr key={category.id} className
+            ="text-center">
+              <td className="py-2">{category.name}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
-};
+}
 
 export default BrandsPage;

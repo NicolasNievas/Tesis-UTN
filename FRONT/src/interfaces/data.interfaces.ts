@@ -19,6 +19,6 @@ export interface IBrandData{
 export interface ICategoryData{
     id: number;
     name: string;
-    Brands: IBrandData;
+    brandId: number;
     active: boolean;
 }

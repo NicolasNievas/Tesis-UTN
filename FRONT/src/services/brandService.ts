@@ -72,3 +72,13 @@ export const reactivateBrand = async (brandId: number) => {
         throw error;
     }
 };
+
+export const createCategory = async (category: Partial<ICategoryData>) => {
+    try {
+        const response = await axios.post(`${$URL}/categories/create`, category);
+        return response.data;
+    } catch (error) {
+        console.error("Error creating category:", error);
+        throw error;
+    }
+};
