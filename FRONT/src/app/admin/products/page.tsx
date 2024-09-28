@@ -4,104 +4,49 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import NewProductModal from "@/components/NewProductModal";
 import ProductListItem from "@/components/ProductListItem";
 import { IProductData, IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
-import { fetchActiveProducts, fetchProductByBrand, fetchProductByCategory, postProduct } from "@/services/ProductService";
+import { desactivateProduct, postProduct } from "@/services/ProductService";
 import { getAllActiveBrands, fetchCategoriesByBrand } from "@/services/brandService";
 import { toast } from "react-toastify";
+import useApi from "@/hooks/useApi";
+import Swal from "sweetalert2";
 
 const AdminProductsPage: React.FC = () => {
-    const [products, setProducts] = useState<IProductData[]>([]);
+    const { data, loading, error } = useApi<IProductData[]>('/allProducts');
     const [brands, setBrands] = useState<IBrandData[]>([]);
     const [categories, setCategories] = useState<ICategoryData[]>([]);
     const [selectedBrand, setSelectedBrand] = useState<number | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
-        const initializeData = async () => {
+        const loadBrands = async () => {
             try {
-                setLoading(true);
-                setError(null);
-                await Promise.all([loadProducts(), loadBrands()]);
+                const data = await getAllActiveBrands();
+                setBrands(data);
             } catch (err) {
-                setError("Error al cargar los datos iniciales. Por favor, intente de nuevo más tarde.");
-            } finally {
-                setLoading(false);
+                toast.error("Error al cargar las marcas. Por favor, intente de nuevo más tarde.");
             }
         };
 
-        initializeData();
+        loadBrands();
     }, []);
 
     useEffect(() => {
-        const loadData = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                if (selectedBrand) {
-                    await loadCategories(selectedBrand);
-                    await loadProductsByBrand(selectedBrand);
-                } else {
-                    setCategories([]);
-                    await loadProducts();
-                }
-            } catch (err) {
-                setError("Error al cargar los datos. Por favor, intente de nuevo más tarde.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadData();
-    }, [selectedBrand]);
-
-    useEffect(() => {
-        const loadData = async () => {
+        const loadCategories = async () => {
             if (selectedBrand) {
-                setLoading(true);
-                setError(null);
                 try {
-                    if (selectedCategory) {
-                        await loadProductsByCategory(selectedCategory);
-                    } else {
-                        await loadProductsByBrand(selectedBrand);
-                    }
+                    const data = await fetchCategoriesByBrand(selectedBrand);
+                    setCategories(data);
                 } catch (err) {
-                    setError("Error al cargar los productos. Por favor, intente de nuevo más tarde.");
-                } finally {
-                    setLoading(false);
+                    toast.error("Error al cargar las categorías. Por favor, intente de nuevo más tarde.");
                 }
+            } else {
+                setCategories([]);
             }
         };
 
-        loadData();
-    }, [selectedCategory]);
-
-    const loadProducts = async () => {
-        const data = await fetchActiveProducts();
-        setProducts(data);
-    };
-
-    const loadBrands = async () => {
-        const data = await getAllActiveBrands();
-        setBrands(data);
-    };
-
-    const loadCategories = async (brandId: number) => {
-        const data = await fetchCategoriesByBrand(brandId);
-        setCategories(data);
-    };
-
-    const loadProductsByBrand = async (brandId: number) => {
-        const data = await fetchProductByBrand(brandId);
-        setProducts(data);
-    };
-
-    const loadProductsByCategory = async (categoryId: number) => {
-        const data = await fetchProductByCategory(categoryId);
-        setProducts(data);
-    };
+        loadCategories();
+    }, [selectedBrand]);
 
     const handleBrandChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const brandId = Number(event.target.value);
@@ -115,11 +60,10 @@ const AdminProductsPage: React.FC = () => {
     };
 
     const handleNewProduct = async (newProduct: Partial<IProductData>) => {
-        try{
+        try {
             await postProduct(newProduct);
             toast.success("Product created successfully.");
-            loadProducts();
-            setIsModalOpen(false);
+            window.location.reload();
         } catch (error) {
             toast.error("Error creating the product. Please try again later.");
         }
@@ -129,12 +73,30 @@ const AdminProductsPage: React.FC = () => {
         // Lógica para editar el producto
     };
 
-    const handleDeleteProduct = (productId: number) => {
-        // Lógica para eliminar el producto
+    const handleDeleteProduct = async (productId: number) => {
+        try {
+            const result = await Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, delete it!",
+            });
+
+            if (result.isConfirmed) {
+                await desactivateProduct(productId);
+                toast.success("Product deleted successfully.");
+                window.location.reload();
+            }
+        } catch (error) {
+            toast.error("Error deleting the product. Please try again later.");
+        }
     };
 
     const handleReactivateProduct = (productId: number) => {
-
+        // Lógica para reactivar el producto
     };
 
     return (
@@ -181,7 +143,7 @@ const AdminProductsPage: React.FC = () => {
             {loading ? (
                 <LoadingSpinner />
             ) : error ? (
-                <p className="text-center py-10 text-red-500">{error}</p>
+                <p className="text-center py-10 text-red-500">{error.message}</p>
             ) : (
                 <table className="min-w-full bg-white">
                     <thead>
@@ -190,12 +152,13 @@ const AdminProductsPage: React.FC = () => {
                             <th className="py-2">Name</th>
                             <th className="py-2">Price</th>
                             <th className="py-2">Stock</th>
+                            <th className="py-2">Active</th>
                             <th className="py-2">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {products.length > 0 ? (
-                            products.map((product) => (
+                        {data && data.length > 0 ? (
+                            data.map((product) => (
                                 <ProductListItem key={product.id} product={product} onEdit={handleEditProduct} onDelete={handleDeleteProduct} onReactive={handleReactivateProduct} />
                             ))
                         ) : (

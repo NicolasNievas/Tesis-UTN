@@ -102,7 +102,6 @@ const NewProductModal: React.FC<NewProductModalProps> = ({ isOpen, onClose, onSu
       brandId: selectedBrand!,
       categoryId: selectedCategory!,
     });
-    toast.success("Product created successfully.");
     resetForm();
     onClose();
   };
