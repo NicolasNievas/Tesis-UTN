@@ -4,7 +4,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import NewProductModal from "@/components/NewProductModal";
 import ProductListItem from "@/components/ProductListItem";
 import { IProductData, IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
-import { desactivateProduct, postProduct } from "@/services/ProductService";
+import { desactivateProduct, postProduct, reactivateProduct } from "@/services/ProductService";
 import { getAllActiveBrands, fetchCategoriesByBrand } from "@/services/brandService";
 import { toast } from "react-toastify";
 import useApi from "@/hooks/useApi";
@@ -95,8 +95,26 @@ const AdminProductsPage: React.FC = () => {
         }
     };
 
-    const handleReactivateProduct = (productId: number) => {
-        // Lógica para reactivar el producto
+    const handleReactivateProduct = async (productId: number) => {
+        try{
+            const result = await Swal.fire({
+                title: "Are you sure?",
+                text: "You are about to reactivate this product.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, reactivate it!",
+            });
+
+            if(result.isConfirmed){
+                await reactivateProduct(productId);
+                toast.success("Product reactivated successfully.");
+                window.location.reload();
+            }
+        } catch (error) {
+            toast.error("Error reactivating the product. Please try again later.");
+        }
     };
 
     return (

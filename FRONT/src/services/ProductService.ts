@@ -53,3 +53,12 @@ export const desactivateProduct = async (productId: number) => {
     throw error;
   }
 };
+
+export const reactivateProduct = async (productId: number) => {
+  try{
+    const response = await axios.put(`${$URL}/reactive/${productId}`);
+    return response.data;
+  } catch(error){
+    throw error;
+  }
+};
