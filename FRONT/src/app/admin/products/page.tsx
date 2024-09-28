@@ -11,7 +11,7 @@ import useApi from "@/hooks/useApi";
 import Swal from "sweetalert2";
 
 const AdminProductsPage: React.FC = () => {
-    const { data, loading, error } = useApi<IProductData[]>('/allProducts');
+    const { data: products, loading, error } = useApi<IProductData[]>('/allProducts');
     const [brands, setBrands] = useState<IBrandData[]>([]);
     const [categories, setCategories] = useState<ICategoryData[]>([]);
     const [selectedBrand, setSelectedBrand] = useState<number | null>(null);
@@ -117,6 +117,16 @@ const AdminProductsPage: React.FC = () => {
         }
     };
 
+    const filteredProducts = products?.filter(product => {
+        if (selectedBrand && product.brandId !== selectedBrand) {
+            return false;
+        }
+        if (selectedCategory && product.categoryId !== selectedCategory) {
+            return false;
+        }
+        return true;
+    });
+
     return (
         <main className="container mx-auto px-4 py-8" style={{ minHeight: "100vh" }}>
             <h1 className="text-3xl flex justify-center font-semibold text-gray-800 mb-6">Admin Products</h1>
@@ -175,13 +185,13 @@ const AdminProductsPage: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {data && data.length > 0 ? (
-                            data.map((product) => (
+                        {filteredProducts && filteredProducts.length > 0 ? (
+                            filteredProducts.map((product) => (
                                 <ProductListItem key={product.id} product={product} onEdit={handleEditProduct} onDelete={handleDeleteProduct} onReactive={handleReactivateProduct} />
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={5} className="text-center py-4 text-gray-600">
+                                <td colSpan={6} className="text-center py-4 text-gray-600">
                                     No hay productos disponibles con los filtros seleccionados.
                                 </td>
                             </tr>
