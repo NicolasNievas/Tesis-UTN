@@ -45,7 +45,6 @@ const NewProductModal: React.FC<NewProductModalProps> = ({ isOpen, onClose, onSu
       if (selectedBrand !== null) {
         try {
           const activeCategories = await fetchCategoriesByBrand(selectedBrand);
-          console.log('Categorías obtenidas para la marca seleccionada:', activeCategories);
           if (activeCategories.length === 0) {
             setError("No categories available for this brand.");
             setCategories([]);
