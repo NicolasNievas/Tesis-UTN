@@ -15,7 +15,7 @@ public interface BrandService {
     List<Brand> getAllBrandsActive();
     List<Brand> getAllBrands();
     Category createCategory(Long brandId, CategoryDTO categoryDTO);
-    Category updateCategory(Long brandId, Category category);
+    Category updateCategory(Long brandId, Long categoryId, CategoryDTO categoryDTO);
     List<Category> getAllCategoriesByBrand(Long brandId);
     Brand deleteBrand(Long brandId);
     Brand reactivateBrand(Long brandId);

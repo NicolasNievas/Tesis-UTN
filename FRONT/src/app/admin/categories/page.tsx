@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { getAllBrands, fetchCategoriesByBrand, createCategory } from "@/services/brandService";
+import { getAllBrands, fetchCategoriesByBrand, createCategory, desactiveCategory, reactivateBrand, reactiveCategory } from "@/services/brandService";
 import { IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
 import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 
 const CategoriesPage: React.FC = () => {
   const [brands, setBrands] = useState<IBrandData[]>([]);
@@ -54,11 +55,47 @@ const CategoriesPage: React.FC = () => {
   };
 
   const handleDeactivateCategory = async (categoryId: number) => {
-    // Implementar lógica de desactivación de categoría
+    try{
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, deactivate it!'
+        });
+    
+        if(result.isConfirmed){
+            await desactiveCategory(selectedBrand!, categoryId);
+            toast.success("Category deactivated successfully");
+            fetchCategories(selectedBrand!);
+        }
+    }catch(error){
+        toast.error("Error deactivating category");
+    }
   };
 
   const handleReactivateCategory = async (categoryId: number) => {
-    // Implementar lógica de reactivación de categoría
+    try{
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, reactivate it!'
+        });
+
+        if(result.isConfirmed){
+            await reactiveCategory(selectedBrand!, categoryId);
+            toast.success("Category reactivated successfully");
+            fetchCategories(selectedBrand!);
+        }
+    } catch(error){
+        toast.error("Error reactivating category");
+    }
   };
 
   const handleBrandChange = (event: React.ChangeEvent<HTMLSelectElement>) => {

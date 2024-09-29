@@ -120,28 +120,28 @@ public class BrandServiceImp implements BrandService{
     }
 
     @Override
-    public Category updateCategory(Long brandId, Category category) {
-        if (category == null || category.getId() == null) {
-            throw new IllegalArgumentException("Category or Category ID cannot be null");
-        }
-
-        BrandEntity brandEntity = brandRepository.findById(brandId)
-                .orElseThrow(() -> new IllegalArgumentException("Brand not found"));
-
-        CategoryEntity entity = (CategoryEntity) categoryRepository.findByIdAndBrand(category.getId(), brandEntity)
-                .orElseThrow(() -> new IllegalArgumentException("Category not found for this brand"));
-
-        if (category.getName() != null && !category.getName().isEmpty()) {
-            if (categoryRepository.existsByNameAndBrand(category.getName(), brandEntity)) {
-                throw new IllegalArgumentException("Category with the same name already exists for this brand");
-            }
-            entity.setName(category.getName());
-        }
-
-        CategoryEntity updatedEntity = categoryRepository.save(entity);
-        Category updatedCategory = modelMapper.map(updatedEntity, Category.class);
-        return updatedCategory;
+public Category updateCategory(Long brandId, Long categoryId, CategoryDTO categoryDTO) {
+    if (categoryId == null) {
+        throw new IllegalArgumentException("Category ID cannot be null");
     }
+
+    BrandEntity brandEntity = brandRepository.findById(brandId)
+            .orElseThrow(() -> new IllegalArgumentException("Brand not found"));
+
+    CategoryEntity entity = (CategoryEntity) categoryRepository.findByIdAndBrand(categoryId, brandEntity)
+            .orElseThrow(() -> new IllegalArgumentException("Category not found for this brand"));
+
+    if (categoryDTO.getName() != null && !categoryDTO.getName().isEmpty()) {
+        if (categoryRepository.existsByNameAndBrand(categoryDTO.getName(), brandEntity)) {
+            throw new IllegalArgumentException("Category with the same name already exists for this brand");
+        }
+        entity.setName(categoryDTO.getName());
+    }
+
+    CategoryEntity updatedEntity = categoryRepository.save(entity);
+    Category updatedCategory = modelMapper.map(updatedEntity, Category.class);
+    return updatedCategory;
+}
 
     @Override
     public List<Category> getAllCategoriesByBrand(Long brandId) {

@@ -43,9 +43,8 @@ public class BrandController {
     }
 
     @PutMapping("/{brandId}/categories/{categoryId}")
-    public ResponseEntity<Category> updateCategory(@PathVariable Long brandId, @PathVariable Long categoryId, @RequestBody Category category) {
-        category.setId(categoryId);
-        Category updatedCategory = brandService.updateCategory(brandId, category);
+    public ResponseEntity<Category> updateCategory(@PathVariable Long brandId, @PathVariable Long categoryId, @RequestBody CategoryDTO categoryDTO) {
+        Category updatedCategory = brandService.updateCategory(brandId, categoryId, categoryDTO);
         return ResponseEntity.ok(updatedCategory);
     }
 
