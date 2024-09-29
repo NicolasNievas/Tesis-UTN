@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import NewProductModal from "@/components/NewProductModal";
 import ProductListItem from "@/components/ProductListItem";
+import EditProductModal from "@/components/EditProductModal";
 import { IProductData, IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
 import { desactivateProduct, postProduct, reactivateProduct } from "@/services/ProductService";
 import { getAllActiveBrands, fetchCategoriesByBrand } from "@/services/brandService";
