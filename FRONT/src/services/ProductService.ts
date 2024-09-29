@@ -62,3 +62,12 @@ export const reactivateProduct = async (productId: number) => {
     throw error;
   }
 };
+
+export const updateProduct = async (product: Partial<IProductData>) => {
+  try{
+    const response = await axios.put(`${$URL}/update/${product.id}`, product);
+    return response.data;
+  } catch(error){
+    throw new Error("Error updating product");
+  }
+}
