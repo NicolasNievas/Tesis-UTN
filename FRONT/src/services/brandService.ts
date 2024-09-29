@@ -103,3 +103,13 @@ export const reactiveCategory = async (brandId: number, categoryId: number) => {
         throw error;
     }
 };
+
+export const updateCategory = async (brandId: number, categoryId: number, categoryName: string) => {
+    try {
+        const response = await axios.put(`${$URL}/${brandId}/categories/${categoryId}`, { name: categoryName });
+        return response.data;
+    } catch (error) {
+        console.error("Error updating category:", error);
+        throw error;
+    }
+};
