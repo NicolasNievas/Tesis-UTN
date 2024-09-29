@@ -26,6 +26,11 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               Brands
             </Link>
           </li>
+          <li>
+            <Link href="/admin/categories" className="hover:text-gray-400">
+              Categories
+            </Link>
+          </li>
         </ul>
         <div className="mt-auto">
           <Link href="/admin" className="hover:text-gray-400">
