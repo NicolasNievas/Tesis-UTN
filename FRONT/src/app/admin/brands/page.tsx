@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { getAllBrands, createBrand, updateBrand, deactivateBrand, reactivateBrand, fetchCategoriesByBrand, createCategory } from "@/services/brandService";
+import { getAllBrands, createBrand, updateBrand, deactivateBrand, reactivateBrand, createCategory, fetchAllCategoriesByBrand } from "@/services/brandService";
 import { IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
 import { toast } from 'react-toastify';
 
@@ -27,7 +27,7 @@ const BrandsPage: React.FC = () => {
 
   const fetchCategories = async (brandId: number) => {
     try {
-      const data = await fetchCategoriesByBrand(brandId);
+      const data = await fetchAllCategoriesByBrand(brandId);
       setCategories(data);
     } catch (error) {
       toast.error("Error fetching categories");

@@ -16,4 +16,5 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> 
 
     List<CategoryEntity> findByBrandAndActiveTrue(BrandEntity brandEntity);
 
+    List<CategoryEntity> findByBrand(BrandEntity brandEntity);
 }

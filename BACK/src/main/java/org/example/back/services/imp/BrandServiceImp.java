@@ -144,7 +144,7 @@ public Category updateCategory(Long brandId, Long categoryId, CategoryDTO catego
 }
 
     @Override
-    public List<Category> getAllCategoriesByBrand(Long brandId) {
+    public List<Category> getAllCategoriesByBrandActive(Long brandId) {
         if(brandId == null) {
             throw new IllegalArgumentException("Brand id cannot be null");
         }
@@ -159,6 +159,29 @@ public Category updateCategory(Long brandId, Long categoryId, CategoryDTO catego
         List<CategoryEntity> categoryEntities = categoryRepository.findByBrandAndActiveTrue(brandEntity);
 
         if(categoryEntities == null || categoryEntities.isEmpty()) {
+            throw new IllegalArgumentException("No categories found for this brand");
+        }
+
+        return categoryEntities.stream().map(categoryEntity -> modelMapper.map(categoryEntity, Category.class)).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Category> getAllCategoriesByBrand(Long brandId) {
+
+        if (brandId == null) {
+            throw new IllegalArgumentException("Brand id cannot be null");
+        }
+        
+        BrandEntity brandEntity = brandRepository.findById(brandId)
+            .orElseThrow(() -> new IllegalArgumentException("Brand not found"));
+            
+        if (!brandEntity.isActive()) {
+            throw new IllegalArgumentException("Brand is not active");
+        }
+        
+        List<CategoryEntity> categoryEntities = categoryRepository.findByBrand(brandEntity);
+
+        if (categoryEntities == null || categoryEntities.isEmpty()) {
             throw new IllegalArgumentException("No categories found for this brand");
         }
 

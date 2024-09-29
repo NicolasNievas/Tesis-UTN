@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { getAllBrands, fetchCategoriesByBrand, createCategory, desactiveCategory, updateCategory, reactiveCategory } from "@/services/brandService";
+import { getAllBrands, createCategory, desactiveCategory, updateCategory, reactiveCategory, fetchAllCategoriesByBrand } from "@/services/brandService";
 import { IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
@@ -26,7 +26,7 @@ const CategoriesPage: React.FC = () => {
 
   const fetchCategories = async (brandId: number) => {
     try {
-      const data = await fetchCategoriesByBrand(brandId);
+      const data = await fetchAllCategoriesByBrand(brandId);
       setCategories(data);
     } catch (error) {
       toast.error("Error fetching categories");

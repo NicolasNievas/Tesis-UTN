@@ -60,7 +60,13 @@ public class BrandController {
         return ResponseEntity.ok(brands);
     }
 
-    @GetMapping("/{brandId}/categories")
+    @GetMapping("/{brandId}/categoriesActive")
+    public ResponseEntity<List<Category>> getAllCategoriesByBrandActive(@PathVariable Long brandId) {
+        List<Category> categories = brandService.getAllCategoriesByBrandActive(brandId);
+        return ResponseEntity.ok(categories);
+    }
+
+    @GetMapping("/{brandId}/allCategories")
     public ResponseEntity<List<Category>> getAllCategoriesByBrand(@PathVariable Long brandId) {
         List<Category> categories = brandService.getAllCategoriesByBrand(brandId);
         return ResponseEntity.ok(categories);
