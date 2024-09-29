@@ -82,3 +82,24 @@ export const createCategory = async (brandId: number, category: Partial<ICategor
         throw error;
     }
 };
+
+export const desactiveCategory = async (brandId: number, categoryId: number) => {
+    try {
+        const response = await axios.put(`${$URL}/${brandId}/category/${categoryId}/desactive`);
+        return response.data;
+    } catch (error) {
+        console.error("Error desactivating category:", error);
+        throw error;
+    }
+};  
+
+
+export const reactiveCategory = async (brandId: number, categoryId: number) => {
+    try {
+        const response = await axios.put(`${$URL}/${brandId}/category/${categoryId}/reactive`);
+        return response.data;
+    } catch (error) {
+        console.error("Error reactivating category:", error);
+        throw error;
+    }
+};
