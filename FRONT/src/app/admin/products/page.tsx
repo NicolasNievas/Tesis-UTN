@@ -5,7 +5,7 @@ import NewProductModal from "@/components/NewProductModal";
 import ProductListItem from "@/components/ProductListItem";
 import EditProductModal from "@/components/EditProductModal";
 import { IProductData, IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
-import { desactivateProduct, postProduct, reactivateProduct } from "@/services/ProductService";
+import { desactivateProduct, postProduct, reactivateProduct, updateProduct } from "@/services/ProductService";
 import { getAllActiveBrands, fetchCategoriesByBrand } from "@/services/brandService";
 import { toast } from "react-toastify";
 import useApi from "@/hooks/useApi";
@@ -18,6 +18,8 @@ const AdminProductsPage: React.FC = () => {
     const [selectedBrand, setSelectedBrand] = useState<number | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [currentProduct, setCurrentProduct] = useState<IProductData | null>(null);
 
     useEffect(() => {
         const loadBrands = async () => {
@@ -64,14 +66,22 @@ const AdminProductsPage: React.FC = () => {
         try {
             await postProduct(newProduct);
             toast.success("Product created successfully.");
+            setIsModalOpen(false);
             window.location.reload();
         } catch (error) {
             toast.error("Error creating the product. Please try again later.");
         }
     };
 
-    const handleEditProduct = (product: IProductData) => {
-        // Lógica para editar el producto
+    const handleEditProduct = async (updatedProduct: Partial<IProductData>) => {
+        try {
+            await updateProduct(updatedProduct);
+            toast.success("Product updated successfully.");
+            setIsEditModalOpen(false);
+            window.location.reload();
+        } catch (error) {
+            toast.error("Error updating the product. Please try again later.");
+        }
     };
 
     const handleDeleteProduct = async (productId: number) => {
@@ -97,7 +107,7 @@ const AdminProductsPage: React.FC = () => {
     };
 
     const handleReactivateProduct = async (productId: number) => {
-        try{
+        try {
             const result = await Swal.fire({
                 title: "Are you sure?",
                 text: "You are about to reactivate this product.",
@@ -108,7 +118,7 @@ const AdminProductsPage: React.FC = () => {
                 confirmButtonText: "Yes, reactivate it!",
             });
 
-            if(result.isConfirmed){
+            if (result.isConfirmed) {
                 await reactivateProduct(productId);
                 toast.success("Product reactivated successfully.");
                 window.location.reload();
@@ -127,6 +137,11 @@ const AdminProductsPage: React.FC = () => {
         }
         return true;
     });
+
+    const openEditModal = (product: IProductData) => {
+        setCurrentProduct(product);
+        setIsEditModalOpen(true);
+    };
 
     return (
         <main className="container mx-auto px-4 py-8" style={{ minHeight: "100vh" }}>
@@ -188,7 +203,7 @@ const AdminProductsPage: React.FC = () => {
                     <tbody>
                         {filteredProducts && filteredProducts.length > 0 ? (
                             filteredProducts.map((product) => (
-                                <ProductListItem key={product.id} product={product} onEdit={handleEditProduct} onDelete={handleDeleteProduct} onReactive={handleReactivateProduct} />
+                                <ProductListItem key={product.id} product={product} onEdit={openEditModal} onDelete={handleDeleteProduct} onReactive={handleReactivateProduct} />
                             ))
                         ) : (
                             <tr>
@@ -205,6 +220,13 @@ const AdminProductsPage: React.FC = () => {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleNewProduct}
+            />
+            <EditProductModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                onSubmit={handleEditProduct}
+                product={currentProduct}
+                brands={brands}
             />
         </main>
     );

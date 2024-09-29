@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { IProductData, ICategoryData, IBrandData } from '@/interfaces/data.interfaces';
 import { toast } from 'react-toastify';
+import { fetchCategoriesByBrand } from '@/services/brandService';
 
 interface EditProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (updatedProduct: Partial<IProductData>) => void;
   product: IProductData | null;
-  categories: ICategoryData[];
   brands: IBrandData[];
 }
 
-const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, onSubmit, product, categories, brands }) => {
+const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, onSubmit, product, brands }) => {
   const [productName, setProductName] = useState('');
   const [productDescription, setProductDescription] = useState('');
   const [productPrice, setProductPrice] = useState('');
@@ -19,6 +19,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
   const [productImageURL, setProductImageURL] = useState('');
   const [selectedBrand, setSelectedBrand] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [categories, setCategories] = useState<ICategoryData[]>([]);
 
   useEffect(() => {
     if (product) {
@@ -32,12 +33,24 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
     }
   }, [product]);
 
-  const handleSubmit = () => {
-    if (categories.length === 0) {
-      toast.error("Favor de seleccionar una categoría");
-      return;
-    }
+  useEffect(() => {
+    const loadCategories = async () => {
+      if (selectedBrand) {
+        try {
+          const data = await fetchCategoriesByBrand(selectedBrand);
+          setCategories(data);
+        } catch (err) {
+          toast.error("Error al cargar las categorías. Por favor, intente de nuevo más tarde.");
+        }
+      } else {
+        setCategories([]);
+      }
+    };
 
+    loadCategories();
+  }, [selectedBrand]);
+
+  const handleSubmit = () => {
     if (selectedBrand && selectedCategory) {
       const selectedCategoryData = categories.find(category => category.id === selectedCategory);
       if (!selectedCategoryData || selectedCategoryData.brandId !== selectedBrand) {
@@ -58,6 +71,12 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
     });
     resetForm();
     onClose();
+  };
+
+  const handleBrandChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const brandId = Number(event.target.value);
+    setSelectedBrand(brandId || null);
+    setSelectedCategory(null);
   };
 
   const resetForm = () => {
@@ -124,7 +143,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
           <label className="block text-gray-700">Brand</label>
           <select
             value={selectedBrand?.toString() || ""}
-            onChange={(e) => setSelectedBrand(Number(e.target.value))}
+            onChange={handleBrandChange}
             className="w-full p-2 border border-gray-300 rounded-md"
           >
             <option value="">Select a brand</option>
@@ -153,7 +172,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
         </div>
         <div className="flex justify-end space-x-4">
           <button onClick={onClose} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
-          <button onClick={handleSubmit} className="bg-blue-500 text-white px-4 py-2 rounded-md">Save</button>
+          <button onClick={handleSubmit} className="bg-green-500 text-white px-4 py-2 rounded-md">Save</button>
         </div>
       </div>
     </div>
