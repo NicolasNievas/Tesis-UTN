@@ -4,12 +4,15 @@ import { getAllBrands, createCategory, desactiveCategory, updateCategory, reacti
 import { IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
+import EditCategoryModal from '@/components/EditCategoryModal';
 
 const CategoriesPage: React.FC = () => {
   const [brands, setBrands] = useState<IBrandData[]>([]);
   const [categories, setCategories] = useState<ICategoryData[]>([]);
   const [selectedBrand, setSelectedBrand] = useState<number | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<ICategoryData | null>(null);
 
   useEffect(() => {
     fetchBrands();
@@ -60,6 +63,7 @@ const CategoriesPage: React.FC = () => {
       await updateCategory(selectedBrand, categoryId, categoryName);
       toast.success("Category updated successfully");
       fetchCategories(selectedBrand);
+      closeModal();
     } catch (error) {
       toast.error("Error updating category");
     }
@@ -76,36 +80,36 @@ const CategoriesPage: React.FC = () => {
             cancelButtonColor: '#3085d6',
             confirmButtonText: 'Yes, deactivate it!'
         });
-    
-        if(result.isConfirmed){
+
+        if(result.isConfirmed) {
             await desactiveCategory(selectedBrand!, categoryId);
             toast.success("Category deactivated successfully");
             fetchCategories(selectedBrand!);
         }
-    }catch(error){
+    } catch (error) {
         toast.error("Error deactivating category");
     }
-  };
+};
 
   const handleReactivateCategory = async (categoryId: number) => {
-    try{
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, reactivate it!'
-        });
+    try {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, reactivate it!'
+      });
 
-        if(result.isConfirmed){
-            await reactiveCategory(selectedBrand!, categoryId);
-            toast.success("Category reactivated successfully");
-            fetchCategories(selectedBrand!);
-        }
-    } catch(error){
-        toast.error("Error reactivating category");
+      if (result.isConfirmed) {
+        await reactiveCategory(selectedBrand!, categoryId);
+        toast.success("Category reactivated successfully");
+        fetchCategories(selectedBrand!);
+      }
+    } catch (error) {
+      toast.error("Error reactivating category");
     }
   };
 
@@ -113,6 +117,16 @@ const CategoriesPage: React.FC = () => {
     const brandId = Number(event.target.value);
     setSelectedBrand(brandId);
     fetchCategories(brandId);
+  };
+
+  const openModal = (category: ICategoryData) => {
+    setSelectedCategory(category);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedCategory(null);
   };
 
   return (
@@ -161,7 +175,7 @@ const CategoriesPage: React.FC = () => {
                 <td className="py-2">{category.name}</td>
                 <td className="py-2">{category.active ? "Yes" : "No"}</td>
                 <td className="py-2 flex justify-center space-x-2">
-                  <button onClick={() => handleUpdateCategory(category.id, prompt("New name:", category.name) || category.name)} className="bg-yellow-500 p-2 rounded-md hover:bg-yellow-600 border border-yellow-600">
+                  <button onClick={() => openModal(category)} className="bg-yellow-500 p-2 rounded-md hover:bg-yellow-600 border border-yellow-600">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/><path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/></svg>
                   </button>
                   <button onClick={() => handleDeactivateCategory(category.id)} className="bg-red-500 p-2 rounded-md hover:bg-red-600 border border-red-600">
@@ -175,13 +189,21 @@ const CategoriesPage: React.FC = () => {
             ))
           ) : (
             <tr>
-              <td colSpan={2} className="text-center py-4 text-gray-600">
+              <td colSpan={3} className="text-center py-4 text-gray-600">
                 No categories available for the selected brand.
               </td>
             </tr>
           )}
         </tbody>
       </table>
+
+      <EditCategoryModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSubmit={handleUpdateCategory}
+        category={selectedCategory}
+        brands={brands}
+      />
     </div>
   );
 };
