@@ -19,4 +19,6 @@ public interface BrandService {
     List<Category> getAllCategoriesByBrand(Long brandId);
     Brand deleteBrand(Long brandId);
     Brand reactivateBrand(Long brandId);
+    Category deleteCategory(Long brandId, Long categoryId);
+    Category reactivateCategory(Long brandId, Long categoryId);
 }

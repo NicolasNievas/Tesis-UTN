@@ -9,6 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.List;
 
 @RestController
@@ -72,5 +77,23 @@ public class BrandController {
     public ResponseEntity<Brand> reactivateBrand(@PathVariable Long brandId) {
         Brand reactivatedBrand = brandService.reactivateBrand(brandId);
         return ResponseEntity.ok(reactivatedBrand);
+    }
+
+    @PutMapping("/{brandId}/categories/{categoryId}/deactivate")
+    @Operation(summary = "Desactivar una categoría", description = "Desactiva una categoría.")
+    @ApiResponse(responseCode = "200", description = "Operación exitosa", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)))
+    @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)))
+    public ResponseEntity<Category> deactivateCategory(@PathVariable Long brandId, @PathVariable Long categoryId) {
+        Category deactivatedCategory = brandService.deleteCategory(brandId, categoryId);
+        return ResponseEntity.ok(deactivatedCategory);
+    }
+
+    @PutMapping("/{brandId}/categories/{categoryId}/reactivate")
+    @Operation(summary = "Reactivar una categoría", description = "Reactiva una categoría.")
+    @ApiResponse(responseCode = "200", description = "Operación exitosa", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)))
+    @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)))
+    public ResponseEntity<Category> reactivateCategory(@PathVariable Long brandId, @PathVariable Long categoryId) {
+        Category reactivatedCategory = brandService.reactivateCategory(brandId, categoryId);
+        return ResponseEntity.ok(reactivatedCategory);
     }
 }

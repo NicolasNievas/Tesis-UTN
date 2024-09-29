@@ -200,5 +200,47 @@ public class BrandServiceImp implements BrandService{
             throw new IllegalArgumentException("Brand is already active");
         }
     }
+
+    @Override
+    public Category deleteCategory(Long brandId, Long categoryId) {
+        if(brandId == null || categoryId == null) {
+            throw new IllegalArgumentException("Brand id or Category id cannot be null");
+        }
+
+        BrandEntity brandEntity = brandRepository.findById(brandId)
+                .orElseThrow(() -> new IllegalArgumentException("Brand not found"));
+
+        CategoryEntity entity = (CategoryEntity) categoryRepository.findByIdAndBrand(categoryId, brandEntity)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found for this brand"));
+
+        if(entity.isActive()){
+            entity.setActive(false);
+            CategoryEntity updatedEntity = categoryRepository.save(entity);
+            return modelMapper.map(updatedEntity, Category.class);
+        } else {
+            throw new IllegalArgumentException("Category is already inactive");
+        }
+    }
+
+    @Override
+    public Category reactivateCategory(Long brandId, Long categoryId) {
+        if(brandId == null || categoryId == null) {
+            throw new IllegalArgumentException("Brand id or Category id cannot be null");
+        }
+
+        BrandEntity brandEntity = brandRepository.findById(brandId)
+                .orElseThrow(() -> new IllegalArgumentException("Brand not found"));
+
+        CategoryEntity entity = (CategoryEntity) categoryRepository.findByIdAndBrand(categoryId, brandEntity)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found for this brand"));
+
+        if(!entity.isActive()){
+            entity.setActive(true);
+            CategoryEntity updatedEntity = categoryRepository.save(entity);
+            return modelMapper.map(updatedEntity, Category.class);
+        } else {
+            throw new IllegalArgumentException("Category is already active");
+        }
+    }
     
 }
