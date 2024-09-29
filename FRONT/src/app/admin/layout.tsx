@@ -2,8 +2,8 @@ import Link from "next/link";
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="admin-layout flex">
-      <nav className="admin-sidebar w-64 h-screen bg-gray-800 text-white flex flex-col p-4">
+    <div className="admin-layout flex min-h-screen">
+      <nav className="admin-sidebar w-64 bg-gray-800 text-white flex flex-col p-4">
         <h2 className="text-2xl font-bold mb-6">Admin Panel</h2>
         <ul className="space-y-4">
           <li>
@@ -40,7 +40,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       </nav>
 
       {/* Main Content */}
-      <main className="admin-content flex-grow p-8 bg-gray-100 min-h-screen">
+      <main className="admin-content flex-grow p-8 bg-gray-100">
         {children}
       </main>
     </div>
