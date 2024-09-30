@@ -86,7 +86,7 @@ const BrandProductsPage: React.FC = () => {
           <Button
             name="Show All"
             onClick={handleShowAllProducts}
-            className="w-32 p-2 h-auto text-sm bg-black-btn hover:bg-black-hover hover:text-white text-gray-bg-light"
+            className="w-28 p-2 h-auto text-sm bg-black-btn hover:bg-black-hover hover:text-white text-gray-bg-light"
           />
         </div>
         <ul>
