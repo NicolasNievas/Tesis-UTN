@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { getAllBrands, createBrand, updateBrand, deactivateBrand, reactivateBrand, createCategory, fetchAllCategoriesByBrand } from "@/services/brandService";
 import { IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
 import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 
 const BrandsPage: React.FC = () => {
   const [brands, setBrands] = useState<IBrandData[]>([]);
@@ -75,9 +76,19 @@ const BrandsPage: React.FC = () => {
 
   const handleDeactivateBrand = async (brandId: number) => {
     try {
-      await deactivateBrand(brandId);
-      toast.success("Brand deactivated successfully");
-      fetchBrands();
+      const confirm = await Swal.fire({
+        title: 'Are you sure?',
+        text: 'This action will deactivate the brand',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, deactivate it',
+      });
+
+      if (confirm.isConfirmed) {
+        await deactivateBrand(brandId);
+        toast.success("Brand deactivated successfully");
+        fetchBrands();
+      }
     } catch (error) {
       toast.error("Error deactivating brand");
     }
@@ -85,9 +96,19 @@ const BrandsPage: React.FC = () => {
 
   const handleReactivateBrand = async (brandId: number) => {
     try {
-      await reactivateBrand(brandId);
-      toast.success("Brand reactivated successfully");
-      fetchBrands();
+      const confirm = await Swal.fire({
+        title: 'Are you sure?',
+        text: 'This action will reactivate the brand',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, reactivate it',
+      });
+
+      if (confirm.isConfirmed) {
+        await reactivateBrand(brandId);
+        toast.success("Brand reactivated successfully");
+        fetchBrands();
+      }
     } catch (error) {
       toast.error("Error reactivating brand");
     }
