@@ -15,7 +15,7 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({ product }) => {
 
   return (
     <div
-      className="w-full rounded-lg overflow-hidden shadow-md bg-white cursor-pointer"
+      className="w-full rounded-lg overflow-hidden shadow-md bg-white cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:shadow-lg"
       onClick={handleRedirect}
     >
       {/* Product image */}
