@@ -97,4 +97,12 @@ public class ProductController {
         List<Product> products = productService.getAllProductsDesactive();
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
+
+    @GetMapping("/getProductById/{productId}")
+    @Operation(summary = "Obtener un producto por ID", description = "Obtiene un producto por ID.")
+    @ApiResponse(responseCode = "200", description = "Operación exitosa", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Product.class)))
+    public ResponseEntity<Product> getProductById(@PathVariable Long productId) {
+        Product product = productService.getProductById(productId);
+        return new ResponseEntity<>(product, HttpStatus.OK);
+    }
 }

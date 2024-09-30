@@ -119,7 +119,7 @@ public class ProductServiceImp implements ProductService{
         CategoryEntity category = categoryRepository.findById(product.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("Category not found with ID: " + product.getCategoryId()));
 
-        if(!category.getBrand().getId().equals(product.getId())) {
+        if (!category.getBrand().getId().equals(product.getBrandId())) {
             throw new IllegalArgumentException("Brand and Category do not match");
         }
 
@@ -272,6 +272,18 @@ public List<Product> getAllProductsByBrand(Long brandId) {
         } else {
             throw new IllegalArgumentException("Product is already active");
         }
+    }
+
+    @Override
+    public Product getProductById(Long productId) {
+        if (productId == null) {
+            throw new IllegalArgumentException("Product ID cannot be null");
+        }
+
+        ProductEntity entity = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+        return modelMapper.map(entity, Product.class);
     }
     
 }

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { IProductData } from '@/interfaces/data.interfaces';
 
 interface ProductPreviewProps {
@@ -6,8 +7,17 @@ interface ProductPreviewProps {
 }
 
 const ProductPreview: React.FC<ProductPreviewProps> = ({ product }) => {
+  const router = useRouter();
+
+  const handleRedirect = () => {
+    router.push(`/product/${product.id}`);
+  };
+
   return (
-    <div className="w-full rounded-lg overflow-hidden shadow-md bg-white">
+    <div
+      className="w-full rounded-lg overflow-hidden shadow-md bg-white cursor-pointer"
+      onClick={handleRedirect}
+    >
       {/* Product image */}
       <div className="relative h-80 flex justify-center">
         <img
