@@ -67,9 +67,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, brand, category 
           </div>
           {/* Precio y botón de compra */}
           <div className="mt-4">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center border-b border-gray-200 pb-2">
               <h3 className="text-2xl font-semibold">Price:</h3>
-              <span className="text-gray-500 font-normal">${product.price}</span>
+              <span className="text-gray-500 text-xl font-normal">${product.price}</span>
             </div>
             <Button
               className="mt-4 bg-black-btn hover:bg-black-hover hover:text-white text-xl font-medium text-gray-bg-light"

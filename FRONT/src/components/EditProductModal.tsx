@@ -95,85 +95,106 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-1/2">
         <h2 className="text-2xl mb-4">Edit Product</h2>
-        <div className="mb-4">
-          <label className="block text-gray-700">Name</label>
-          <input
-            type="text"
-            value={productName}
-            onChange={(e) => setProductName(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700">Description</label>
-          <textarea
-            value={productDescription}
-            onChange={(e) => setProductDescription(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700">Price</label>
-          <input
-            type="text"
-            value={productPrice}
-            onChange={(e) => setProductPrice(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700">Stock</label>
-          <input
-            type="text"
-            value={productStock}
-            onChange={(e) => setProductStock(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700">Image URLs (comma separated)</label>
-          <input
-            type="text"
-            value={productImageURL}
-            onChange={(e) => setProductImageURL(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700">Brand</label>
-          <select
-            value={selectedBrand?.toString() || ""}
-            onChange={handleBrandChange}
-            className="w-full p-2 border border-gray-300 rounded-md"
-          >
-            <option value="">Select a brand</option>
-            {brands.map((brand) => (
-              <option key={brand.id} value={brand.id.toString()}>
-                {brand.name}
+        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+          <div className="col-span-2">
+            <label htmlFor="productName" className="block mb-2">Nombre</label>
+            <input
+              type="text"
+              id="productName"
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div className="col-span-2">
+            <label htmlFor="productDescription" className="block mb-2">Descripción</label>
+            <textarea
+              id="productDescription"
+              value={productDescription}
+              onChange={(e) => setProductDescription(e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="brand" className="block mb-2">Marca</label>
+            <select
+              id="brand"
+              value={selectedBrand ?? ''}
+              onChange={handleBrandChange}
+              className="w-full p-2 border rounded"
+              required
+            >
+              <option value="" disabled>Select a brand</option>
+              {brands.map((brand) => (
+                <option key={brand.id} value={brand.id}>{brand.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="category" className="block mb-2">Categoría</label>
+            <select
+              id="category"
+              value={selectedCategory ?? ''}
+              onChange={(e) => setSelectedCategory(Number(e.target.value))}
+              className="w-full p-2 border rounded"
+              required
+              disabled={!selectedBrand || categories.length === 0}
+            >
+              <option value="" disabled>
+                {!selectedBrand 
+                  ? "Select a Category" 
+                  : categories.length === 0 
+                    ? "No categories available" 
+                    : "Select a Category"
+                }
               </option>
-            ))}
-          </select>
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700">Category</label>
-          <select
-            value={selectedCategory?.toString() || ""}
-            onChange={(e) => setSelectedCategory(Number(e.target.value))}
-            className="w-full p-2 border border-gray-300 rounded-md"
-            disabled={!selectedBrand}
-          >
-            <option value="">Select a category</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id.toString()}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="flex justify-end space-x-4">
-          <button onClick={onClose} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
-          <button onClick={handleSubmit} className="bg-green-500 text-white px-4 py-2 rounded-md">Save</button>
-        </div>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>{category.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="productPrice" className="block mb-2">Precio</label>
+            <input
+              type="number"
+              id="productPrice"
+              value={productPrice}
+              onChange={(e) => setProductPrice(e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+              step="0.01"
+            />
+          </div>
+          <div>
+            <label htmlFor="productStock" className="block mb-2">Stock</label>
+            <input
+              type="number"
+              id="productStock"
+              value={productStock}
+              onChange={(e) => setProductStock(e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div className="col-span-2">
+            <label htmlFor="productImageURL" className="block mb-2">Imagen URL</label>
+            <input
+              type="text"
+              id="productImageURL"
+              value={productImageURL}
+              onChange={(e) => setProductImageURL(e.target.value)}
+              className="w-full p-2 border rounded"
+              placeholder="Separar múltiples URLs con comas"
+              required
+            />
+          </div>
+          <div className="col-span-2 flex justify-end">
+            <button type="button" onClick={onClose} className="mr-2 px-4 py-2 bg-gray-200 rounded">Cancelar</button>
+            <button type="submit" className="px-4 py-2 bg-green-500 text-white rounded">Guardar</button>
+          </div>
+        </form>
       </div>
     </div>
   );
