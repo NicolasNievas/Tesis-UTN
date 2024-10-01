@@ -22,4 +22,7 @@ public class BrandEntity {
 
     @OneToMany(mappedBy = "brand", cascade = CascadeType.ALL)
     private List<CategoryEntity> category;
+
+    @Column(nullable = false)
+    private boolean active;
 }

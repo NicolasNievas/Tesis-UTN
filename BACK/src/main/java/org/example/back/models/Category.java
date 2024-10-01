@@ -1,0 +1,15 @@
+package org.example.back.models;
+
+import lombok.*;
+
+@Setter
+@Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class Category {
+    private Long id;
+    private String name;
+    private boolean active;
+    private Long brandId;
+}
