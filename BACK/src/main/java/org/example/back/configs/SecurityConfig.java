@@ -25,8 +25,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authRequest ->
                         authRequest
-                                .requestMatchers("/auth/**", "/swagger-ui.html", "/swagger-ui/**",  "/v3/api-docs/**", "/products/**").permitAll()
-                                .requestMatchers("/admin/products/**").hasRole("ADMINISTRATOR")
+                                .requestMatchers("/auth/**", "/swagger-ui.html", "/swagger-ui/**",  "/v3/api-docs/**", "/products/**", "/brands/**").permitAll()
+                                .requestMatchers("/admin/**").hasRole("ADMINISTRATOR")
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManager ->
