@@ -25,12 +25,16 @@ public class BrandController {
     private BrandService brandService;
 
     @GetMapping("/active")
+    @Operation(summary = "Obtener todas las marcas activas", description = "Obtiene todas las marcas activas.")
+    @ApiResponse(responseCode = "200", description = "Operación exitosa", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Brand.class)))
     public ResponseEntity<List<Brand>> getAllBrandsActive() {
         List<Brand> brands = brandService.getAllBrandsActive();
         return ResponseEntity.ok(brands);
     }
 
     @GetMapping("/{brandId}/categoriesActive")
+    @Operation(summary = "Obtener todas las categorías activas por marca", description = "Obtiene todas las categorías activas por marca.")
+    @ApiResponse(responseCode = "200", description = "Operación exitosa", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)))
     public ResponseEntity<List<Category>> getAllCategoriesByBrandActive(@PathVariable Long brandId) {
         List<Category> categories = brandService.getAllCategoriesByBrandActive(brandId);
         return ResponseEntity.ok(categories);
