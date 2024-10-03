@@ -1,3 +1,5 @@
+import { Role } from "./enums";
+
 export interface IProductData{
     id: number;
     name: string;
@@ -21,4 +23,19 @@ export interface ICategoryData{
     name: string;
     brandId: number;
     active: boolean;
+}
+
+export interface IUserData{
+    id: number;
+    username: string;
+    email: string;
+    role: Role;
+    
+}
+
+
+export interface AuthResponse<T> {
+    response?: T;
+    status: number;
+    message?: string;
 }
