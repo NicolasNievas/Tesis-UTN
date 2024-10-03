@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.example.back.models.Product;
-import org.example.back.services.BrandService;
 import org.example.back.services.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +20,6 @@ import java.util.List;
 public class AdminProductController {
 
     private final ProductService productService;
-    private final BrandService brandService;
 
     @PostMapping("/products/create")
     @Operation(summary = "Crear un producto", description = "Crea un nuevo producto.")

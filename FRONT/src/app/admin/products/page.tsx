@@ -5,14 +5,14 @@ import NewProductModal from "@/components/NewProductModal";
 import ProductListItem from "@/components/ProductListItem";
 import EditProductModal from "@/components/EditProductModal";
 import { IProductData, IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
-import { desactivateProduct, postProduct, reactivateProduct, updateProduct } from "@/services/ProductService";
+import { desactivateProduct, postProduct, reactivateProduct, updateProduct } from "@/services/AdminProductService";
 import { getAllActiveBrands, fetchCategoriesByBrand } from "@/services/brandService";
 import { toast } from "react-toastify";
-import useApi from "@/hooks/useApi";
+import useAdminApi from "@/hooks/UseAdminApi";
 import Swal from "sweetalert2";
 
 const AdminProductsPage: React.FC = () => {
-    const { data: products, loading, error } = useApi<IProductData[]>('/allProducts');
+    const { data: products, loading, error } = useAdminApi<IProductData[]>('/products/allProducts');
     const [brands, setBrands] = useState<IBrandData[]>([]);
     const [categories, setCategories] = useState<ICategoryData[]>([]);
     const [selectedBrand, setSelectedBrand] = useState<number | null>(null);

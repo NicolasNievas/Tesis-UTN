@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { getAllBrands, createCategory, desactiveCategory, updateCategory, reactiveCategory, fetchAllCategoriesByBrand } from "@/services/brandService";
+import { createCategory, desactiveCategory, updateCategory, reactiveCategory, fetchAllCategoriesByBrand } from "@/services/AdminCategoryService";
+import { getAllBrands } from "@/services/AdminBrandService";
 import { IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';

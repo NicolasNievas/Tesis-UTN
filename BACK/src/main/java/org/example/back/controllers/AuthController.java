@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.example.back.dtos.AuthResponse;
 import org.example.back.dtos.LoginRequest;
 import org.example.back.dtos.RegisterRequest;
-import org.example.back.dtos.common.ErrorApi;
 import org.example.back.models.Category;
 import org.example.back.services.AuthService;
 import org.springframework.http.HttpStatus;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000")
 public class AuthController {
 
     private final AuthService authService;

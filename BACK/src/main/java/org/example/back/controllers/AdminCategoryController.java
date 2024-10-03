@@ -21,7 +21,7 @@ public class AdminCategoryController {
 
     private final BrandService brandService;
 
-    @PostMapping("/category/{brandId}/category")
+    @PostMapping("/category/{brandId}/create")
     @Operation(summary = "Crear una categoría", description = "Crea una nueva categoría.")
     @ApiResponse(responseCode = "201", description = "Operación exitosa", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)))
     @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)))
@@ -30,7 +30,7 @@ public class AdminCategoryController {
         return ResponseEntity.ok(createdCategory);
     }
 
-    @PutMapping("/category/{brandId}/categories/{categoryId}")
+    @PutMapping("/category/{brandId}/{categoryId}/update")
     @Operation(summary = "Actualizar una categoría", description = "Actualiza una categoría existente.")
     @ApiResponse(responseCode = "200", description = "Operación exitosa", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)))
     @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)))
@@ -47,7 +47,7 @@ public class AdminCategoryController {
         return ResponseEntity.ok(categories);
     }
 
-    @PutMapping("/category/{brandId}/category/{categoryId}/desactive")
+    @PutMapping("/category/{brandId}/{categoryId}/desactive")
     @Operation(summary = "Desactivar una categoría", description = "Desactiva una categoría.")
     @ApiResponse(responseCode = "200", description = "Operación exitosa", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)))
     @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)))
@@ -56,7 +56,7 @@ public class AdminCategoryController {
         return ResponseEntity.ok(deactivatedCategory);
     }
 
-    @PutMapping("/category/{brandId}/category/{categoryId}/reactive")
+    @PutMapping("/category/{brandId}/{categoryId}/reactive")
     @Operation(summary = "Reactivar una categoría", description = "Reactiva una categoría.")
     @ApiResponse(responseCode = "200", description = "Operación exitosa", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)))
     @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)))
