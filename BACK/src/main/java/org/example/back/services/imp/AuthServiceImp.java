@@ -10,6 +10,7 @@ import org.example.back.jwt.JwtService;
 import org.example.back.repositories.UserRepository;
 import org.example.back.services.AuthService;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,10 +28,16 @@ public class AuthServiceImp implements AuthService {
     private final AuthenticationManager authenticationManager;
     @Override
     public AuthResponse login(LoginRequest request) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-        UserDetails user=userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        String token=jwtService.getToken(user);
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        } catch (BadCredentialsException e) {
+            throw new IllegalArgumentException("Invalid data");
+        }
+
+        UserDetails user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        String token = jwtService.getToken(user);
         return AuthResponse.builder()
                 .token(token)
                 .build();
@@ -41,12 +48,12 @@ public class AuthServiceImp implements AuthService {
 
         Optional<UserEntity> existingUserEmail = userRepository.findByEmail(request.getEmail());
         if (existingUserEmail.isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new IllegalArgumentException("Email already exists");
         }
 
         Optional<UserEntity> existingUserPhoneNumber = userRepository.findByPhoneNumber(request.getPhoneNumber());
         if (existingUserPhoneNumber.isPresent()) {
-            throw new RuntimeException("Phone number already exists");
+            throw new IllegalArgumentException("Phone number already exists");
         }
 
         UserEntity user = UserEntity.builder()

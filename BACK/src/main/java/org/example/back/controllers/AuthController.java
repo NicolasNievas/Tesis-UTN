@@ -8,8 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.example.back.dtos.AuthResponse;
 import org.example.back.dtos.LoginRequest;
 import org.example.back.dtos.RegisterRequest;
+import org.example.back.dtos.common.ErrorApi;
 import org.example.back.models.Category;
 import org.example.back.services.AuthService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,9 +28,9 @@ public class AuthController {
     @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)))
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
        try{
-           return ResponseEntity.ok(authService.login(request));
-       } catch (Exception e){
-           return ResponseEntity.badRequest().build();
+           return new ResponseEntity<>(authService.login(request), HttpStatus.OK);
+       } catch (IllegalArgumentException e){
+           throw new IllegalArgumentException(e.getMessage());
        }
     }
 
@@ -39,8 +41,8 @@ public class AuthController {
     public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
         try{
             return ResponseEntity.ok(authService.register(request));
-        } catch (Exception e){
-            return ResponseEntity.badRequest().build();
+        } catch (IllegalArgumentException e){
+            throw new IllegalArgumentException(e.getMessage());
         }
     }
 }
