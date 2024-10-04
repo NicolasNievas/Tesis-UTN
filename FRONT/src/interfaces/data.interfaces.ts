@@ -26,11 +26,14 @@ export interface ICategoryData{
 }
 
 export interface IUserData{
-    id: number;
-    username: string;
-    email: string;
-    role: Role;
-    
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  address: string;
+  city: string;
+  role: string;
 }
 
 
