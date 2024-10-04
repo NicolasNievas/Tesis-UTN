@@ -22,6 +22,5 @@ public class User {
     private String address;
     private String city;
     private Role role;
-    private boolean active;
     //private List<Order> orders;
 }
