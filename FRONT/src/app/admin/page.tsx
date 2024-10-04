@@ -10,5 +10,5 @@ const AdminPage = () => {
     );
   };
   
-  export default AdminPage;
+  export default withAdmin(AdminPage);
   

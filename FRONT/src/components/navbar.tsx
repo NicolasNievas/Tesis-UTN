@@ -136,10 +136,10 @@ const Navbar = () => {
                     <div className="p-2 border-b border-gray-200">
                       <span className="text-gray-600 text-xs">{userEmail}</span>
                     </div>
-                    <Link className='block p-2 hover:bg-gray-200' href="/profile">
+                    <Link className='block p-2 hover:bg-gray-200' href="/account/profile">
                       My Profile
                     </Link>
-                    <Link className='block p-2 hover:bg-gray-200' href="/orders">
+                    <Link className='block p-2 hover:bg-gray-200' href="/account/orders">
                       My Orders
                     </Link>
                     <button
