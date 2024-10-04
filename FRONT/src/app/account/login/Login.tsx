@@ -33,7 +33,7 @@ const Login = ({ setCurrentView }: ILoginProps) => {
 
     try {
       await login({ email, password });
-      toast.success('Login successful');
+      toast.success('Sign in successfully');
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);

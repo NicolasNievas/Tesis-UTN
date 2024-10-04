@@ -40,7 +40,7 @@ const Register = ({ setCurrentView }: IRegisterProps) => {
 
     try {
       await register(formData);
-      toast.success('Registration successful! Please log in.');
+      toast.success('Registration successful!');
       setCurrentView(LOGIN_VIEW.SIGN_IN);
     } catch (error) {
       if (error instanceof Error) {

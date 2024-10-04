@@ -5,6 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { IBrandData } from '@/interfaces/data.interfaces';
 import { getAllActiveBrands } from '@/services/brandService';
+import { useAuthContext } from '@/context/data.context';
+import { useRouter } from 'next/navigation';
 
 const Navbar = () => {
   const [isHoverAccount, setIsHoverAccount] = useState<boolean>(false);
@@ -12,6 +14,9 @@ const Navbar = () => {
   const [brands, setBrands] = useState<IBrandData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const { isAuthenticated, isAdmin, logout, userEmail } = useAuthContext();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchBrands = async () => {
@@ -29,6 +34,12 @@ const Navbar = () => {
     fetchBrands();
   }, []);
 
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+    setIsHoverAccount(false);
+  };
+
   return (
     <nav id='navbar' className="w-full bg-white text-black shadow-md">
       <div id='navbar-container' className="mx-auto px-6 flex justify-between items-center">
@@ -44,15 +55,17 @@ const Navbar = () => {
         <div className="flex items-center gap-4">
 
           {/* Admin Button */}
-          <Link href="/admin">
-            <button className="flex items-center gap-2 p-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield-check">
-                <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
-                <path d="m9 12 2 2 4-4"/>
-              </svg>
-              Admin
-            </button>
-          </Link>
+          {isAdmin && (
+            <Link href="/admin">
+              <button className="flex items-center gap-2 p-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield-check">
+                  <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
+                  <path d="m9 12 2 2 4-4"/>
+                </svg>
+                Admin
+              </button>
+            </Link>
+          )}
 
           {/* About Us Button */}
           <Link href="/about-us">
@@ -107,18 +120,40 @@ const Navbar = () => {
             onMouseLeave={() => setIsHoverAccount(false)}
           >
             <button className="flex items-center gap-2 p-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              Account
+              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              {isAuthenticated ? userEmail?.split('@')[0] : 'Account'}
             </button>
 
             {isHoverAccount && (
-              <div className='absolute z-50 w-40 top-[102%] border rounded-lg border-gray-300 bg-white text-sm'>
-                <Link className='block p-2 hover:bg-gray-200' href="/account">
-                  Sign in
-                </Link>
-                <Link className='block p-2 hover:bg-gray-200' href="/profile">
-                  My Profile
-                </Link>
+              <div className='absolute z-50 w-48 top-[102%] border rounded-lg border-gray-300 bg-white text-sm'>
+                {isAuthenticated ? (
+                  <>
+                    <div className="p-2 border-b border-gray-200">
+                      <span className="text-gray-600 text-xs">{userEmail}</span>
+                    </div>
+                    <Link className='block p-2 hover:bg-gray-200' href="/profile">
+                      My Profile
+                    </Link>
+                    <Link className='block p-2 hover:bg-gray-200' href="/orders">
+                      My Orders
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className='w-full text-left p-2 text-red-600 hover:bg-gray-200 border-t border-gray-200'
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link className='block p-2 hover:bg-gray-200' href="/account">
+                      Sign In
+                    </Link>
+                  </>
+                )}
               </div>
             )}
           </div>
