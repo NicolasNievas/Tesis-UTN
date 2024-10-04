@@ -7,6 +7,7 @@ import { IBrandData } from '@/interfaces/data.interfaces';
 import { getAllActiveBrands } from '@/services/brandService';
 import { useAuthContext } from '@/context/data.context';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
 
 const Navbar = () => {
   const [isHoverAccount, setIsHoverAccount] = useState<boolean>(false);
@@ -38,6 +39,7 @@ const Navbar = () => {
     logout();
     router.push('/');
     setIsHoverAccount(false);
+    toast.success('Sign out successfully');
   };
 
   return (
