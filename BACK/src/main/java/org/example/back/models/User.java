@@ -6,8 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.back.entities.Role;
 
-import java.util.List;
-
 @Data
 @Builder
 @AllArgsConstructor

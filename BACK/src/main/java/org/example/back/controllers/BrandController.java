@@ -1,7 +1,5 @@
 package org.example.back.controllers;
 
-import org.example.back.dtos.BrandDTO;
-import org.example.back.dtos.CategoryDTO;
 import org.example.back.models.Brand;
 import org.example.back.models.Category;
 import org.example.back.services.BrandService;
