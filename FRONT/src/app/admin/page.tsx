@@ -1,3 +1,6 @@
+"use client"
+import { withAdmin } from "@/hoc/isAdmin";
+
 const AdminPage = () => {
     return (
       <div className="admin-container">

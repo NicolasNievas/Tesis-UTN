@@ -1,30 +1,66 @@
 import axios from 'axios';
-import { AuthResponse, IUserData } from '@/interfaces/data.interfaces';
+import { LoginRequest, RegisterRequest, AuthResponse } from '@/interfaces/data.interfaces';
+import JWTService from '@/jwt/JwtService';
 
-const $URL = process.env.NEXT_PUBLIC_API_URL_AUTH;
+const API_URL = process.env.NEXT_PUBLIC_API_URL_AUTH;
 
-export const login = async (email: string, password: string): Promise<AuthResponse<string>> => {
-  try {
-    const response = await axios.post(`${$URL}/login`, { email, password });
-    const { token } = response.data;
-    localStorage.setItem('token', token);
-    return { response: token, status: 200, message: 'Login successful' };
-  } catch (error: any) {
-    return { message: error.response.data.message, status: error.response.status };
+class AuthService {
+  static async login(request: LoginRequest): Promise<AuthResponse> {
+    try {
+      const response = await axios.post<AuthResponse>(
+        `${API_URL}/login`,
+        request
+      );
+      
+      if (response.data.token) {
+        JWTService.setToken(response.data.token);
+      }
+      
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Error during login');
+      }
+      throw error;
+    }
   }
-};
 
-export const register = async (userData: IUserData): Promise<AuthResponse<string>> => {
-  try {
-    const response = await axios.post(`${$URL}/register`, userData);
-    const { token } = response.data;
-    localStorage.setItem('token', token);
-    return { response: token, status: 201, message: 'Registration successful' };
-  } catch (error: any) {
-    return { message: error.response.data.message, status: error.response.status };
+  static async register(request: RegisterRequest): Promise<AuthResponse> {
+    try {
+      const response = await axios.post<AuthResponse>(
+        `${API_URL}/register`,
+        request
+      );
+      
+      if (response.data.token) {
+        JWTService.setToken(response.data.token);
+      }
+      
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Error during registration');
+      }
+      throw error;
+    }
   }
-};
 
-export const logout = () => {
-  localStorage.removeItem('token');
-};
+  static logout(): void {
+    JWTService.removeToken();
+  }
+
+  static setupAxiosInterceptors(): void {
+    axios.interceptors.response.use(
+      response => response,
+      error => {
+        if (error.response?.status === 401) {
+          this.logout();
+          window.location.href = '/login';
+        }
+        return Promise.reject(error);
+      }
+    );
+  }
+}
+
+export default AuthService;

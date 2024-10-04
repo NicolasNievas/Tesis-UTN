@@ -34,8 +34,27 @@ export interface IUserData{
 }
 
 
-export interface AuthResponse<T> {
-    response?: T;
-    status: number;
-    message?: string;
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+  
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  firstname: string;
+  lastname: string;
+  phoneNumber: string;
+  address: string;
+  city: string;
+}
+  
+export interface AuthResponse {
+  token: string;
+}
+export interface DecodedToken {
+  sub: string;  
+  exp: number;  
+  iat: number;  
+  authorities: string[]; 
 }

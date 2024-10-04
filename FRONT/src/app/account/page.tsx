@@ -1,15 +1,19 @@
-const accountPage = () => {
-    return(
-        <div className="relative h-screen flex items-center justify-center">
-        {/* Imagen de fondo */}
-        <img
-          src="/construccion.png"
-          alt="En construcción"
-          className="absolute inset-0 w-full h-full object-cover z-0"
-        />
+"use client";
+import { useState } from "react";
+import Login from "./login/Login";
+import Register from "./register/Register";
+import { LOGIN_VIEW} from "@/interfaces/enums";
 
-      </div>
-    );
-};
+export default function account() {
+  const [currentView, setCurrentView] = useState(LOGIN_VIEW.SIGN_IN)
 
-export default accountPage;
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+        {currentView === LOGIN_VIEW.SIGN_IN ? (
+            <Login setCurrentView={setCurrentView} />
+        ) : (
+            <Register setCurrentView={setCurrentView} />
+        )}
+    </div>
+)
+}
