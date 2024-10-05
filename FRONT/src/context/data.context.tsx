@@ -1,5 +1,5 @@
 'use client'
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import AuthService from '@/services/AuthService';
 import JWTService from '@/jwt/JwtService';
 import { LoginRequest, RegisterRequest } from '@/interfaces/data.interfaces';

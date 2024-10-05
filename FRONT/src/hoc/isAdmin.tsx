@@ -1,26 +1,53 @@
 "use client"
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useAuthContext } from '@/context/data.context';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+
+const ADMIN_ROUTES = [
+  '/admin',
+  '/admin/products',
+  '/admin/orders',
+  '/admin/reports',
+  '/admin/brands',
+  '/admin/categories'
+];
 
 export function withAdmin<P extends object>(WrappedComponent: React.ComponentType<P>) {
   return function WithAdminComponent(props: P) {
     const { isAuthenticated, isAdmin, loading } = useAuthContext();
     const router = useRouter();
+    const pathname = usePathname();
     const [isChecking, setIsChecking] = useState(true);
 
     useEffect(() => {
-      if (!loading) {
-        if (!isAuthenticated || !isAdmin) {
-          router.push('/account');
+      const checkAdminAccess = async () => {
+        if (!loading) {
+          // Verificamos si la ruta actual está en las rutas protegidas
+          const isProtectedRoute = ADMIN_ROUTES.some(route => 
+            pathname.startsWith(route)
+          );
+
+          if (isProtectedRoute) {
+            if (!isAuthenticated) {
+              router.replace('/login');
+            } else if (!isAdmin) {
+              router.replace('/unauthorized');
+            }
+          }
+          setIsChecking(false);
         }
-        setIsChecking(false);
-      }
-    }, [isAuthenticated, isAdmin, router, loading]);
+      };
+
+      checkAdminAccess();
+    }, [isAuthenticated, isAdmin, router, loading, pathname]);
 
     if (loading || isChecking) {
-      return <div><LoadingSpinner /></div>;
+      return (
+        <div className="flex justify-center items-center h-screen">
+          <LoadingSpinner />
+        </div>
+      );
     }
 
     if (!isAuthenticated || !isAdmin) {
