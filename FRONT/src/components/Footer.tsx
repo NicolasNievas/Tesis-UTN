@@ -13,9 +13,9 @@ const Footer = () => {
             <p className='text-sm lg:text-base'>
               <Link
                 className='font-extralight hover:text-blue'
-                href="mailto:correo@example.com"
+                href="mailto:coffecraze1@gmail.com"
               >
-                correo@example.com
+                coffecraze1@gmail.com
               </Link>
             </p>
           </div>
