@@ -30,7 +30,7 @@ export function withAdmin<P extends object>(WrappedComponent: React.ComponentTyp
 
           if (isProtectedRoute) {
             if (!isAuthenticated) {
-              router.replace('/login');
+              router.replace('/account');
             } else if (!isAdmin) {
               router.replace('/unauthorized');
             }

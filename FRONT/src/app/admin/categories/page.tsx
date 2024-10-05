@@ -6,6 +6,7 @@ import { IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import EditCategoryModal from '@/components/EditCategoryModal';
+import { withAdmin } from '@/hoc/isAdmin';
 
 const CategoriesPage: React.FC = () => {
   const [brands, setBrands] = useState<IBrandData[]>([]);
@@ -209,4 +210,4 @@ const CategoriesPage: React.FC = () => {
   );
 };
 
-export default CategoriesPage;
+export default withAdmin(CategoriesPage);

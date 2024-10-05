@@ -4,6 +4,7 @@ import { getAllBrands, createBrand, updateBrand, deactivateBrand, reactivateBran
 import { IBrandData } from "@/interfaces/data.interfaces";
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
+import { withAdmin } from '@/hoc/isAdmin';
 
 const BrandsPage: React.FC = () => {
   const [brands, setBrands] = useState<IBrandData[]>([]);
@@ -138,4 +139,4 @@ const BrandsPage: React.FC = () => {
   );
 }
 
-export default BrandsPage;
+export default withAdmin( BrandsPage);

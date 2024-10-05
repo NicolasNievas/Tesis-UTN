@@ -10,6 +10,7 @@ import { getAllActiveBrands, fetchCategoriesByBrand } from "@/services/brandServ
 import { toast } from "react-toastify";
 import useAdminApi from "@/hooks/UseAdminApi";
 import Swal from "sweetalert2";
+import { withAdmin } from "@/hoc/isAdmin";
 
 const AdminProductsPage: React.FC = () => {
     const { data: products, loading, error } = useAdminApi<IProductData[]>('/products/allProducts');
@@ -232,4 +233,4 @@ const AdminProductsPage: React.FC = () => {
     );
 };
 
-export default AdminProductsPage;
+export default withAdmin(AdminProductsPage);
