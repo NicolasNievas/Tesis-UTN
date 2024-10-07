@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import JWTService from "@/jwt/JwtService";
 
 export interface RequestError{
     name: string;
@@ -18,7 +19,17 @@ export const useApi = <T,>(path?: string) => {
         setIsLoading(true);
 
         try{
-            const { data } = await axios.get<T>(`${$URL}${path}`)
+            if (!JWTService.isAdmin()) {
+                throw new Error("Unauthorized: Admin access required");
+            }
+
+            const token = JWTService.getToken();
+            
+            const headers = {
+                'Authorization': `Bearer ${token}`
+            };
+
+            const { data } = await axios.get<T>(`${$URL}${path}`, { headers });
             setData(data)
         } catch (err){
             if(err instanceof Error){
