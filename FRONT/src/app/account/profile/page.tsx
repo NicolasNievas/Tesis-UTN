@@ -2,11 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import { getUserProfile, updateUserProfile  } from '@/services/UserService';
 import { IUserData, UpdateUserRequest } from '@/interfaces/data.interfaces';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import LoadingSpinner from '@/components/atoms/LoadingSpinner';
 import { useAuthContext } from '@/context/data.context';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import Button from '@/components/Button';
+import Button from '@/components/atoms/Button';
 import { toast } from 'react-toastify';
 
 const MyProfile: React.FC = () => {

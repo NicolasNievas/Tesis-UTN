@@ -1,7 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { IProductData, IBrandData, ICategoryData } from '@/interfaces/data.interfaces';
-import Button from '@/components/Button';
+import Button from '@/components/atoms/Button';
 import { toast } from 'react-toastify';
 
 interface ProductDetailProps {

@@ -5,7 +5,7 @@ import { getAllBrands } from "@/services/AdminBrandService";
 import { IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
-import EditCategoryModal from '@/components/EditCategoryModal';
+import EditCategoryModal from '@/components/organisms/EditCategoryModal';
 import { withAdmin } from '@/hoc/isAdmin';
 
 const CategoriesPage: React.FC = () => {

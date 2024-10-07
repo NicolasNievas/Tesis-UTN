@@ -1,9 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import LoadingSpinner from "@/components/LoadingSpinner";
-import NewProductModal from "@/components/NewProductModal";
-import ProductListItem from "@/components/ProductListItem";
-import EditProductModal from "@/components/EditProductModal";
+import LoadingSpinner from "@/components/atoms/LoadingSpinner";
+import NewProductModal from "@/components/organisms/NewProductModal";
+import ProductListItem from "@/components/molecules/ProductListItem";
+import EditProductModal from "@/components/organisms/EditProductModal";
 import { IProductData, IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
 import { desactivateProduct, postProduct, reactivateProduct, updateProduct } from "@/services/AdminProductService";
 import { getAllActiveBrands, fetchCategoriesByBrand } from "@/services/brandService";

@@ -1,5 +1,5 @@
 "use client"
-import LoadingSpinner from '@/components/LoadingSpinner';
+import LoadingSpinner from '@/components/atoms/LoadingSpinner';
 import { useAuthContext } from '@/context/data.context';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';

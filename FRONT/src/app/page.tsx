@@ -2,8 +2,8 @@
 import { useState, useEffect } from "react";
 import { IProductData } from "@/interfaces/data.interfaces";
 import { fetchActiveProducts } from "@/services/ProductService";
-import LoadingSpinner from "@/components/LoadingSpinner";
-import ProductPreview from "@/components/ProductPreview";
+import LoadingSpinner from "@/components/atoms/LoadingSpinner";
+import ProductPreview from "@/components/molecules/ProductPreview";
 
 export default function Home() {
   const [products, setProducts] = useState<IProductData[]>([]);

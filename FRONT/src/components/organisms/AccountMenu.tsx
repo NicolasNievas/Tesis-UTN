@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthContext } from '@/context/data.context';
-import Button from './Button';
+import Button from '../atoms/Button';
 
 const AccountMenu: React.FC = () => {
     const pathname = usePathname();

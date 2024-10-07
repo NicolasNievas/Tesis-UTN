@@ -1,6 +1,6 @@
 "use client"
 import React from 'react';
-import AccountMenu from '@/components/AccountMenu';
+import AccountMenu from '@/components/organisms/AccountMenu';
 import { useAuthContext } from '@/context/data.context';
 
 const AccountLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
