@@ -61,3 +61,11 @@ export interface DecodedToken {
   iat: number;  
   authorities: string[]; 
 }
+
+export interface UpdateUserRequest {
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  address?: string;
+  city?: string;
+}
