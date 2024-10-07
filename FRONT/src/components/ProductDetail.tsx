@@ -72,7 +72,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, brand, category 
               <span className="text-gray-500 text-xl font-normal">${product.price}</span>
             </div>
             <Button
-              className="mt-4 bg-black-btn hover:bg-black-hover hover:text-white text-xl font-medium text-gray-bg-light"
+              className="w-full h-2/3 mt-4 bg-black-btn hover:bg-black-hover hover:text-white text-xl font-medium text-gray-bg-light"
               name="Add to cart"
               onClick={handleAddToCart}
             />
