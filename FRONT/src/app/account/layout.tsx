@@ -4,11 +4,11 @@ import AccountMenu from '@/components/AccountMenu';
 
 const AccountLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return (
-        <div className="flex">
+        <div className="account-layout flex min-h-screen">
             <AccountMenu />
-            <div className="flex-grow p-4">
+            <main className="account-content flex-grow p-8 ">
                 {children}
-            </div>
+            </main>
         </div>
     );
 };
