@@ -1,16 +1,20 @@
 'use client'
 import React, { useEffect, useState } from 'react';
-import { getUserProfile } from '@/services/UserService';
-import { IUserData } from '@/interfaces/data.interfaces';
+import { getUserProfile, updateUserProfile  } from '@/services/UserService';
+import { IUserData, UpdateUserRequest } from '@/interfaces/data.interfaces';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useAuthContext } from '@/context/data.context';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import Button from '@/components/Button';
+import { toast } from 'react-toastify';
 
 const MyProfile: React.FC = () => {
     const [user, setUser] = useState<IUserData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [formData, setFormData] = useState<UpdateUserRequest>({});
+    const [isEditing, setIsEditing] = useState(false);
     const { isAuthenticated } = useAuthContext();
     const router = useRouter();
 
@@ -56,10 +60,137 @@ const MyProfile: React.FC = () => {
         </div>
     );
 
+    const handleEdit = () => {
+        if (user) {
+            setFormData({
+                firstName: user.firstName,
+                lastName: user.lastName,
+                phoneNumber: user.phoneNumber,
+                address: user.address,
+                city: user.city
+            });
+            setIsEditing(true);
+            setLoading(false);
+        }
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            const updatedUser = await updateUserProfile(formData);
+            toast.success('Profile updated correctly');
+            setUser(updatedUser);
+            setIsEditing(false);
+            setError(null);
+        } catch (err) {
+            setError('Error updating profile');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCancel = () => {
+        setIsEditing(false);
+        setError(null);
+    };
+
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Mi Perfil</h1>
-            <div className="bg-white shadow rounded-lg p-6">
+        <div className="flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-bold">My Profile</h1>
+            {!isEditing && (
+                <Button 
+                    onClick={handleEdit}
+                    className="w-28 p-2 h-auto text-sm bg-black-btn hover:bg-black-hover hover:text-white text-gray-bg-light"
+                    name='Edit'
+                />
+            )}
+        </div>
+
+        {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {error}
+            </div>
+        )}
+
+        <div className="bg-white shadow rounded-lg p-6">
+            {isEditing ? (
+                <form onSubmit={handleSubmit}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-gray-700 mb-2">Nombre:</label>
+                            <input
+                                type="text"
+                                name="firstName"
+                                value={formData.firstName || ''}
+                                onChange={handleChange}
+                                className="w-full border rounded px-3 py-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-gray-700 mb-2">Apellido:</label>
+                            <input
+                                type="text"
+                                name="lastName"
+                                value={formData.lastName || ''}
+                                onChange={handleChange}
+                                className="w-full border rounded px-3 py-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-gray-700 mb-2">Teléfono:</label>
+                            <input
+                                type="text"
+                                name="phoneNumber"
+                                value={formData.phoneNumber || ''}
+                                onChange={handleChange}
+                                className="w-full border rounded px-3 py-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-gray-700 mb-2">Dirección:</label>
+                            <input
+                                type="text"
+                                name="address"
+                                value={formData.address || ''}
+                                onChange={handleChange}
+                                className="w-full border rounded px-3 py-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-gray-700 mb-2">Ciudad:</label>
+                            <input
+                                type="text"
+                                name="city"
+                                value={formData.city || ''}
+                                onChange={handleChange}
+                                className="w-full border rounded px-3 py-2"
+                            />
+                        </div>
+                    </div>
+                    <div className="mt-4 flex justify-end space-x-2">
+                            <Button
+                                onClick={handleCancel}
+                                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                                name='Cancelar'
+                                isDisabled={loading}
+                            />
+                            <Button
+                                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                                name={loading ? 'Guardando...' : 'Guardar Cambios'}
+                                isDisabled={loading}
+                            />
+                        </div>
+                </form>
+            ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="border-b md:border-b-0 pb-2 md:pb-0">
                         <h2 className="font-semibold text-gray-600">Nombre:</h2>
@@ -82,8 +213,9 @@ const MyProfile: React.FC = () => {
                         <p className="text-gray-900">{user.city || 'No especificada'}</p>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
+    </div>
     );
 };
 
