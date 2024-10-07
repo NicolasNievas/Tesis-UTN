@@ -27,6 +27,10 @@ public class UserServiceImp implements UserService {
     public User getUserProfile(String email) {
         UserEntity userEntity = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con email: " + email));
+        return mapUserEntityToUser(userEntity);
+    }
+
+    private User mapUserEntityToUser(UserEntity userEntity) {
         return User.builder()
                 .id(userEntity.getId())
                 .firstName(userEntity.getFirstName())
