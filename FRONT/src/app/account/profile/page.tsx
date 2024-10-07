@@ -126,7 +126,7 @@ const MyProfile: React.FC = () => {
                 <form onSubmit={handleSubmit}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-gray-700 mb-2">Nombre:</label>
+                            <label className="block text-gray-700 mb-2">First Name:</label>
                             <input
                                 type="text"
                                 name="firstName"
@@ -136,7 +136,7 @@ const MyProfile: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-700 mb-2">Apellido:</label>
+                            <label className="block text-gray-700 mb-2">Last Name:</label>
                             <input
                                 type="text"
                                 name="lastName"
@@ -146,7 +146,7 @@ const MyProfile: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-700 mb-2">Teléfono:</label>
+                            <label className="block text-gray-700 mb-2">Phone Number:</label>
                             <input
                                 type="text"
                                 name="phoneNumber"
@@ -156,7 +156,7 @@ const MyProfile: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-700 mb-2">Dirección:</label>
+                            <label className="block text-gray-700 mb-2">Address:</label>
                             <input
                                 type="text"
                                 name="address"
@@ -166,7 +166,7 @@ const MyProfile: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-700 mb-2">Ciudad:</label>
+                            <label className="block text-gray-700 mb-2">City:</label>
                             <input
                                 type="text"
                                 name="city"
@@ -180,12 +180,12 @@ const MyProfile: React.FC = () => {
                             <Button
                                 onClick={handleCancel}
                                 className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-                                name='Cancelar'
+                                name='Cancel'
                                 isDisabled={loading}
                             />
                             <Button
                                 className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-                                name={loading ? 'Guardando...' : 'Guardar Cambios'}
+                                name={loading ? 'Saving...' : 'Save Changes'}
                                 isDisabled={loading}
                             />
                         </div>
@@ -193,23 +193,23 @@ const MyProfile: React.FC = () => {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="border-b md:border-b-0 pb-2 md:pb-0">
-                        <h2 className="font-semibold text-gray-600">Nombre:</h2>
-                        <p className="text-gray-900">{user.firstName} {user.lastName}</p>
+                        <h2 className="font-semibold text-gray-600">Name:</h2>
+                        <p className="text-gray-900">{user.firstName}, {user.lastName}</p>
                     </div>
                     <div className="border-b md:border-b-0 pb-2 md:pb-0">
                         <h2 className="font-semibold text-gray-600">Email:</h2>
                         <p className="text-gray-900">{user.email}</p>
                     </div>
                     <div className="border-b md:border-b-0 pb-2 md:pb-0">
-                        <h2 className="font-semibold text-gray-600">Teléfono:</h2>
+                        <h2 className="font-semibold text-gray-600">Phone Number:</h2>
                         <p className="text-gray-900">{user.phoneNumber || 'No especificado'}</p>
                     </div>
                     <div className="border-b md:border-b-0 pb-2 md:pb-0">
-                        <h2 className="font-semibold text-gray-600">Dirección:</h2>
+                        <h2 className="font-semibold text-gray-600">Address:</h2>
                         <p className="text-gray-900">{user.address || 'No especificada'}</p>
                     </div>
                     <div>
-                        <h2 className="font-semibold text-gray-600">Ciudad:</h2>
+                        <h2 className="font-semibold text-gray-600">City:</h2>
                         <p className="text-gray-900">{user.city || 'No especificada'}</p>
                     </div>
                 </div>
