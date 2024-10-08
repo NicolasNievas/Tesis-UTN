@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { LOGIN_VIEW } from '@/interfaces/enums';
 import { useAuthContext } from '@/context/data.context';
+import Button from '@/components/atoms/Button';
 
 interface IRegisterProps {
     setCurrentView: (view: LOGIN_VIEW) => void;
@@ -58,153 +59,146 @@ const Register = ({ setCurrentView }: IRegisterProps) => {
   };
 
   return (
-    <div className="max-w-md mx-auto my-8 p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-center">Create Account</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Email Field */}
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            required
-            disabled={isLoading}
-          />
-        </div>
-
-        {/* Password Field */}
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            required
-            disabled={isLoading}
-            minLength={6}
-          />
-        </div>
-
-        {/* Name Fields */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="firstname" className="block text-sm font-medium text-gray-700 mb-1">
-              First Name
-            </label>
-            <input
-              type="text"
-              id="firstname"
-              name="firstname"
-              value={formData.firstname}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-              required
-              disabled={isLoading}
-            />
-          </div>
-          <div>
-            <label htmlFor="lastname" className="block text-sm font-medium text-gray-700 mb-1">
-              Last Name
-            </label>
-            <input
-              type="text"
-              id="lastname"
-              name="lastname"
-              value={formData.lastname}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-              required
-              disabled={isLoading}
-            />
-          </div>
-        </div>
-
-        {/* Contact Information */}
-        <div>
-          <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
-            Phone Number
-          </label>
-          <input
-            type="tel"
-            id="phoneNumber"
-            name="phoneNumber"
-            value={formData.phoneNumber}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            required
-            disabled={isLoading}
-          />
-        </div>
-
-        {/* Address Fields */}
-        <div>
-          <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-            Address
-          </label>
-          <input
-            type="text"
-            id="address"
-            name="address"
-            value={formData.address}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            required
-            disabled={isLoading}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-            City
-          </label>
-          <input
-            type="text"
-            id="city"
-            name="city"
-            value={formData.city}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            required
-            disabled={isLoading}
-          />
-        </div>
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          className={`w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white 
-            ${isLoading 
-              ? 'bg-blue-400 cursor-not-allowed' 
-              : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
-            }`}
-          disabled={isLoading}
+    <div id="register-pages" className="w-2/4 mb-32 mt-16">
+      <div id="onboarding-card" className="min-w-full m-auto bg-gray-bg ">
+        <div 
+          id="onboarding-form" 
+          className="p-8 rounded-xl bg-gray-bg flex flex-col justify-center w-full text-center shadow-[rgba(0,_0,_0,_0.24)_0px_3px_8px]"
         >
-          {isLoading ? 'Creating account...' : 'Create Account'}
-        </button>
+          <h2 className="text-xl font-bold">
+          BECOME A MEMBER
+          </h2>
+          <p className="text-">Create your Member profile, and get access to an enhanced shopping experience.</p>
+          <form className="relative" onSubmit={handleSubmit}>
+            {/* Email Field */}
+            <div>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="Email"
+                title='Enter your email'
+                value={formData.email}
+                onChange={handleChange}
+                className="border m-2 text-xl bg-white p-2 w-full rounded-lg font-extralight"
+                required
+                disabled={isLoading}
+              />
+            </div>
+  
+            {/* Password Field */}
+            <div>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Password"
+                title='Enter your password'
+                value={formData.password}
+                onChange={handleChange}
+                className="border m-2 text-xl bg-white p-2 w-full rounded-lg font-extralight"
+                required
+                disabled={isLoading}
+                minLength={6}
+              />
+            </div>
+  
+            {/* Name Fields */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <input
+                  type="text"
+                  id="firstname"
+                  name="firstname"
+                  placeholder="First Name"
+                  title="Enter your first name"
+                  value={formData.firstname}
+                  onChange={handleChange}
+                  className="border m-2 text-xl bg-white p-2 w-full rounded-lg font-extralight"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  id="lastname"
+                  name="lastname"
+                  placeholder="Last Name"
+                  title="Enter your last name"
+                  value={formData.lastname}
+                  onChange={handleChange}
+                  className="border m-2 text-xl bg-white p-2 w-full rounded-lg font-extralight"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+  
+            {/* Contact Information */}
+            <div>
+              <input
+                type="tel"
+                id="phoneNumber"
+                name="phoneNumber"
+                placeholder='Phone Number'
+                title='Enter your phone number'
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                className="border m-2 text-xl bg-white p-2 w-full rounded-lg font-extralight"
+                required
+                disabled={isLoading}
+              />
+            </div>
+  
+            {/* Address Fields */}
+            <div>
+              <input
+                type="text"
+                id="address"
+                name="address"
+                placeholder="Address"
+                title="Enter your address"
+                value={formData.address}
+                onChange={handleChange}
+                className="border m-2 text-xl bg-white p-2 w-full rounded-lg font-extralight"
+                required
+                disabled={isLoading}
+              />
+            </div>
 
-        {/* Login Link */}
-        <div className="text-center mt-4">
-          <button
-            type="button"
-            onClick={() => setCurrentView(LOGIN_VIEW.SIGN_IN)}
-            className="text-sm text-blue-600 hover:text-blue-500"
-            disabled={isLoading}
-          >
-            Already have an account? Sign in
-          </button>
+            {/* City Field */}
+            <div>
+              <input
+                type="text"
+                id="city"
+                name="city"
+                placeholder="City"
+                title="Enter your city"
+                value={formData.city}
+                onChange={handleChange}
+                className="border m-2 text-xl bg-white p-2 w-full rounded-lg font-extralight"
+                required
+                disabled={isLoading}
+              />
+            </div>
+  
+            <Button 
+              name="Sign up" 
+              className='w-full h-[80px] p-2 text-sm bg-black-btn hover:bg-black-hover hover:text-white text-gray-bg-light' 
+              isDisabled={isLoading} 
+            />
+          </form>
+          <div>
+            <button 
+              onClick={() => setCurrentView(LOGIN_VIEW.SIGN_IN)} 
+              className="hover:underline"
+            >
+              Already have an account? Sign in
+            </button>
+          </div>
         </div>
-      </form>
+      </div>
     </div>
   );
 };
