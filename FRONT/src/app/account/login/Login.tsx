@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { LOGIN_VIEW } from '@/interfaces/enums';
 import { useAuthContext } from '@/context/data.context';
+import Button from '@/components/atoms/Button';
+import GoogleImage from '@/components/atoms/GoogleImage';
 
 interface ILoginProps {
     setCurrentView: (view: LOGIN_VIEW) => void;
@@ -12,6 +14,7 @@ interface ILoginProps {
 const Login = ({ setCurrentView }: ILoginProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isDisabled, setIsDisabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { login, isAdmin, isAuthenticated } = useAuthContext();
@@ -27,8 +30,14 @@ const Login = ({ setCurrentView }: ILoginProps) => {
     }
   }, [isAuthenticated, isAdmin, router]);
 
+  useEffect(() => {
+    // Habilitar o deshabilitar el botón de inicio de sesión
+    setIsDisabled(!(email && password));
+  }, [email, password]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsDisabled(true);
     setIsLoading(true);
 
     try {
@@ -45,67 +54,72 @@ const Login = ({ setCurrentView }: ILoginProps) => {
     }
   };
 
-  return (
-    <div className="container mx-auto my-8">
-      <h2 className="text-2xl font-bold mb-4">Login</h2>
-      <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4">
-        <div>
-          <label 
-            htmlFor="email" 
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            required
-            disabled={isLoading}
-          />
-        </div>
-        <div>
-          <label 
-            htmlFor="password" 
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            required
-            disabled={isLoading}
-          />
-        </div>
-        <button 
-          type="submit" 
-          className={`w-full px-4 py-2 text-white rounded-md transition-colors
-            ${isLoading 
-              ? 'bg-blue-400 cursor-not-allowed' 
-              : 'bg-blue-500 hover:bg-blue-600'
-            }`}
-          disabled={isLoading}
-        >
-          {isLoading ? 'Logging in...' : 'Login'}
-        </button>
+  const handleSubmitWithGoogle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    toast.info('Google sign in is not yet implemented');
+  }
 
-        <div className="text-center mt-4">
-          <button
-            type="button"
-            onClick={() => setCurrentView(LOGIN_VIEW.REGISTER)}
-            className="text-blue-500 hover:text-blue-600 text-sm"
-            disabled={isLoading}
-          >
-            Don't have an account? Register here
-          </button>
+  return (
+    <div id="login-pages" className="w-2/4 mb-32 mt-16">
+      <div id="onboarding-card" className="min-w-full m-auto bg-gray-bg">
+        <div 
+          id="onboarding-form" 
+          className="p-8 rounded-xl bg-gray-bg flex flex-col justify-center w-full text-center shadow-[rgba(0,_0,_0,_0.24)_0px_3px_8px]"
+        >
+          <h2 className="text-xl font-bold">
+            WELCOME BACK
+          </h2>
+          <p className="text-base">Sign in to access an enhanced shopping experience.</p>
+          <form className="relative" onSubmit={handleSubmitWithGoogle}>
+            <GoogleImage classname="absolute bottom-[40%] left-[5%]" width={40} height={40} />
+            <Button name="Continue with google" className="w-full h-[80px] hover:font-bold" />
+          </form>
+          <div className="w-full flex items-center before:content-[''] before:border-b-2 before:h-1.5 before:flex-1 after:border-b-2 after:h-1.5 after:flex-1">
+            <span className="p-4">Or</span>
+          </div>
+          <form className="mt-8" onSubmit={handleSubmit}>
+            <div>
+              <input
+                id="email"
+                type="email"
+                name="email"
+                placeholder="Email"
+                title="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="border m-2 text-xl bg-white p-2 w-full rounded-lg font-extralight"
+                required
+              />
+            </div>
+            <div>
+              <input
+                id="password"
+                type="password"
+                name="password"
+                placeholder="Password"
+                title="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="border m-2 text-xl bg-white p-2 w-full rounded-lg font-extralight"
+                required
+              />
+            </div>
+            <Button 
+            name="Sign in" 
+            className='w-full h-[80px] p-2 text-sm bg-black-btn hover:bg-black-hover hover:text-white text-gray-bg-light' 
+            isDisabled={isDisabled || isLoading} 
+            />          
+          </form>
+          <div>
+            <button 
+              onClick={() => setCurrentView(LOGIN_VIEW.REGISTER)} 
+              className="hover:underline"
+            >
+              Create an account
+            </button>
+          </div>
         </div>
-      </form>
+      </div>
     </div>
   );
 };
