@@ -9,6 +9,7 @@ import org.example.back.entities.UserEntity;
 import org.example.back.jwt.JwtService;
 import org.example.back.repositories.UserRepository;
 import org.example.back.services.AuthService;
+import org.example.back.services.MailService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -26,17 +28,21 @@ public class AuthServiceImp implements AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final MailService mailService;
     @Override
     public AuthResponse login(LoginRequest request) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         } catch (BadCredentialsException e) {
-            throw new IllegalArgumentException("Invalid data");
+            throw new IllegalArgumentException("Invalid credentials");
         }
 
-        UserDetails user = userRepository.findByEmail(request.getEmail())
+        UserEntity user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        if (!user.isEmailVerified()) {
+            throw new IllegalArgumentException("Email not verified. Please verify your email first.");
+        }
         String token = jwtService.getToken(user);
         return AuthResponse.builder()
                 .token(token)
@@ -56,6 +62,9 @@ public class AuthServiceImp implements AuthService {
             throw new IllegalArgumentException("Phone number already exists");
         }
 
+        String verificationCode = mailService.generateVerificationCode();
+        LocalDateTime expiry = LocalDateTime.now().plusMinutes(15);
+
         UserEntity user = UserEntity.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -65,9 +74,13 @@ public class AuthServiceImp implements AuthService {
                 .address(request.getAddress())
                 .city(request.getCity())
                 .role(Role.CUSTOMER)
+                .emailVerified(false)
+                .verificationCode(verificationCode)
+                .verificationCodeExpiry(expiry)
                 .build();
 
         userRepository.save(user);
+        mailService.sendVerificationEmail(user, verificationCode);
 
         return AuthResponse.builder()
                 .token(jwtService.getToken(user))
