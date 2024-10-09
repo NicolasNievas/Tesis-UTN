@@ -29,19 +29,19 @@ public class MailServiceImp implements MailService {
 
     private void validateForm(ContactForm contactForm) {
         if (contactForm == null) {
-            throw new IllegalArgumentException("El formulario no puede estar vacío");
+            throw new IllegalArgumentException("The form cannot be empty");
         }
         if (StringUtils.isEmpty(contactForm.getName())) {
-            throw new IllegalArgumentException("Por favor, ingrese su nombre");
+            throw new IllegalArgumentException("Please enter your name");
         }
         if (StringUtils.isEmpty(contactForm.getEmail())) {
-            throw new IllegalArgumentException("Por favor, ingrese su correo electrónico");
+            throw new IllegalArgumentException("Please enter your email address");
         }
         if (!isValidEmail(contactForm.getEmail())) {
-            throw new IllegalArgumentException("Por favor, ingrese un correo electrónico válido");
+            throw new IllegalArgumentException("Please enter a valid email address");
         }
         if (StringUtils.isEmpty(contactForm.getMessage())) {
-            throw new IllegalArgumentException("Por favor, ingrese su mensaje");
+            throw new IllegalArgumentException("Please enter your message");
         }
     }
 

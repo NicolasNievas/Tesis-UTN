@@ -69,3 +69,19 @@ export interface UpdateUserRequest {
   address?: string;
   city?: string;
 }
+
+export interface IContactFormData {
+  name: string;
+  email: string;
+  message: string;
+}
+
+export interface ContactResponse {
+  message?: string;
+  error?: string;
+}
+
+export interface FormStatus {
+  message: string;
+  type: 'success' | 'error' | '';
+}

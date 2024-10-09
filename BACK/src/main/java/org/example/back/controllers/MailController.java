@@ -30,7 +30,7 @@ public class MailController {
         try {
             mailService.sendEmail(contactForm);
             return ResponseEntity.ok(
-                    Collections.singletonMap("message", "¡Gracias por contactarnos! Tu mensaje ha sido enviado exitosamente.")
+                    Collections.singletonMap("message", "Thank you for contacting us! Your message has been sent successfully.")
             );
         } catch (IllegalArgumentException e) {
             return ResponseEntity
@@ -40,7 +40,7 @@ public class MailController {
             log.error("Error procesando formulario de contacto", e);
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Collections.singletonMap("error", "Hubo un problema al enviar tu mensaje. Por favor, intenta nuevamente más tarde."));
+                    .body(Collections.singletonMap("error", "There was a problem sending your message. Please try again later."));
         }
     }
 }
