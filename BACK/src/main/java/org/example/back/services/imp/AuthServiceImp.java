@@ -1,9 +1,7 @@
 package org.example.back.services.imp;
 
 import lombok.RequiredArgsConstructor;
-import org.example.back.dtos.AuthResponse;
-import org.example.back.dtos.LoginRequest;
-import org.example.back.dtos.RegisterRequest;
+import org.example.back.dtos.*;
 import org.example.back.entities.Role;
 import org.example.back.entities.UserEntity;
 import org.example.back.jwt.JwtService;
@@ -86,4 +84,54 @@ public class AuthServiceImp implements AuthService {
                 .token(jwtService.getToken(user))
                 .build();
     }
+
+    @Override
+    public PasswordResetResponse forgotPassword(String email) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("No user found with this email address"));
+
+        String verificationCode = mailService.generateVerificationCode();
+        LocalDateTime expiry = LocalDateTime.now().plusMinutes(15);
+
+        user.setVerificationCode(verificationCode);
+        user.setVerificationCodeExpiry(expiry);
+        userRepository.save(user);
+
+        mailService.sendPasswordResetEmail(user, verificationCode);
+
+        return PasswordResetResponse.builder()
+                .message("Password reset instructions have been sent to your email")
+                .success(true)
+                .build();
+    }
+
+    @Override
+    public PasswordResetResponse resetPassword(ResetPasswordRequest request) {
+        UserEntity user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Validar el código
+        if (user.getVerificationCode() == null ||
+                user.getVerificationCodeExpiry() == null ||
+                user.getVerificationCodeExpiry().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Reset code has expired. Please request a new one.");
+        }
+
+        if (!user.getVerificationCode().equals(request.getCode())) {
+            throw new IllegalArgumentException("Invalid reset code");
+        }
+
+        // Actualizar la contraseña
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setVerificationCode(null);
+        user.setVerificationCodeExpiry(null);
+        userRepository.save(user);
+
+        return PasswordResetResponse.builder()
+                .message("Password has been successfully reset")
+                .success(true)
+                .build();
+    }
+
+
 }

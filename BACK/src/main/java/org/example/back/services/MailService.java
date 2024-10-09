@@ -10,4 +10,5 @@ public interface MailService {
     String generateVerificationCode();
     void sendVerificationEmail(UserEntity userEntity, String verificationCode);
     void verifyEmail(String email,String verificationCode);
+    void sendPasswordResetEmail(UserEntity user, String verificationCode);
 }

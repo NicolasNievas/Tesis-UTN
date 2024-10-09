@@ -147,4 +147,35 @@ public class MailServiceImp implements MailService {
                 form.getMessage()
         );
     }
+
+    @Override
+    public void sendPasswordResetEmail(UserEntity user, String verificationCode) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(user.getEmail());
+        message.setSubject("Password Reset Request - Coffee Craze");
+        message.setText(String.format("""
+            Hello %s,
+            
+            We received a request to reset your password for your Coffee Craze account.
+            
+            Your password reset code is: %s
+            
+            This code will expire in 15 minutes.
+            
+            If you didn't request a password reset, please ignore this email or contact support if you have concerns.
+            
+            Best regards,
+            Coffee Craze Team
+            """,
+                user.getFirstName(),
+                verificationCode));
+
+        try {
+            emailSender.send(message);
+            log.info("Password reset email sent to: {}", user.getEmail());
+        } catch (MailException e) {
+            log.error("Error sending password reset email", e);
+            throw new RuntimeException("Could not send password reset email", e);
+        }
+    }
 }
