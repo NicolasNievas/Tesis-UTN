@@ -2,6 +2,7 @@ package org.example.back.services;
 
 import java.util.List;
 
+import org.example.back.entities.ProductEntity;
 import org.example.back.models.Product;
 import org.springframework.stereotype.Service;
 
@@ -17,5 +18,5 @@ public interface ProductService {
     Product deteleProduct(Long productId);
     Product reactiveProduct(Long productId);
     Product getProductById(Long productId);
-    
+    List<Product> getAllProductsWithNoStock();
 }

@@ -285,5 +285,18 @@ public List<Product> getAllProductsByBrand(Long brandId) {
 
         return modelMapper.map(entity, Product.class);
     }
-    
+
+    @Override
+    public List<Product> getAllProductsWithNoStock() {
+        List<ProductEntity> entities = productRepository.findByStock(0);
+
+        if (entities.isEmpty()) {
+            throw new IllegalArgumentException("No products found with no stock");
+        }
+
+        return entities.stream()
+                .map(entity -> modelMapper.map(entity, Product.class))
+                .collect(Collectors.toList());
+    }
+
 }

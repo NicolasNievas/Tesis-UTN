@@ -19,5 +19,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     List<ProductEntity> findByBrandId(Long brandId);
 
     List<ProductEntity> findByActiveFalse();
-    
+
+    List<ProductEntity> findByStock(int stock);
 }

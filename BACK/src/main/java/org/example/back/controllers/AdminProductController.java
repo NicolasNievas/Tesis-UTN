@@ -72,4 +72,12 @@ public class AdminProductController {
         List<Product> products = productService.getAllProductsDesactive();
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
+
+    @GetMapping("/products/allProductsWithNoStock")
+    @Operation(summary = "Obtener todos los productos sin stock", description = "Obtiene todos los productos sin stock.")
+    @ApiResponse(responseCode = "200", description = "Operación exitosa", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Product.class)))
+    public ResponseEntity<List<Product>> getAllProductsWithNoStock() {
+        List<Product> products = productService.getAllProductsWithNoStock();
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
 }
