@@ -2,13 +2,16 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import AuthService from '@/services/AuthService';
 import JWTService from '@/jwt/JwtService';
-import { LoginRequest, RegisterRequest } from '@/interfaces/data.interfaces';
+import { LoginRequest, PasswordResetResponse, RegisterRequest, ResetPasswordRequest } from '@/interfaces/data.interfaces';
 
 interface IAuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   login: (request: LoginRequest) => Promise<void>;
   register: (request: RegisterRequest) => Promise<void>;
+  verifyEmail: (email: string, code: string) => Promise<void>;
+  forgotPassword: (email: string) => Promise<PasswordResetResponse>;
+  resetPassword: (request: ResetPasswordRequest) => Promise<PasswordResetResponse>;
   logout: () => void;
   loading: boolean;
   userEmail: string | null;
@@ -51,7 +54,6 @@ export const AuthProvider = ({ children }: IDataProvideProps) => {
   const register = async (request: RegisterRequest) => {
     try {
       await AuthService.register(request);
-      checkAuth();
     } catch (error) {
       throw error;
     }
@@ -64,6 +66,30 @@ export const AuthProvider = ({ children }: IDataProvideProps) => {
     setUserEmail(null);
   };
 
+  const verifyEmail = async (email: string, code: string) => {
+    try {
+      await AuthService.verifyEmail(email, code);
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const forgotPassword = async (email: string) => {
+    try {
+      return await AuthService.forgotPassword(email);
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const resetPassword = async (request: ResetPasswordRequest) => {
+    try {
+      return await AuthService.resetPassword(request);
+    } catch (error) {
+      throw error;
+    }
+  };
+
   return (
     <AuthContext.Provider 
       value={{ 
@@ -71,6 +97,9 @@ export const AuthProvider = ({ children }: IDataProvideProps) => {
         isAdmin, 
         login, 
         register, 
+        verifyEmail,
+        forgotPassword,
+        resetPassword,
         logout, 
         loading,
         userEmail 

@@ -6,6 +6,9 @@ export enum Role {
 export enum LOGIN_VIEW {
     SIGN_IN = "sign-in",
     REGISTER = "register",
+    VERIFY_EMAIL = 'VERIFY_EMAIL',
+    FORGOT_PASSWORD = 'FORGOT_PASSWORD',
+    RESET_PASSWORD = 'RESET_PASSWORD'
 }
 
 export enum RESPONSE_STATUS {

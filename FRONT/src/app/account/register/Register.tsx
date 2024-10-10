@@ -41,8 +41,8 @@ const Register = ({ setCurrentView }: IRegisterProps) => {
 
     try {
       await register(formData);
-      toast.success('Registration successful!');
-      setCurrentView(LOGIN_VIEW.SIGN_IN);
+      toast.success('Registration successful! Please verify your email.');
+      setCurrentView(LOGIN_VIEW.VERIFY_EMAIL);
     } catch (error) {
       if (error instanceof Error) {
         // Manejar mensajes de error específicos del backend

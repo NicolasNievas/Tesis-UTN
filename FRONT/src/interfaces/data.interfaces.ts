@@ -85,3 +85,27 @@ export interface FormStatus {
   message: string;
   type: 'success' | 'error' | '';
 }
+
+// Password reset interfaces
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  email: string;
+  code: string;
+  newPassword: string;
+}
+
+export interface PasswordResetResponse {
+  message: string;
+  success: boolean;
+}
+
+// Email verification interfaces
+
+export interface EmailVerificationRequest {
+  email: string;
+  code: string;
+}

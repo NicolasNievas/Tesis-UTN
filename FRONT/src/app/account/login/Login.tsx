@@ -118,6 +118,15 @@ const Login = ({ setCurrentView }: ILoginProps) => {
               Create an account
             </button>
           </div>
+          <div>
+            <button 
+              type="button"
+              onClick={() => setCurrentView(LOGIN_VIEW.FORGOT_PASSWORD)}
+              className="text-sm hover:underline"
+            >
+              Forgot Password?
+            </button>
+          </div>
         </div>
       </div>
     </div>
