@@ -28,9 +28,9 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({ product }) => {
       </div>
 
       {/* Product information */}
-      <div className="px-4 py-3 flex justify-between">
-        <div className="font-bold text-lg mb-1 truncate">{product.name}</div>
-        <p className="text-gray-800 text-base">${product.price.toFixed(2)}</p>
+      <div className="px-4 py-2 flex justify-between bg-white">
+        <div className="font-bold text-sm mb-1 truncate">{product.name}</div>
+        <p className="text-gray-800 text-sm">${product.price.toFixed(2)}</p>
       </div>
     </div>
   );
