@@ -48,7 +48,8 @@ const CartPage: React.FC = () => {
   };
 
   if (!isAuthenticated) {
-    return <p className="container mx-auto py-8">You must be logged in to view your cart.</p>;
+    const error = toast.error('You must be logged in to view your cart');
+    return error;
   }
 
   if (cartLoading) {
