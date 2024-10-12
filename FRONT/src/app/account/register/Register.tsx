@@ -23,6 +23,11 @@ const Register = ({ setCurrentView }: IRegisterProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { register, isAuthenticated } = useAuthContext();
+  const [isDisabled, setIsDisabled] = useState(true);
+
+  useEffect(() => {
+    setIsDisabled(!(formData.email && formData.password && formData.firstname && formData.lastname && formData.phoneNumber && formData.address && formData.city));
+  }, [formData]);
 
   useEffect(() => {
     // Redirigir si el usuario ya está autenticado
@@ -186,7 +191,7 @@ const Register = ({ setCurrentView }: IRegisterProps) => {
             <Button 
               name="Sign up" 
               className='w-full h-[80px] p-2 text-sm bg-black-btn hover:bg-black-hover hover:text-white text-gray-bg-light' 
-              isDisabled={isLoading} 
+              isDisabled={isDisabled || isLoading} 
             />
           </form>
           <div>
@@ -194,7 +199,7 @@ const Register = ({ setCurrentView }: IRegisterProps) => {
               onClick={() => setCurrentView(LOGIN_VIEW.SIGN_IN)} 
               className="hover:underline"
             >
-              Already have an account? Sign in
+              Already have an account? <br /> Sign in
             </button>
           </div>
         </div>

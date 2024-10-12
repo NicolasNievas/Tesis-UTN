@@ -39,3 +39,12 @@ export const postProduct = async (productData: Partial<IProductData>) => {
       throw new Error("Error updating product");
     }
   }
+
+export const getAllProductsWithNoStock = async (): Promise<IProductData[]> => {
+  try{
+    const response = await adminAxios.get(`${$URL}/products/allProductsWithNoStock`);
+    return response.data;
+  } catch(error){
+    throw error;
+  }
+};

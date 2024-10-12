@@ -1,8 +1,9 @@
 import React from 'react';
-import Image from 'next/image';
 import { IProductData, IBrandData, ICategoryData } from '@/interfaces/data.interfaces';
 import Button from '@/components/atoms/Button';
 import { toast } from 'react-toastify';
+import { useAuthContext } from '@/context/data.context';
+import { useRouter } from 'next/navigation';
 
 interface ProductDetailProps {
   product: IProductData;
@@ -12,29 +13,25 @@ interface ProductDetailProps {
 
 const ProductDetail: React.FC<ProductDetailProps> = ({ product, brand, category }) => {
   const { imageUrls } = product;
-  // const { cart, addToCart, user } = useDataContext();
+  const { addToCart, cartLoading, isAuthenticated, cart } = useAuthContext();
+  const router = useRouter();
 
-  // const checkUser = () => {
-  //   if (!user) {
-  //     route("/account");
-  //     return false;
-  //   } else {
-  //     return true;
-  //   }
-  // };
 
-  const handleAddToCart = () => {
-    // if (checkUser()) {
-    //   const isProductInCart = cart.some((item) => item.id === product.id);
+  const checkProductInCart = (productId: number) => {
+    return cart?.items?.some(item => item.productId === productId) ?? false;
+  };
+  
+  const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      router.push('/account');
+      return;
+    }
 
-    //   if (isProductInCart) {
-    //     toast.warning(`${product.name} is already added`);
-    //   } else {
-    //     addToCart(product);
-    //     toast.success(`${product.name} successfully added`);
-    //   }
-    // }
-    toast.info("Add to cart functionality is not implemented yet.");
+    try {
+      await addToCart(product.id);
+    } catch (error: any) {
+      toast.error('Error adding to cart');
+    }
   };
 
   return (
@@ -73,8 +70,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, brand, category 
             </div>
             <Button
               className="w-full h-2/3 mt-4 bg-black-btn hover:bg-black-hover hover:text-white text-xl font-medium text-gray-bg-light"
-              name="Add to cart"
+              name={cartLoading ? "Adding to cart..." :  checkProductInCart(product.id) ? "Product in cart" : "Add to cart"}
               onClick={handleAddToCart}
+              isDisabled={cartLoading || checkProductInCart(product.id)}
             />
           </div>
         </div>

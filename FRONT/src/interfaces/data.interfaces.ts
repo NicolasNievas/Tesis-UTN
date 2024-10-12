@@ -109,3 +109,23 @@ export interface EmailVerificationRequest {
   email: string;
   code: string;
 }
+
+// Cart interfaces
+
+export interface CartItem {
+  id: number;
+  productId: number;
+  productName: string;
+  imageUrls: string[];
+  price: number;
+  quantity: number;
+  subtotal: number;
+  availableStock: number; 
+}
+
+export interface Cart {
+  id: number;
+  userId: number;
+  items: CartItem[];
+  total: number;
+}

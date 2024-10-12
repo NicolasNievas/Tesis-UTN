@@ -7,20 +7,28 @@ class JWTService {
   private static readonly TOKEN_PREFIX = 'Bearer ';
 
   static setToken(token: string): void {
-    localStorage.setItem(this.TOKEN_KEY, token);
-    this.setAuthHeader(token);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.TOKEN_KEY, token);
+      this.setAuthHeader(token);
+    }
   }
 
   static getToken(): string | null {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem(this.TOKEN_KEY);
+      const token = localStorage.getItem(this.TOKEN_KEY);
+      if (token) {
+        this.setAuthHeader(token);
+      }
+      return token;
     }
     return null;
   }
 
   static removeToken(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    this.removeAuthHeader();
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(this.TOKEN_KEY);
+      this.removeAuthHeader();
+    }
   }
 
   static isTokenValid(): boolean {
@@ -30,8 +38,14 @@ class JWTService {
     try {
       const decoded = this.decodeToken(token);
       const currentTime = Date.now() / 1000;
-      return decoded.exp > currentTime;
+      // Add a 5-minute buffer to prevent edge cases
+      if (decoded.exp <= currentTime + 300) {
+        this.removeToken();
+        return false;
+      }
+      return true;
     } catch {
+      this.removeToken();
       return false;
     }
   }
