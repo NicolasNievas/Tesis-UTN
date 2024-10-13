@@ -2,7 +2,6 @@ package org.example.back.services;
 
 import java.util.List;
 
-import org.example.back.entities.ProductEntity;
 import org.example.back.models.Product;
 import org.springframework.stereotype.Service;
 

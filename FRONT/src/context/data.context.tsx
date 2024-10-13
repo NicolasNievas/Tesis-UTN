@@ -37,20 +37,13 @@ export const AuthProvider = ({ children }: IDataProvideProps) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  // Cart state
   const [cart, setCart] = useState<Cart | null>(null);
   const [cartLoading, setCartLoading] = useState(false);
   const [cartError, setCartError] = useState<string | null>(null);
 
-  // useEffect(() => {
-  //   checkAuth();
-  //   AuthService.setupAxiosInterceptors();
-  // }, []);
-
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Configurar interceptores primero
         AuthService.setupAxiosInterceptors();
         
         // Verificar autenticación

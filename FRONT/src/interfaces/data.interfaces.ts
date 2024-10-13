@@ -1,5 +1,3 @@
-import { Role } from "./enums";
-
 export interface IProductData{
     id: number;
     name: string;

@@ -18,6 +18,7 @@ const CartPage: React.FC = () => {
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/account');
+      toast.error('You must be logged in to view your cart.');
       return;
     }
     
@@ -46,11 +47,6 @@ const CartPage: React.FC = () => {
   const calculateTotal = () => {
     return calculateSubtotal() + SHIPPING_COST;
   };
-
-  if (!isAuthenticated) {
-    const error = toast.error('You must be logged in to view your cart');
-    return error;
-  }
 
   if (cartLoading) {
     return <p> <LoadingSpinner /> </p>;
