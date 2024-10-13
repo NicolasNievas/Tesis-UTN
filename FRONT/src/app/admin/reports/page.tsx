@@ -1,4 +1,6 @@
-const AdminReports = () => {
+import { withAdmin } from "@/hoc/isAdmin";
+
+const AdminReports: React.FC = () => {
     return (
       <div className="relative h-screen flex items-center justify-center">
         {/* Imagen de fondo */}
@@ -12,5 +14,5 @@ const AdminReports = () => {
     );
   };
   
-  export default AdminReports;
+  export default withAdmin(AdminReports);
   

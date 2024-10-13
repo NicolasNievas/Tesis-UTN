@@ -1,15 +1,22 @@
-const accountPage = () => {
-    return(
-        <div className="relative h-screen flex items-center justify-center">
-        {/* Imagen de fondo */}
-        <img
-          src="/construccion.png"
-          alt="En construcción"
-          className="absolute inset-0 w-full h-full object-cover z-0"
-        />
+"use client";
+import { useState } from "react";
+import Login from "./login/Login";
+import Register from "./register/Register";
+import ForgotPasswordModal from "@/components/organisms/ForgotPasswordModal";
+import ResetPasswordModal from "@/components/organisms/ResetPasswordModal";
+import VerifyEmailModal from "@/components/organisms/VerifyEmailModal";
+import { LOGIN_VIEW } from "@/interfaces/enums";
 
-      </div>
-    );
-};
+export default function Account() {
+  const [currentView, setCurrentView] = useState(LOGIN_VIEW.SIGN_IN);
 
-export default accountPage;
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      {currentView === LOGIN_VIEW.SIGN_IN && <Login setCurrentView={setCurrentView} />}
+      {currentView === LOGIN_VIEW.REGISTER && <Register setCurrentView={setCurrentView} />}
+      {currentView === LOGIN_VIEW.FORGOT_PASSWORD && <ForgotPasswordModal setCurrentView={setCurrentView} />}
+      {currentView === LOGIN_VIEW.RESET_PASSWORD && <ResetPasswordModal setCurrentView={setCurrentView} />}
+      {currentView === LOGIN_VIEW.VERIFY_EMAIL && <VerifyEmailModal setCurrentView={setCurrentView} />}
+    </div>
+  );
+}

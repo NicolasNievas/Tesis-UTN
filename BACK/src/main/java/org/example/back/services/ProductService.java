@@ -17,5 +17,5 @@ public interface ProductService {
     Product deteleProduct(Long productId);
     Product reactiveProduct(Long productId);
     Product getProductById(Long productId);
-    
+    List<Product> getAllProductsWithNoStock();
 }

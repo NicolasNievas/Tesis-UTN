@@ -1,6 +1,5 @@
 import { IProductData } from "@/interfaces/data.interfaces";
 import axios from "axios";
-import { error } from "console";
 
 const $URL = process.env.NEXT_PUBLIC_API_URL_PRODUCTS;
 
@@ -34,40 +33,3 @@ export const fetchProductByBrand = async (brand: number): Promise<IProductData[]
       throw error;
     }
   };
-
-export const postProduct = async (productData: Partial<IProductData>) => {
-  try {
-    const response = await axios.post(`${$URL}/create`, productData);
-    return response.data;
-  } catch (error) {
-    console.error("Error creating product:", error);
-    throw error;
-  }
-};
-
-export const desactivateProduct = async (productId: number) => {
-  try{
-    const response = await axios.put(`${$URL}/desactive/${productId}`);
-    return response.data;
-  }catch(error){
-    throw error;
-  }
-};
-
-export const reactivateProduct = async (productId: number) => {
-  try{
-    const response = await axios.put(`${$URL}/reactive/${productId}`);
-    return response.data;
-  } catch(error){
-    throw error;
-  }
-};
-
-export const updateProduct = async (product: Partial<IProductData>) => {
-  try{
-    const response = await axios.put(`${$URL}/update/${product.id}`, product);
-    return response.data;
-  } catch(error){
-    throw new Error("Error updating product");
-  }
-}

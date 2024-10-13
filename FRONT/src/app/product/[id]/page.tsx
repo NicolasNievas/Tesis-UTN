@@ -1,9 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { notFound } from "next/navigation";
-import ProductDetail from "@/components/ProductDetail";
+import ProductDetail from "@/components/organisms/ProductDetail";
 import useApi from "@/hooks/useApi";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import LoadingSpinner from "@/components/atoms/LoadingSpinner";
 import { IProductData, IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
 import { getAllActiveBrands, fetchCategoriesByBrand } from "@/services/brandService"; 
 

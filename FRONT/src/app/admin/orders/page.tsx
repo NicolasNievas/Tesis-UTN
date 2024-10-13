@@ -1,3 +1,5 @@
+import { withAdmin } from "@/hoc/isAdmin";
+
 const AdminOrders = () => {
     return (
       <div className="relative h-screen flex items-center justify-center">
@@ -11,5 +13,5 @@ const AdminOrders = () => {
     );
   };
   
-  export default AdminOrders;
+  export default withAdmin(AdminOrders);
   

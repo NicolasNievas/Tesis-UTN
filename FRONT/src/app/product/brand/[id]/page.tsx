@@ -2,12 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import ProductPreview from "@/components/ProductPreview";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import ProductPreview from "@/components/molecules/ProductPreview";
+import LoadingSpinner from "@/components/atoms/LoadingSpinner";
 import { fetchCategoriesByBrand } from "@/services/brandService";
 import { fetchProductByBrand, fetchProductByCategory } from "@/services/ProductService";
 import { IProductData, ICategoryData } from "@/interfaces/data.interfaces";
-import Button from "@/components/Button";
+import Button from "@/components/atoms/Button";
 import { toast } from "react-toastify";
 
 

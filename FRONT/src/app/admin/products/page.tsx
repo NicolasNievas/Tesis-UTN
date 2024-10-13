@@ -1,18 +1,19 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import LoadingSpinner from "@/components/LoadingSpinner";
-import NewProductModal from "@/components/NewProductModal";
-import ProductListItem from "@/components/ProductListItem";
-import EditProductModal from "@/components/EditProductModal";
+import LoadingSpinner from "@/components/atoms/LoadingSpinner";
+import NewProductModal from "@/components/organisms/NewProductModal";
+import ProductListItem from "@/components/molecules/ProductListItem";
+import EditProductModal from "@/components/organisms/EditProductModal";
 import { IProductData, IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
-import { desactivateProduct, postProduct, reactivateProduct, updateProduct } from "@/services/ProductService";
+import { desactivateProduct, postProduct, reactivateProduct, updateProduct } from "@/services/AdminProductService";
 import { getAllActiveBrands, fetchCategoriesByBrand } from "@/services/brandService";
 import { toast } from "react-toastify";
-import useApi from "@/hooks/useApi";
+import useAdminApi from "@/hooks/UseAdminApi";
 import Swal from "sweetalert2";
+import { withAdmin } from "@/hoc/isAdmin";
 
 const AdminProductsPage: React.FC = () => {
-    const { data: products, loading, error } = useApi<IProductData[]>('/allProducts');
+    const { data: products, loading, error } = useAdminApi<IProductData[]>('/products/allProducts');
     const [brands, setBrands] = useState<IBrandData[]>([]);
     const [categories, setCategories] = useState<ICategoryData[]>([]);
     const [selectedBrand, setSelectedBrand] = useState<number | null>(null);
@@ -20,6 +21,7 @@ const AdminProductsPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [currentProduct, setCurrentProduct] = useState<IProductData | null>(null);
+    const [filterNoStock, setFilterNoStock] = useState(false);
 
     useEffect(() => {
         const loadBrands = async () => {
@@ -135,6 +137,9 @@ const AdminProductsPage: React.FC = () => {
         if (selectedCategory && product.categoryId !== selectedCategory) {
             return false;
         }
+        if (filterNoStock && product.stock > 0) {
+            return false;
+        }
         return true;
     });
 
@@ -180,6 +185,13 @@ const AdminProductsPage: React.FC = () => {
                         <circle cx="12" cy="12" r="10"/>
                         <path d="M8 12h8"/>
                         <path d="M12 8v8"/>
+                    </svg>
+                </button>
+                <button onClick={() => setFilterNoStock(!filterNoStock)}
+                className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-filter">
+                        <polygon points="22 3 2 3 10 12.5 10 19 14 21 14 12.5 22 3"/>
                     </svg>
                 </button>
             </div>
@@ -232,4 +244,4 @@ const AdminProductsPage: React.FC = () => {
     );
 };
 
-export default AdminProductsPage;
+export default withAdmin(AdminProductsPage);
