@@ -52,6 +52,10 @@ const CartPage: React.FC = () => {
     return <p> <LoadingSpinner /> </p>;
   }
 
+  const handleCheckoutClick = () => {
+    toast.info('This functionality is not implemented yet.');
+  };
+
   return (
     <div className="container mx-auto h-screen py-8">
       <h2 className="text-2xl font-semibold mb-4">Cart</h2>
@@ -117,9 +121,11 @@ const CartPage: React.FC = () => {
               <Line />
               <p className="text-lg">Total <span className="float-right">${calculateTotal()}</span></p>
               <Line />
-              <Link href="checkout">
-                <Button name="Go to Checkout" className='w-full h-[90px] p-2 h-auto text-xl bg-black-btn hover:bg-black-hover hover:text-white text-gray-bg-light'/>
-              </Link>
+              <Button 
+              name="Go to Checkout" 
+              className='w-full h-[90px] p-2 h-auto text-xl bg-black-btn hover:bg-black-hover hover:text-white text-gray-bg-light'
+              onClick={handleCheckoutClick}
+              />
             </div>
           </div>
         </div>
