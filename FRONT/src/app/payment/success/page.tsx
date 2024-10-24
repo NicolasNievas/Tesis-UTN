@@ -57,7 +57,7 @@ const PaymentSuccessPage = () => {
                 title: 'Producto 1',
                 quantity: 2,
                 unit_price: 50.00,
-                picture_url: 'https://via.placeholder.com/150',
+                picture_url: 'https://bonafide.com.ar/media/2022/05/Sensaciones-Suave-125g-2-1-1-1-1-1-1-1.png',
               },
               {
                 id: '2',
