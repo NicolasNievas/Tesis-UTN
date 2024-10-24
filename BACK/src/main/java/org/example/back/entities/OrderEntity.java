@@ -3,6 +3,7 @@ package org.example.back.entities;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -24,6 +25,7 @@ public class OrderEntity {
     private UserEntity customer;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
     private Set<OrderDetailEntity> details;
 
     @Column(nullable = false)

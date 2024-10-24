@@ -13,5 +13,5 @@ const AdminOrders = () => {
     );
   };
   
-  export default withAdmin(AdminOrders);
+  export default AdminOrders;
   

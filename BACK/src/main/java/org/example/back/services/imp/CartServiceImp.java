@@ -1,8 +1,11 @@
 package org.example.back.services.imp;
 
+import com.mercadopago.exceptions.MPApiException;
+import com.mercadopago.exceptions.MPException;
 import lombok.RequiredArgsConstructor;
 import org.example.back.dtos.CartDTO;
 import org.example.back.dtos.CartItemDTO;
+import org.example.back.dtos.UserDTO;
 import org.example.back.entities.CartEntity;
 import org.example.back.entities.CartItemEntity;
 import org.example.back.entities.ProductEntity;
@@ -12,6 +15,7 @@ import org.example.back.repositories.CartRepository;
 import org.example.back.repositories.ProductRepository;
 import org.example.back.repositories.UserRepository;
 import org.example.back.services.CartService;
+import org.example.back.services.MercadoPagoService;
 import org.example.back.services.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +35,7 @@ public class CartServiceImp implements CartService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final UserService userService;
+    private final MercadoPagoService mercadoPagoService;
     @Override
     @Transactional
     public CartDTO getCartByUser() {
@@ -135,16 +140,52 @@ public class CartServiceImp implements CartService {
 
     @Override
     @Transactional
-    public void clearCart() {
-        User currentUser = userService.getCurrentUser();
-        CartEntity cart = cartRepository.findByUserId(currentUser.getId())
+    public void clearCart(String email) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        CartEntity cart = cartRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new RuntimeException("Carrito no encontrado"));
 
         cart.getItems().clear();
         cart.setUpdatedAt(LocalDateTime.now());
         cartRepository.save(cart);
     }
+    @Override
+    @Transactional
+    public String initiatePayment() throws MPException, MPApiException {
+        User currentUser = userService.getCurrentUser();
+        CartEntity cart = cartRepository.findByUserId(currentUser.getId())
+                .orElseThrow(() -> new RuntimeException("Cart not found"));
 
+        List<CartItemDTO> items = cart.getItems().stream()
+                .map(this::convertToCartItemDTO)
+                .collect(Collectors.toList());
+
+        UserDTO userDTO = convertToUserDTO(currentUser);
+
+        return mercadoPagoService.createPreference(items, userDTO);
+    }
+
+    private UserDTO convertToUserDTO(User user) {
+        return UserDTO.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .address(user.getAddress())
+                .build();
+    }
+
+    private CartItemDTO convertToCartItemDTO(CartItemEntity item) {
+        return CartItemDTO.builder()
+                .productId(item.getProduct().getId())
+                .productName(item.getProduct().getName())
+                .price(item.getProduct().getPrice())
+                .quantity(item.getQuantity())
+                .imageUrls(item.getProduct().getImageUrls())
+                .build();
+    }
     private CartDTO convertToDTO(CartEntity cart) {
         List<CartItemDTO> itemDTOs = cart.getItems().stream()
                 .map(item -> {
