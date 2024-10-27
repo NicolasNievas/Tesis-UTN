@@ -35,6 +35,17 @@ const OrderDetailsModal = ({ order, onClose, isOpen }: OrderDetailsModalProps) =
         return 'Fecha no disponible';
     };
 
+    const getShippingStatus = (status: string) => {
+        switch (status) {
+            case 'LOCAL_PICKUP':
+                return 'Local Pickup';
+            case 'HOME_DELIVERY':
+                return 'Home Delivery';
+            default:
+                return 'N/A';
+        }
+    };
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
             <div className="bg-gray-800 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto text-white">
@@ -75,7 +86,7 @@ const OrderDetailsModal = ({ order, onClose, isOpen }: OrderDetailsModalProps) =
                             </div>
                             <div>
                                 <p className="text-sm font-medium text-gray-300">Shipping Method</p>
-                                <p className="text-base text-white">{order.shippingName}</p>
+                                <p className="text-base text-white">{getShippingStatus(order.shippingName)}</p>
                             </div>
                         </div>
 
