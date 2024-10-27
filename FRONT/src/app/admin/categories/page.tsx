@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import EditCategoryModal from '@/components/organisms/EditCategoryModal';
 import { withAdmin } from '@/hoc/isAdmin';
+import Line from '@/components/atoms/Line';
 
 const CategoriesPage: React.FC = () => {
   const [brands, setBrands] = useState<IBrandData[]>([]);
@@ -133,7 +134,8 @@ const CategoriesPage: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-semibold text-gray-800 mb-6">Categories</h1>
+      <h1 className="text-3xl font-semibold text-gray-800 mb-6">Categories Management</h1>
+      <Line />
       <div className="mb-6">
         <select
           value={selectedBrand?.toString() || ""}

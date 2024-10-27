@@ -6,6 +6,7 @@ import { OrderResponse } from '@/interfaces/data.interfaces';
 import { toast } from 'react-toastify';
 import OrderDetailsModal from '@/components/organisms/OrderDetailsModal';
 import { Package, Truck, Calendar, Mail, Clock, DollarSign } from 'lucide-react';
+import Line from '@/components/atoms/Line';
 
 const AdminOrders = () => {
     const [orders, setOrders] = useState<OrderResponse[]>([]);
@@ -99,7 +100,9 @@ const AdminOrders = () => {
                 <h1 className="text-3xl font-bold text-gray-800">Orders Management</h1>
                 <span className="text-sm text-gray-500">Total Orders: {orders.length}</span>
             </div>
-            
+
+            <Line />
+
             <div className="grid gap-6">
                 {orders.map((order) => (
                     <div key={order.id} 
