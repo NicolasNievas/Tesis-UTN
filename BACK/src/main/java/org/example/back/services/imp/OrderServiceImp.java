@@ -107,6 +107,8 @@ public class OrderServiceImp implements OrderService {
                     .lastName(order.getCustomer().getLastName())
                     .email(order.getCustomer().getEmail())
                     .phoneNumber(order.getCustomer().getPhoneNumber())
+                    .address(order.getCustomer().getAddress())
+                    .city(order.getCustomer().getCity())
                     .build();
         }
 

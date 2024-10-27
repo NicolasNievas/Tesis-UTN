@@ -4,10 +4,13 @@ import { withAdmin } from "@/hoc/isAdmin";
 import OrderService from '@/services/OrderService';
 import { OrderResponse } from '@/interfaces/data.interfaces';
 import { toast } from 'react-toastify';
+import OrderDetailsModal from '@/components/organisms/OrderDetailsModal';
 
 const AdminOrders = () => {
     const [orders, setOrders] = useState<OrderResponse[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedOrder, setSelectedOrder] = useState<OrderResponse | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         loadOrders();
@@ -25,8 +28,17 @@ const AdminOrders = () => {
         }
     };
 
+    const handleOpenModal = (order: OrderResponse) => {
+        setSelectedOrder(order);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedOrder(null);
+    };
+
     const formatDate = (dateArray: any) => {
-        // Si la fecha es un array
         if (Array.isArray(dateArray)) {
             const [year, month, day, hour, minute, second] = dateArray;
             const date = new Date(year, month - 1, day, hour, minute, second);
@@ -37,9 +49,7 @@ const AdminOrders = () => {
                 hour: '2-digit',
                 minute: '2-digit'
             });
-        }
-        // Si la fecha viene como string ISO
-        else if (typeof dateArray === 'string') {
+        } else if (typeof dateArray === 'string') {
             const date = new Date(dateArray);
             return date.toLocaleString('es-AR', {
                 year: 'numeric',
@@ -96,7 +106,7 @@ const AdminOrders = () => {
                                         <div>
                                             <div>{order.customer.email}</div>
                                             <div className="text-sm text-gray-500">
-                                                {order.customer.phoneNumber}
+                                                {order.customer.phoneNumber || 'No phone'}
                                             </div>
                                         </div>
                                     ) : 'N/A'}
@@ -116,7 +126,7 @@ const AdminOrders = () => {
                                 <td className="px-6 py-4">${order.total.toFixed(2)}</td>
                                 <td className="px-6 py-4">
                                     <button
-                                        onClick={() => {/* Implementar vista de detalles */}}
+                                        onClick={() => handleOpenModal(order)}
                                         className="text-blue-600 hover:text-blue-800 mr-2"
                                     >
                                         Details
@@ -127,6 +137,14 @@ const AdminOrders = () => {
                     </tbody>
                 </table>
             </div>
+
+            {selectedOrder && (
+                <OrderDetailsModal
+                    order={selectedOrder}
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                />
+            )}
         </div>
     );
 };
