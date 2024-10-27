@@ -1,10 +1,11 @@
 'use client'
 import { useEffect, useState } from 'react';
-import { withAdmin } from "@/hoc/isAdmin";
+import { withAdmin } from '@/hoc/isAdmin';
 import OrderService from '@/services/OrderService';
 import { OrderResponse } from '@/interfaces/data.interfaces';
 import { toast } from 'react-toastify';
 import OrderDetailsModal from '@/components/organisms/OrderDetailsModal';
+import { Package, Truck, Calendar, Mail, Clock, DollarSign } from 'lucide-react';
 
 const AdminOrders = () => {
     const [orders, setOrders] = useState<OrderResponse[]>([]);
@@ -46,8 +47,6 @@ const AdminOrders = () => {
                 year: 'numeric',
                 month: 'numeric',
                 day: 'numeric',
-                // hour: '2-digit',
-                // minute: '2-digit'
             });
         } else if (typeof dateArray === 'string') {
             const date = new Date(dateArray);
@@ -55,12 +54,36 @@ const AdminOrders = () => {
                 year: 'numeric',
                 month: 'numeric',
                 day: 'numeric',
-                // hour: '2-digit',
-                // minute: '2-digit'
             });
         }
         return 'Fecha no disponible';
     };
+
+    const getStatusStyles = (status: string) => {
+        const baseStyles = "px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 w-fit";
+        switch (status) {
+            case 'COMPLETED':
+                return `${baseStyles} bg-green-100 text-green-800 border border-green-200`;
+            case 'PENDING':
+                return `${baseStyles} bg-yellow-100 text-yellow-800 border border-yellow-200`;
+            case 'CANCELLED':
+                return `${baseStyles} bg-red-100 text-red-800 border border-red-200`;
+            default:
+                return `${baseStyles} bg-blue-100 text-blue-800 border border-blue-200`;
+        }
+    };
+
+    const getShippingStatus = (status: string) => {
+        switch (status) {
+            case 'LOCAL_PICKUP':
+                return 'Local Pickup';
+            case 'HOME_DELIVERY':
+                return 'Home Delivery';
+            default:
+                return 'N/A';
+        }
+    };
+    
 
     if (loading) {
         return (
@@ -71,71 +94,86 @@ const AdminOrders = () => {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-8">Orders Management</h1>
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
+            <div className="flex items-center justify-between mb-8">
+                <h1 className="text-3xl font-bold text-gray-800">Orders Management</h1>
+                <span className="text-sm text-gray-500">Total Orders: {orders.length}</span>
+            </div>
             
-            <div className="overflow-x-auto">
-                <table className="min-w-full bg-white shadow-md rounded-lg">
-                    <thead className="bg-gray-100">
-                        <tr>
-                            {/* <th className="px-6 py-3 text-left">Order ID</th> */}
-                            <th className="px-6 py-3 text-left">Date</th>
-                            {/* <th className="px-6 py-3 text-left">Customer</th> */}
-                            <th className="px-6 py-3 text-left">Contact</th>
-                            <th className="px-6 py-3 text-left">Status</th>
-                            {/* <th className="px-6 py-3 text-left">Payment</th> */}
-                            <th className="px-6 py-3 text-left">Shipping</th>
-                            <th className="px-6 py-3 text-left">Total</th>
-                            <th className="px-6 py-3 text-left">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {orders.map((order) => (
-                            <tr key={order.id} className="border-b hover:bg-gray-50">
-                                {/* <td className="px-6 py-4">{order.id}</td> */}
-                                <td className="px-6 py-4">
-                                    {formatDate(order.date)}
-                                </td>
-                                {/* <td className="px-6 py-4">
-                                    {order.customer ? (
-                                        `${order.customer.firstName} ${order.customer.lastName}`
-                                    ) : 'N/A'}
-                                </td> */}
-                                <td className="px-6 py-4">
-                                    {order.customer ? (
-                                        <div>
-                                            <div>{order.customer.email}</div>
-                                            {/* <div className="text-sm text-gray-500">
-                                                {order.customer.phoneNumber || 'No phone'}
-                                            </div> */}
+            <div className="grid gap-6">
+                {orders.map((order) => (
+                    <div key={order.id} 
+                         className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200 overflow-hidden">
+                        <div className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 items-center">
+                                {/* Date Column */}
+                                <div className="flex items-center gap-4">
+                                    <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                                    <div className="min-w-[120px]">
+                                        <div className="text-sm font-medium text-gray-600">Date</div>
+                                        <div className="text-gray-900">{formatDate(order.date)}</div>
+                                    </div>
+                                </div>
+
+                                {/* Customer Contact */}
+                                <div className="flex items-center gap-8">
+                                    <Mail className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                                    <div className="min-w-[140px]">
+                                        <div className="text-sm font-medium text-gray-600">Customer</div>
+                                        <div className="text-gray-900 truncate max-w-[180px]">
+                                            {order.customer?.email || 'N/A'}
                                         </div>
-                                    ) : 'N/A'}
-                                </td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 rounded-full text-sm ${
-                                        order.status === 'COMPLETED' ? 'bg-green-200 text-green-800' :
-                                        order.status === 'PENDING' ? 'bg-yellow-200 text-yellow-800' :
-                                        order.status === 'CANCELLED' ? 'bg-red-200 text-red-800' :
-                                        'bg-blue-200 text-blue-800'
-                                    }`}>
-                                        {order.status}
-                                    </span>
-                                </td>
-                                {/* <td className="px-6 py-4">{order.paymentMethodName}</td> */}
-                                <td className="px-6 py-4">{order.shippingName}</td>
-                                <td className="px-6 py-4">${order.total.toFixed(2)}</td>
-                                <td className="px-6 py-4">
+                                    </div>
+                                </div>
+
+                                {/* Status */}
+                                <div className="flex items-center gap-4">
+                                    <Clock className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                                    <div className="min-w-[100px]">
+                                        <div className="text-sm font-medium text-gray-600">Status</div>
+                                        <div className={getStatusStyles(order.status)}>
+                                            {order.status}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Shipping */}
+                                <div className="flex items-center gap-4">
+                                    <Truck className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                                    <div className="min-w-[120px]">
+                                        <div className="text-sm font-medium text-gray-600">Shipping</div>
+                                        <div className="text-gray-900">
+                                            {getShippingStatus(order.shippingName)}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Total */}
+                                <div className="flex items-center gap-4">
+                                    <DollarSign className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                                    <div className="min-w-[80px]">
+                                        <div className="text-sm font-medium text-gray-600">Total</div>
+                                        <div className="text-gray-900 font-medium">
+                                            ${order.total.toFixed(2)}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Actions */}
+                                <div className="flex justify-end">
                                     <button
                                         onClick={() => handleOpenModal(order)}
-                                        className="text-blue-600 hover:text-blue-800 mr-2"
+                                        className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:text-blue-800 
+                                                 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors duration-200"
                                     >
-                                        Details
+                                        <Package className="w-4 h-4" />
+                                        View Details
                                     </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
 
             {selectedOrder && (
