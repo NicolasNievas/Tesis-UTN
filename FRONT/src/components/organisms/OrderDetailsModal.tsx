@@ -1,6 +1,7 @@
 import React from 'react';
 import { OrderResponse } from '@/interfaces/data.interfaces';
 import Line from '../atoms/Line';
+import { User, Mail, Phone, MapPin, Building } from 'lucide-react';
 
 interface OrderDetailsModalProps {
     order: OrderResponse;
@@ -144,26 +145,70 @@ const OrderDetailsModal = ({ order, onClose, isOpen }: OrderDetailsModalProps) =
                     {/* Customer Info */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-semibold text-white">Customer Information</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-gray-700 p-4 rounded-lg hover:bg-gray-600 transition-colors">
+                        <div className="grid grid-cols-2 gap-6">
+                            {/* Name */}
+                            <div className="bg-gray-700 p-4 rounded-lg flex items-center space-x-4 hover:bg-gray-600 transition-colors">
+                                <div className="flex-shrink-0 text-indigo-400">
+                                    <User size={24} />
+                                </div>
+                                <div>
                                 <p className="text-sm font-medium text-gray-300">Name</p>
-                                <p className="text-white">{order.customer.firstName} {order.customer.lastName}</p>
+                                <p className="text-base text-white">
+                                    {order.customer.firstName} {order.customer.lastName}
+                                </p>
+                                </div>
                             </div>
-                            <div className="bg-gray-700 p-4 rounded-lg hover:bg-gray-600 transition-colors">
-                                <p className="text-sm font-medium text-gray-300">Email</p>
-                                <p className="text-white">{order.customer.email}</p>
+                            
+                            {/* Email */}
+                            <div className="bg-gray-700 p-4 rounded-lg flex items-center space-x-4 hover:bg-gray-600 transition-colors">
+                                <div className="flex-shrink-0 text-blue-400">
+                                    <Mail size={24} />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-300">Email</p>
+                                    <p className="text-base text-white truncate max-w-[250px]">
+                                        {order.customer.email}
+                                    </p>
+                                </div>
                             </div>
-                            <div className="bg-gray-700 p-4 rounded-lg hover:bg-gray-600 transition-colors">
-                                <p className="text-sm font-medium text-gray-300">Phone</p>
-                                <p className="text-white">{order.customer.phoneNumber || 'Not provided'}</p>
+                            
+                            {/* Phone */}
+                            <div className="bg-gray-700 p-4 rounded-lg flex items-center space-x-4 hover:bg-gray-600 transition-colors">
+                                <div className="flex-shrink-0 text-green-400">
+                                    <Phone size={24} />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-300">Phone</p>
+                                    <p className="text-base text-white">
+                                        {order.customer.phoneNumber || 'Not provided'}
+                                    </p>
+                                </div>
                             </div>
-                            <div className="bg-gray-700 p-4 rounded-lg hover:bg-gray-600 transition-colors">
-                                <p className="text-sm font-medium text-gray-300">Address</p>
-                                <p className="text-white">{order.customer.address}</p>
+
+                            {/* Address */}
+                            <div className="bg-gray-700 p-4 rounded-lg flex items-center space-x-4 hover:bg-gray-600 transition-colors">
+                                <div className="flex-shrink-0 text-orange-400">
+                                    <MapPin size={24} />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-300">Address</p>
+                                    <p className="text-base text-white">
+                                        {order.customer.address}
+                                    </p>
+                                </div>
                             </div>
-                            <div className="bg-gray-700 p-4 rounded-lg hover:bg-gray-600 transition-colors">
-                                <p className="text-sm font-medium text-gray-300">City</p>
-                                <p className="text-white">{order.customer.city}</p>
+
+                            {/* City */}
+                            <div className="bg-gray-700 p-4 rounded-lg flex items-center space-x-4 hover:bg-gray-600 transition-colors">
+                                <div className="flex-shrink-0 text-purple-400">
+                                    <Building size={24} />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-300">City</p>
+                                    <p className="text-base text-white">
+                                        {order.customer.city}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
