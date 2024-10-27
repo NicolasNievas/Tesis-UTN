@@ -42,4 +42,10 @@ public class OrderEntity {
     @ManyToOne
     @JoinColumn(name = "shipping_id", nullable = false)
     private ShippingEntity shipping;
+
+    @Column(name = "mercadopago_order_id")
+    private String mercadoPagoOrderId;  // Para guardar el ID de la orden de MP
+
+    @Column(name = "payment_id")
+    private String paymentId;  // Para guardar el ID del pago de MP
 }

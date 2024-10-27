@@ -40,7 +40,7 @@ const OrderDetailsModal = ({ order, onClose, isOpen }: OrderDetailsModalProps) =
             <div className="bg-gray-800 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto text-white">
                 {/* Header */}
                 <div className="p-6 border-b border-gray-700 flex justify-between items-center sticky top-0 bg-gray-800">
-                    <h2 className="text-2xl font-bold text-white">Order Details #{order.id}</h2>
+                    <h2 className="text-2xl font-bold text-white">Order Details #{order.mercadoPagoOrderId}</h2>
                 </div>
 
                 {/* Content */}
@@ -164,9 +164,9 @@ const OrderDetailsModal = ({ order, onClose, isOpen }: OrderDetailsModalProps) =
                                     {order.details.map((detail) => (
                                         <tr key={detail.id} className="hover:bg-gray-600 transition-colors">
                                             <td className="px-6 py-4">
-                                                {detail.productImage ? (
+                                                {detail.imageUrl ? (
                                                     <img
-                                                        src={detail.productImage}
+                                                        src={detail.imageUrl}
                                                         alt={detail.productName}
                                                         className="h-16 w-16 object-cover rounded"
                                                     />

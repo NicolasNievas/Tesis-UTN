@@ -46,8 +46,8 @@ const AdminOrders = () => {
                 year: 'numeric',
                 month: 'numeric',
                 day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
+                // hour: '2-digit',
+                // minute: '2-digit'
             });
         } else if (typeof dateArray === 'string') {
             const date = new Date(dateArray);
@@ -55,8 +55,8 @@ const AdminOrders = () => {
                 year: 'numeric',
                 month: 'numeric',
                 day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
+                // hour: '2-digit',
+                // minute: '2-digit'
             });
         }
         return 'Fecha no disponible';
@@ -80,10 +80,10 @@ const AdminOrders = () => {
                         <tr>
                             {/* <th className="px-6 py-3 text-left">Order ID</th> */}
                             <th className="px-6 py-3 text-left">Date</th>
-                            <th className="px-6 py-3 text-left">Customer</th>
+                            {/* <th className="px-6 py-3 text-left">Customer</th> */}
                             <th className="px-6 py-3 text-left">Contact</th>
                             <th className="px-6 py-3 text-left">Status</th>
-                            <th className="px-6 py-3 text-left">Payment</th>
+                            {/* <th className="px-6 py-3 text-left">Payment</th> */}
                             <th className="px-6 py-3 text-left">Shipping</th>
                             <th className="px-6 py-3 text-left">Total</th>
                             <th className="px-6 py-3 text-left">Actions</th>
@@ -96,18 +96,18 @@ const AdminOrders = () => {
                                 <td className="px-6 py-4">
                                     {formatDate(order.date)}
                                 </td>
-                                <td className="px-6 py-4">
+                                {/* <td className="px-6 py-4">
                                     {order.customer ? (
                                         `${order.customer.firstName} ${order.customer.lastName}`
                                     ) : 'N/A'}
-                                </td>
+                                </td> */}
                                 <td className="px-6 py-4">
                                     {order.customer ? (
                                         <div>
                                             <div>{order.customer.email}</div>
-                                            <div className="text-sm text-gray-500">
+                                            {/* <div className="text-sm text-gray-500">
                                                 {order.customer.phoneNumber || 'No phone'}
-                                            </div>
+                                            </div> */}
                                         </div>
                                     ) : 'N/A'}
                                 </td>
@@ -121,7 +121,7 @@ const AdminOrders = () => {
                                         {order.status}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4">{order.paymentMethodName}</td>
+                                {/* <td className="px-6 py-4">{order.paymentMethodName}</td> */}
                                 <td className="px-6 py-4">{order.shippingName}</td>
                                 <td className="px-6 py-4">${order.total.toFixed(2)}</td>
                                 <td className="px-6 py-4">

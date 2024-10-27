@@ -44,6 +44,8 @@ public class OrderServiceImp implements OrderService {
         order.setCustomer(userEntity);
         order.setDate(LocalDateTime.now());
         order.setStatus(orderRequest.getStatus());
+        order.setPaymentId(orderRequest.getPaymentId());
+        order.setMercadoPagoOrderId(orderRequest.getMercadoPagoOrderId());
 
         PaymentMethodEntity paymentMethod = paymentMethodRepository.findById(orderRequest.getPaymentMethodId())
                 .orElseThrow(() -> new RuntimeException("Método de pago no encontrado"));
@@ -119,6 +121,9 @@ public class OrderServiceImp implements OrderService {
                         .quantity(detail.getQuantity())
                         .price(detail.getPrice())
                         .subtotal(detail.getPrice().multiply(BigDecimal.valueOf(detail.getQuantity())))
+                        .imageUrl(detail.getProduct().getImageUrls() != null && !detail.getProduct().getImageUrls().isEmpty()
+                                ? detail.getProduct().getImageUrls().get(0)
+                                : null)
                         .build())
                 .collect(Collectors.toList());
 
@@ -135,6 +140,8 @@ public class OrderServiceImp implements OrderService {
                 .customer(customerInfo)
                 .total(total)
                 .details(details)
+                .paymentId(order.getPaymentId())
+                .mercadoPagoOrderId(order.getMercadoPagoOrderId())
                 .build();
     }
 }

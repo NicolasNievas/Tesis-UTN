@@ -132,6 +132,8 @@ export interface Cart {
 
 export interface OrderResponse {
   id: number;
+  paymentId: string;
+  mercadoPagoOrderId: string;
   date: number[] | string; 
   status: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCELLED';
   paymentMethodName: string;
@@ -147,7 +149,7 @@ export interface OrderDetailResponse {
   quantity: number;
   price: number;
   subtotal: number;
-  productImage?: string;
+  imageUrl?: string;
 }
 
 export enum OrderStatus {

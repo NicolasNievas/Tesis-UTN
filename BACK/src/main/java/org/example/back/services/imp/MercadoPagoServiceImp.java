@@ -155,6 +155,7 @@ public class MercadoPagoServiceImp implements MercadoPagoService {
 
                 String status = paymentData.path("status").asText();
                 String externalReference = paymentData.path("external_reference").asText();
+                String mercadoPagoOrderId = paymentData.path("order").path("id").asText();
 
                 String paymentMethodId = paymentData.path("payment_method_id").asText();
                 String paymentTypeId = paymentData.path("payment_type_id").asText();
@@ -205,6 +206,8 @@ public class MercadoPagoServiceImp implements MercadoPagoService {
                     orderRequest.setShippingId(1L); // ID por defecto del método de envío
                     orderRequest.setTransactionAmount(transactionAmount);
                     orderRequest.setPaymentMethodDetail(paymentMethodId + " - " + paymentTypeId);
+                    orderRequest.setPaymentId(dataId);
+                    orderRequest.setMercadoPagoOrderId(mercadoPagoOrderId);
 
                     // Mapear estado
                     switch (status) {

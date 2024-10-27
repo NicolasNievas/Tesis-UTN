@@ -13,6 +13,7 @@ public class OrderRequest {
     private Long paymentMethodId;
     private Long shippingId;
     private String paymentId;
+    private String mercadoPagoOrderId;
     private OrderStatus status;
     private List<OrderDetailRequest> details;
     private double transactionAmount;
