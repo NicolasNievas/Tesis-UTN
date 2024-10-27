@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.back.dtos.response.OrderDetailResponse;
 import org.example.back.dtos.response.OrderResponse;
 import org.example.back.entities.*;
+import org.example.back.models.CustomerInfo;
 import org.example.back.models.OrderDetailRequest;
 import org.example.back.models.OrderRequest;
 import org.example.back.models.User;
@@ -90,7 +91,25 @@ public class OrderServiceImp implements OrderService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<OrderResponse> getAllOrders() {
+        List<OrderEntity> orders = orderRepository.findAll();
+        return orders.stream()
+                .map(this::convertToOrderResponse)
+                .collect(Collectors.toList());
+    }
+
     private OrderResponse convertToOrderResponse(OrderEntity order) {
+        CustomerInfo customerInfo = null;
+        if (order.getCustomer() != null) {
+            customerInfo = CustomerInfo.builder()
+                    .firstName(order.getCustomer().getFirstName())
+                    .lastName(order.getCustomer().getLastName())
+                    .email(order.getCustomer().getEmail())
+                    .phoneNumber(order.getCustomer().getPhoneNumber())
+                    .build();
+        }
+
         List<OrderDetailResponse> details = order.getDetails().stream()
                 .map(detail -> OrderDetailResponse.builder()
                         .id(detail.getId())
@@ -111,6 +130,7 @@ public class OrderServiceImp implements OrderService {
                 .status(order.getStatus())
                 .paymentMethodName(order.getPaymentMethod().getName())
                 .shippingName(order.getShipping().getName())
+                .customer(customerInfo)
                 .total(total)
                 .details(details)
                 .build();

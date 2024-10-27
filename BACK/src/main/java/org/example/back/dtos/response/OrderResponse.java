@@ -2,6 +2,7 @@ package org.example.back.dtos.response;
 
 import lombok.*;
 import org.example.back.entities.OrderStatus;
+import org.example.back.models.CustomerInfo;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -18,5 +19,7 @@ public class OrderResponse {
     private String paymentMethodName;
     private String shippingName;
     private BigDecimal total;
+    private String mercadoPagoOrderId;
+    private CustomerInfo customer;
     private List<OrderDetailResponse> details;
 }

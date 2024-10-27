@@ -10,4 +10,5 @@ import java.util.List;
 public interface OrderService {
     OrderResponse createOrder (OrderRequest orderRequest, String userEmail);
     List<OrderResponse> getUserOrders();
+    List<OrderResponse> getAllOrders();
 }
