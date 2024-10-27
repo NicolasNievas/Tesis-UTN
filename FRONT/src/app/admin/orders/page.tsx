@@ -32,7 +32,7 @@ const AdminOrders = () => {
             const date = new Date(year, month - 1, day, hour, minute, second);
             return date.toLocaleString('es-AR', {
                 year: 'numeric',
-                month: 'long',
+                month: 'numeric',
                 day: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit'
@@ -43,7 +43,7 @@ const AdminOrders = () => {
             const date = new Date(dateArray);
             return date.toLocaleString('es-AR', {
                 year: 'numeric',
-                month: 'long',
+                month: 'numeric',
                 day: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit'
@@ -68,7 +68,7 @@ const AdminOrders = () => {
                 <table className="min-w-full bg-white shadow-md rounded-lg">
                     <thead className="bg-gray-100">
                         <tr>
-                            <th className="px-6 py-3 text-left">Order ID</th>
+                            {/* <th className="px-6 py-3 text-left">Order ID</th> */}
                             <th className="px-6 py-3 text-left">Date</th>
                             <th className="px-6 py-3 text-left">Customer</th>
                             <th className="px-6 py-3 text-left">Contact</th>
@@ -82,7 +82,7 @@ const AdminOrders = () => {
                     <tbody>
                         {orders.map((order) => (
                             <tr key={order.id} className="border-b hover:bg-gray-50">
-                                <td className="px-6 py-4">{order.id}</td>
+                                {/* <td className="px-6 py-4">{order.id}</td> */}
                                 <td className="px-6 py-4">
                                     {formatDate(order.date)}
                                 </td>
