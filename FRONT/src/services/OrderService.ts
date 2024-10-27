@@ -1,12 +1,21 @@
 import axios from 'axios';
 import { OrderResponse } from '@/interfaces/data.interfaces';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL_ADMIN;
+const $URLADMIN = process.env.NEXT_PUBLIC_API_URL_ADMIN;
+const $URL = process.env.NEXT_PUBLIC_API_URL_ORDERS;
 
 class OrderService {
     static async getAllOrders(): Promise<OrderResponse[]> {
         try {
-            const response = await axios.get(`${API_URL}/orders`);
+            const response = await axios.get(`${$URLADMIN}/orders`);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+    static async getUserOrders(): Promise<OrderResponse[]> {
+        try {
+            const response = await axios.get(`${$URL}/get`);
             return response.data;
         } catch (error) {
             throw error;
