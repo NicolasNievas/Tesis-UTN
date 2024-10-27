@@ -10,19 +10,19 @@ const AccountMenu: React.FC = () => {
     const { logout } = useAuthContext();
 
     return (
-        <nav className="account-sidebar w-64 bg-gray-200 text-black flex flex-col p-4 min-h-screen">
-            <h2 className="text-2xl font-bold mb-6">Account</h2>
-            <ul className="space-y-4 flex-grow">
+        <nav className="account-sidebar w-64 bg-gray-bg text-black flex flex-col p-6 min-h-screen shadow-lg">
+            <h2 className="text-3xl font-bold mb-8 text-black-btn">Account</h2>
+            <ul className="space-y-6 flex-grow">
                 <li>
                     <Link href="/account/profile">
-                        <span className={pathname === '/account/profile' ? 'font-bold' : ''}>
+                        <span className={`block p-3 rounded-md transition-colors duration-200 cursor-pointer ${pathname === '/account/profile' ? 'bg-blue text-white' : 'hover:bg-gray-200'}`}>
                             Profile
                         </span>
                     </Link>
                 </li>
                 <li>
                     <Link href="/account/orders">
-                        <span className={pathname === '/account/orders' ? 'font-bold' : ''}>
+                        <span className={`block p-3 rounded-md transition-colors duration-200 cursor-pointer ${pathname === '/account/orders' ? 'bg-blue text-white' : 'hover:bg-gray-200'}`}>
                             Orders
                         </span>
                     </Link>
@@ -31,7 +31,7 @@ const AccountMenu: React.FC = () => {
             <div className="mt-auto">
                 <Button
                     name="Log out"
-                    className='w-full p-2 h-auto  bg-black-btn hover:bg-black-hover hover:text-white text-gray-bg-light'
+                    className='w-full p-3 h-auto bg-black-btn hover:bg-black-hover hover:text-white text-white rounded-md'
                     onClick={() => {
                         logout();
                         router.push('/');
