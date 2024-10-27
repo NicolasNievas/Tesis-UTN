@@ -93,7 +93,7 @@ public class OrderServiceImp implements OrderService {
 
     @Override
     public List<OrderResponse> getAllOrders() {
-        List<OrderEntity> orders = orderRepository.findAll();
+        List<OrderEntity> orders = orderRepository.findAllByOrderByDateDesc();
         return orders.stream()
                 .map(this::convertToOrderResponse)
                 .collect(Collectors.toList());
