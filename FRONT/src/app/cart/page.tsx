@@ -74,6 +74,10 @@ const CartPage: React.FC = () => {
     return <p> <LoadingSpinner /> </p>;
   }
 
+  const handleCheckoutClick = () => {
+    toast.info('This functionality is not implemented yet.');
+  };
+
   return (
     <div className="container mx-auto h-screen py-8">
       <h2 className="text-2xl font-semibold mb-4">Cart</h2>
