@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 import useAdminApi from "@/hooks/UseAdminApi";
 import Swal from "sweetalert2";
 import { withAdmin } from "@/hoc/isAdmin";
+import Line from "@/components/atoms/Line";
 
 const AdminProductsPage: React.FC = () => {
     const { data: products, loading, error } = useAdminApi<IProductData[]>('/products/allProducts');
@@ -151,6 +152,7 @@ const AdminProductsPage: React.FC = () => {
     return (
         <main className="container mx-auto px-4 py-8" style={{ minHeight: "100vh" }}>
             <h1 className="text-3xl flex justify-center font-semibold text-gray-800 mb-6">Admin Products</h1>
+            <Line />
             <div className="mb-6 flex items-center space-x-4">
                 <select
                     value={selectedBrand?.toString() || ""}

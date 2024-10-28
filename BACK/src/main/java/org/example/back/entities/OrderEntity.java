@@ -3,6 +3,7 @@ package org.example.back.entities;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -24,6 +25,7 @@ public class OrderEntity {
     private UserEntity customer;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
     private Set<OrderDetailEntity> details;
 
     @Column(nullable = false)
@@ -40,4 +42,10 @@ public class OrderEntity {
     @ManyToOne
     @JoinColumn(name = "shipping_id", nullable = false)
     private ShippingEntity shipping;
+
+    @Column(name = "mercadopago_order_id")
+    private String mercadoPagoOrderId;  // Para guardar el ID de la orden de MP
+
+    @Column(name = "payment_id")
+    private String paymentId;  // Para guardar el ID del pago de MP
 }

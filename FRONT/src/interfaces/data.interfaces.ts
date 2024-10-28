@@ -127,3 +127,43 @@ export interface Cart {
   items: CartItem[];
   total: number;
 }
+
+// Order Interfaces
+
+export interface OrderResponse {
+  id: number;
+  paymentId: string;
+  mercadoPagoOrderId: string;
+  date: number[] | string; 
+  status: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCELLED';
+  paymentMethodName: string;
+  shippingName: string;
+  customer: CustomerInfo;
+  total: number;
+  details: OrderDetailResponse[];
+}
+
+export interface OrderDetailResponse {
+  id: number;
+  productName: string;
+  quantity: number;
+  price: number;
+  subtotal: number;
+  imageUrl?: string;
+}
+
+export enum OrderStatus {
+  PENDING = 'PENDING',
+  IN_PROCESS = 'IN_PROCESS',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED'
+}
+
+export interface CustomerInfo {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  address: string;
+  city: string;
+}

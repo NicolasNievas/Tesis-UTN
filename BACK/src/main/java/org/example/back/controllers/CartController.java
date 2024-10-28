@@ -53,8 +53,8 @@ public class CartController {
     @Operation(summary = "Limpiar carrito", description = "Elimina todos los productos del carrito del usuario autenticado")
     @ApiResponse(responseCode = "204", description = "Carrito limpiado exitosamente")
     @ApiResponse(responseCode = "401", description = "No autorizado")
-    public ResponseEntity<Void> clearCart() {
-        cartService.clearCart();
+    public ResponseEntity<Void> clearCart(@RequestParam("email") String email) {
+        cartService.clearCart(email);
         return ResponseEntity.noContent().build();
     }
 }

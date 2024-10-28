@@ -1,19 +1,24 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuthContext } from '@/context/data.context';
-import Link from 'next/link';
 import Button from "@/components/atoms/Button";
 import Line from "@/components/atoms/Line";
 import { useRouter } from 'next/navigation';
 import LoadingSpinner from '@/components/atoms/LoadingSpinner';
 import { toast } from 'react-toastify';
+import { Wallet } from '@mercadopago/sdk-react';
+import MercadoPagoService from '@/services/MercadoPagoService';
 
 const SHIPPING_COST = 0;
 
 const CartPage: React.FC = () => {
   const { cart, getCart, isAuthenticated, cartLoading, updateCartItem, removeFromCart } = useAuthContext();
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [preferenceId, setPreferenceId] = useState<string | null>(null);
+  const [isDisabled, setIsDisabled] = useState<boolean>(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -35,7 +40,6 @@ const CartPage: React.FC = () => {
     }
   };
 
-
   const handleQuantityChange = async (productId: number, quantity: number) => {
     await updateCartItem(productId, quantity);
   };
@@ -46,6 +50,24 @@ const CartPage: React.FC = () => {
 
   const calculateTotal = () => {
     return calculateSubtotal() + SHIPPING_COST;
+  };
+
+  const initiatePayment = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await MercadoPagoService.initiatePayment();
+      if (data.preferenceId) {
+        setPreferenceId(data.preferenceId);
+        setIsDisabled(true); 
+      } else {
+        throw new Error('Failed to create payment preference');
+      }
+    } catch (err) {
+      setError('Error initiating payment. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (cartLoading) {
@@ -122,10 +144,17 @@ const CartPage: React.FC = () => {
               <p className="text-lg">Total <span className="float-right">${calculateTotal()}</span></p>
               <Line />
               <Button 
-              name="Go to Checkout" 
-              className='w-full h-[90px] p-2 h-auto text-xl bg-black-btn hover:bg-black-hover hover:text-white text-gray-bg-light'
-              onClick={handleCheckoutClick}
+                name={loading ? 'Processing...' : 'Go to Checkout'}
+                onClick={initiatePayment} 
+                isDisabled={isDisabled} 
+                className='w-full h-[90px] p-2 h-auto text-xl bg-black-btn hover:bg-black-hover hover:text-white text-gray-bg-light rounded-md mt-4'
               />
+              {error && <p style={{ color: 'red' }}>{error}</p>}
+              {preferenceId && (
+                <div id="wallet_container">
+                  <Wallet initialization={{ preferenceId }} customization={{ texts: { valueProp: 'smart_option' } }} />
+                </div>
+              )}
             </div>
           </div>
         </div>
