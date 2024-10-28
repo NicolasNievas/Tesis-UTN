@@ -87,7 +87,7 @@ public class OrderServiceImp implements OrderService {
     @Override
     public List<OrderResponse> getUserOrders() {
         User currentUser = userService.getCurrentUser();
-        List<OrderEntity> orders = orderRepository.findByCustomerId(currentUser.getId());
+        List<OrderEntity> orders = orderRepository.findByCustomerIdOrderByDateDesc(currentUser.getId());
         return orders.stream()
                 .map(this::convertToOrderResponse)
                 .collect(Collectors.toList());
