@@ -7,9 +7,8 @@ const $URL = process.env.NEXT_PUBLIC_API_URL_ORDERS;
 class OrderService {
     static async getAllOrders(
         page: number = 0,
-        size: number = 10,
-        startDate?: string,
-        endDate?: string,
+        size: number = 5,
+        
         status?: string
     ): Promise<PaginatedResponse<OrderResponse>> {
         try {
@@ -19,12 +18,7 @@ class OrderService {
             });
             
             // Only add dates if they're not empty
-            if (startDate && startDate.trim() !== '') {
-                params.append('startDate', startDate);
-            }
-            if (endDate && endDate.trim() !== '') {
-                params.append('endDate', endDate);
-            }
+            
             if (status && status !== 'ALL') {
                 params.append('status', status);
             }

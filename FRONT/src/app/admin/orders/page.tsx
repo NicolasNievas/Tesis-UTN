@@ -18,7 +18,7 @@ const AdminOrders = () => {
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
-    const pageSize = 10;
+    const pageSize = 5;
     
     // Filter states
     const [startDate, setStartDate] = useState('');
@@ -38,8 +38,6 @@ const AdminOrders = () => {
             const response = await OrderService.getAllOrders(
                 currentPage,
                 pageSize,
-                startDate || undefined,
-                endDate || undefined,
                 selectedStatus === 'ALL' ? undefined : selectedStatus
             );
             setOrders(response.content);

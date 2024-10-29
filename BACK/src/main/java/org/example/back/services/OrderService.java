@@ -14,5 +14,5 @@ public interface OrderService {
     OrderResponse createOrder (OrderRequest orderRequest, String userEmail);
     List<OrderResponse> getUserOrders();
     List<OrderResponse> getAllOrders();
-   // PageResponse<OrderResponse> getAllOrders(LocalDateTime startDate, LocalDateTime endDate, OrderStatus status, int page, int size);
+   PageResponse<OrderResponse> getAllOrders( OrderStatus status, int page, int size);
 }

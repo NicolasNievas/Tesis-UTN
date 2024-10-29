@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -105,23 +106,15 @@ public class OrderServiceImp implements OrderService {
                 .map(this::convertToOrderResponse)
                 .collect(Collectors.toList());
     }
-   /* @Override
+    @Override
     public PageResponse<OrderResponse> getAllOrders(
-            LocalDateTime startDate,
-            LocalDateTime endDate,
+
             OrderStatus status,
             int page,
             int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-
-        // Use actual null values for the repository query
-        Page<OrderEntity> orderPage = orderRepository.findOrdersByFilters(
-                startDate,
-                endDate,
-                status,
-                pageable
-        );
+        Page<OrderEntity> orderPage = orderRepository.findOrdersByFilters(status, pageable);
 
         List<OrderResponse> orders = orderPage.getContent().stream()
                 .map(this::convertToOrderResponse)
@@ -135,7 +128,7 @@ public class OrderServiceImp implements OrderService {
                 .totalPages(orderPage.getTotalPages())
                 .build();
     }
-  */
+
     private OrderResponse convertToOrderResponse(OrderEntity order) {
         CustomerInfo customerInfo = null;
         if (order.getCustomer() != null) {
