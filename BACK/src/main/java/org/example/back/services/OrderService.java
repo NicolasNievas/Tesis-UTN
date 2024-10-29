@@ -14,4 +14,5 @@ public interface OrderService {
     List<OrderResponse> getUserOrders();
     List<OrderResponse> getAllOrders();
    PageResponse<OrderResponse> getAllOrders( OrderStatus status, int page, int size);
+   OrderResponse updateOrderStatus(Long orderId, OrderStatus status);
 }

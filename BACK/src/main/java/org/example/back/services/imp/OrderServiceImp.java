@@ -127,6 +127,29 @@ public class OrderServiceImp implements OrderService {
                 .build();
     }
 
+    @Override
+    @Transactional
+    public OrderResponse updateOrderStatus(Long orderId, OrderStatus status) {
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada con ID: " + orderId));
+        validateStatusTransition(order.getStatus(), status);
+
+        order.setStatus(status);
+        OrderEntity updatedOrder = orderRepository.save(order);
+        return convertToOrderResponse(updatedOrder);
+    }
+
+    private void validateStatusTransition(OrderStatus currentStatus, OrderStatus newStatus) {
+        if (currentStatus == OrderStatus.COMPLETED &&
+                (newStatus == OrderStatus.IN_PROCESS || newStatus == OrderStatus.PENDING)) {
+            throw new RuntimeException("No se puede cambiar el estado de una orden completada a " + newStatus);
+        }
+
+        if (currentStatus == OrderStatus.CANCELLED && newStatus != OrderStatus.PENDING){
+            throw new RuntimeException("No se puede cambiar el estado de una orden cancelada a " + newStatus);
+        }
+    }
+
     private OrderResponse convertToOrderResponse(OrderEntity order) {
         CustomerInfo customerInfo = null;
         if (order.getCustomer() != null) {

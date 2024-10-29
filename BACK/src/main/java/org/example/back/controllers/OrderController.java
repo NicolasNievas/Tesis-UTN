@@ -51,4 +51,22 @@ public class OrderController {
         );
         return ResponseEntity.ok(response);
     }
+    @PutMapping("/admin/orders/{orderId}/status")
+    @Operation(summary = "Update order status (Admin only)",
+            description = "Updates the status of an order. Requires ADMINISTRATOR role.")
+    @ApiResponse(responseCode = "200", description = "Order status updated successfully")
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    @ApiResponse(responseCode = "404", description = "Order not found")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
+    public ResponseEntity<OrderResponse> updateOrderStatus(
+            @PathVariable Long orderId,
+            @RequestParam OrderStatus status
+    ) {
+        try{
+            OrderResponse response = orderService.updateOrderStatus(orderId, status);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
