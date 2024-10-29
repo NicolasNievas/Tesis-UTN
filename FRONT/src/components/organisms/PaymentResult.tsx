@@ -56,12 +56,14 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = ({ type }) => {
   const payment_id = searchParams.get('payment_id') || 'N/A';
   const status = searchParams.get('status') || 'failure';
 
+  const $TOKEN = process.env.NEXT_PUBLIC_MERCADO_PAGO_TOKEN;
+
   useEffect(() => {
     const fetchPaymentDetails = async () => {
       try {
         const response = await fetch(`https://api.mercadopago.com/v1/payments/${payment_id}`, {
           headers: {
-            'Authorization': 'Bearer APP_USR-3381691299265753-101517-1dc718032f38a6d0abf3cb4c3492d9e6-2037404181'
+            'Authorization': `Bearer ${$TOKEN}`
           }
         });
         
