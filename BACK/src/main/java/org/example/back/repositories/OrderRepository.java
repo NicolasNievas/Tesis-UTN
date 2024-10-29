@@ -1,6 +1,7 @@
 package org.example.back.repositories;
 
 import org.example.back.entities.OrderEntity;
+import org.example.back.entities.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,11 +16,15 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     List<OrderEntity> findByCustomerIdOrderByDateDesc(Long customerId);
     List<OrderEntity> findAllByOrderByDateDesc();
-        @Query("SELECT o FROM OrderEntity o WHERE " + "(:startDate IS NULL OR o.date >= :startDate) AND " +
-                        "(:endDate IS NULL OR o.date <= :endDate) AND " + "(:status IS NULL OR o.status = :status) "
-                        + "ORDER BY o.date DESC")
-        Page<OrderEntity> findOrdersByFilters(@Param("startDate") LocalDateTime startDate,
-                        @Param("endDate") LocalDateTime endDate,
-                        @Param("status") String status,
-                        Pageable pageable);
+    @Query("SELECT o FROM OrderEntity o WHERE " +
+            "(:startDate IS NULL OR o.date >= :startDate) AND " +
+            "(:endDate IS NULL OR o.date <= :endDate) AND " +
+            "(:status IS NULL OR o.status = :status) " +
+            "ORDER BY o.date DESC")
+    Page<OrderEntity> findOrdersByFilters(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("status") OrderStatus status,
+            Pageable pageable
+    );
 }

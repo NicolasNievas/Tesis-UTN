@@ -14,8 +14,6 @@ public class PageResponse<T> {
     private int pageSize;
     private long totalElements;
     private int totalPages;
-    private boolean last;
-    private boolean first;
 
     public static <T> PageResponse<T> from(Page<T> page) {
         return PageResponse.<T>builder()
@@ -24,8 +22,6 @@ public class PageResponse<T> {
                 .pageSize(page.getSize())
                 .totalElements(page.getTotalElements())
                 .totalPages(page.getTotalPages())
-                .last(page.isLast())
-                .first(page.isFirst())
                 .build();
     }
 }

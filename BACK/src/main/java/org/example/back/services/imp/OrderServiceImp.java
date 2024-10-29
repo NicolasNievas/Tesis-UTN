@@ -1,6 +1,7 @@
 package org.example.back.services.imp;
 
 import lombok.RequiredArgsConstructor;
+import org.example.back.dtos.PageResponse;
 import org.example.back.dtos.response.OrderDetailResponse;
 import org.example.back.dtos.response.OrderResponse;
 import org.example.back.entities.*;
@@ -12,6 +13,10 @@ import org.example.back.repositories.*;
 import org.example.back.services.CartService;
 import org.example.back.services.OrderService;
 import org.example.back.services.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -100,7 +105,37 @@ public class OrderServiceImp implements OrderService {
                 .map(this::convertToOrderResponse)
                 .collect(Collectors.toList());
     }
+   /* @Override
+    public PageResponse<OrderResponse> getAllOrders(
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            OrderStatus status,
+            int page,
+            int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
 
+        // Use actual null values for the repository query
+        Page<OrderEntity> orderPage = orderRepository.findOrdersByFilters(
+                startDate,
+                endDate,
+                status,
+                pageable
+        );
+
+        List<OrderResponse> orders = orderPage.getContent().stream()
+                .map(this::convertToOrderResponse)
+                .collect(Collectors.toList());
+
+        return PageResponse.<OrderResponse>builder()
+                .content(orders)
+                .pageNumber(orderPage.getNumber())
+                .pageSize(orderPage.getSize())
+                .totalElements(orderPage.getTotalElements())
+                .totalPages(orderPage.getTotalPages())
+                .build();
+    }
+  */
     private OrderResponse convertToOrderResponse(OrderEntity order) {
         CustomerInfo customerInfo = null;
         if (order.getCustomer() != null) {

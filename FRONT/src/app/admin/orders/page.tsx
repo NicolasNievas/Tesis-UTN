@@ -5,7 +5,7 @@ import OrderService from '@/services/OrderService';
 import { OrderResponse } from '@/interfaces/data.interfaces';
 import { toast } from 'react-toastify';
 import OrderDetailsModal from '@/components/organisms/OrderDetailsModal';
-import { Package, Truck, Calendar, Mail, Clock, DollarSign } from 'lucide-react';
+import { Package, Truck, Calendar, Mail, Clock, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
 import Line from '@/components/atoms/Line';
 
 const AdminOrders = () => {
@@ -14,20 +14,54 @@ const AdminOrders = () => {
     const [selectedOrder, setSelectedOrder] = useState<OrderResponse | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalElements, setTotalElements] = useState(0);
+    const pageSize = 10;
+    
+    // Filter states
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [selectedStatus, setSelectedStatus] = useState('');
+
+    const STATUS_OPTIONS = ['ALL', 'PENDING', 'IN_PROCESS', 'COMPLETED', 'CANCELLED'];
+
     useEffect(() => {
         loadOrders();
-    }, []);
+    }, [currentPage, startDate, endDate, selectedStatus]);
 
     const loadOrders = async () => {
         try {
-            const data = await OrderService.getAllOrders();
-            setOrders(data);
+            setLoading(true);
+            // Only pass dates if they're not empty
+            const response = await OrderService.getAllOrders(
+                currentPage,
+                pageSize,
+                startDate || undefined,
+                endDate || undefined,
+                selectedStatus === 'ALL' ? undefined : selectedStatus
+            );
+            setOrders(response.content);
+            setTotalPages(response.totalPages);
+            setTotalElements(response.totalElements);
         } catch (error) {
             toast.error('Error loading orders');
             console.error('Error loading orders:', error);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage);
+    };
+
+    const resetFilters = () => {
+        setStartDate('');
+        setEndDate('');
+        setSelectedStatus('');
+        setCurrentPage(0);
     };
 
     const handleOpenModal = (order: OrderResponse) => {
@@ -99,6 +133,60 @@ const AdminOrders = () => {
             <div className="flex items-center justify-between mb-8">
                 <h1 className="text-3xl font-bold text-gray-800">Orders Management</h1>
                 <span className="text-sm text-gray-500">Total Orders: {orders.length}</span>
+            </div>
+
+            {/* Filters Section */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                        <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => {
+                                setStartDate(e.target.value);
+                                setCurrentPage(0);
+                            }}
+                            className="w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                        <input
+                            type="date"
+                            value={endDate}
+                            onChange={(e) => {
+                                setEndDate(e.target.value);
+                                setCurrentPage(0);
+                            }}
+                            className="w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select
+                            value={selectedStatus}
+                            onChange={(e) => {
+                                setSelectedStatus(e.target.value);
+                                setCurrentPage(0);
+                            }}
+                            className="w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                            {STATUS_OPTIONS.map(status => (
+                                <option key={status} value={status}>{status}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="flex items-end">
+                        <button
+                            onClick={resetFilters}
+                            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 
+                                     bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
+                        >
+                            Reset Filters
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <Line />
@@ -177,6 +265,34 @@ const AdminOrders = () => {
                         </div>
                     </div>
                 ))}
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex items-center justify-between mt-6 bg-white p-4 rounded-lg shadow-sm">
+                <div className="text-sm text-gray-700">
+                    Showing {orders.length} of {totalElements} orders
+                </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 0}
+                        className="p-2 rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed
+                                 hover:bg-gray-50 transition-colors duration-200"
+                    >
+                        <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <span className="text-sm text-gray-700">
+                        Page {currentPage + 1} of {totalPages}
+                    </span>
+                    <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage >= totalPages - 1}
+                        className="p-2 rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed
+                                 hover:bg-gray-50 transition-colors duration-200"
+                    >
+                        <ChevronRight className="w-5 h-5" />
+                    </button>
+                </div>
             </div>
 
             {selectedOrder && (
