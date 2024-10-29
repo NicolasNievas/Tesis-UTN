@@ -1,22 +1,16 @@
 package org.example.back.controllers;
 
-import io.micrometer.common.util.StringUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
-import org.example.back.dtos.PageResponse;
+import org.example.back.dtos.response.PageResponse;
 import org.example.back.dtos.response.OrderResponse;
 import org.example.back.entities.OrderStatus;
 import org.example.back.services.OrderService;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
