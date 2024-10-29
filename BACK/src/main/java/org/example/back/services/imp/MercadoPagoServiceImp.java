@@ -220,6 +220,12 @@ public class MercadoPagoServiceImp implements MercadoPagoService {
                         case "in_process":
                             orderRequest.setStatus(OrderStatus.IN_PROCESS);
                             break;
+                        case "cancelled":
+                            orderRequest.setStatus(OrderStatus.CANCELLED);
+                            break;
+                        case "rejected":
+                            orderRequest.setStatus(OrderStatus.CANCELLED);
+                            break;
                         default:
                             orderRequest.setStatus(OrderStatus.PENDING);
                     }
