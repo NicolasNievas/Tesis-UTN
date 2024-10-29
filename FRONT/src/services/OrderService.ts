@@ -29,6 +29,14 @@ class OrderService {
             throw error;
         }
     }
+    static async getUserOrders(): Promise<OrderResponse[]> {
+        try {
+            const response = await axios.get(`${$URL}/get`);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 export default OrderService;
