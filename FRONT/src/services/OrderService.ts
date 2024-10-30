@@ -8,21 +8,16 @@ class OrderService {
     static async getAllOrders(
         page: number = 0,
         size: number = 5,
-        
-        status?: string
+        status?: string,
     ): Promise<PaginatedResponse<OrderResponse>> {
         try {
             const params = new URLSearchParams({
                 page: page.toString(),
                 size: size.toString()
             });
-            
-            // Only add dates if they're not empty
-            
             if (status && status !== 'ALL') {
                 params.append('status', status);
             }
-            
             const response = await axios.get(`${$URLADMIN}/orders?${params.toString()}`);
             return response.data;
         } catch (error) {

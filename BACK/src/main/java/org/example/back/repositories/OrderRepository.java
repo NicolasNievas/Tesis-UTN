@@ -16,7 +16,6 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     List<OrderEntity> findByCustomerIdOrderByDateDesc(Long customerId);
     List<OrderEntity> findAllByOrderByDateDesc();
     @Query("SELECT o FROM OrderEntity o WHERE " +
-
             "(:status IS NULL OR o.status = :status) " +
             "ORDER BY o.date DESC")
     Page<OrderEntity> findOrdersByFilters(

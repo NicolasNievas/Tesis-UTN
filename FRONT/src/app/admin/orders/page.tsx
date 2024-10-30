@@ -5,21 +5,23 @@ import OrderService from '@/services/OrderService';
 import { OrderResponse } from '@/interfaces/data.interfaces';
 import { toast } from 'react-toastify';
 import OrderDetailsModal from '@/components/organisms/OrderDetailsModal';
-import { Package, Truck, Calendar, Mail, Clock, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Package, Truck, Calendar, Mail, Clock, DollarSign, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, FilterIcon } from 'lucide-react';
 import Line from '@/components/atoms/Line';
 
 const AdminOrders = () => {
     const [orders, setOrders] = useState<OrderResponse[]>([]);
+    const [filteredOrders, setFilteredOrders] = useState<OrderResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState<OrderResponse | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isFilterCollapsed, setIsFilterCollapsed] = useState(true);
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
     const pageSize = 5;
-    
+
     // Filter states
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
@@ -29,18 +31,18 @@ const AdminOrders = () => {
 
     useEffect(() => {
         loadOrders();
-    }, [currentPage, startDate, endDate, selectedStatus]);
+    }, [currentPage, selectedStatus]);
 
     const loadOrders = async () => {
         try {
             setLoading(true);
-            // Only pass dates if they're not empty
             const response = await OrderService.getAllOrders(
                 currentPage,
                 pageSize,
                 selectedStatus === 'ALL' ? undefined : selectedStatus
             );
             setOrders(response.content);
+            setFilteredOrders(response.content);
             setTotalPages(response.totalPages);
             setTotalElements(response.totalElements);
         } catch (error) {
@@ -59,6 +61,7 @@ const AdminOrders = () => {
         setStartDate('');
         setEndDate('');
         setSelectedStatus('');
+        setFilteredOrders(orders);
         setCurrentPage(0);
     };
 
@@ -70,6 +73,22 @@ const AdminOrders = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedOrder(null);
+    };
+
+    const handleToggleFilter = () => {
+        setIsFilterCollapsed((prevState) => !prevState);
+    };
+
+    const handleApplyFilters = () => {
+        setCurrentPage(0);
+        setFilteredOrders(
+            orders.filter((order) => {
+                if (selectedStatus !== 'ALL' && order.status !== selectedStatus) {
+                    return false;
+                }
+                return true;
+            })
+        );
     };
 
     const formatDate = (dateArray: any) => {
@@ -128,69 +147,80 @@ const AdminOrders = () => {
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl">
-            <div className="flex items-center justify-between mb-8">
-                <h1 className="text-3xl font-bold text-gray-800">Orders Management</h1>
-                <span className="text-sm text-gray-500">Total Orders: {orders.length}</span>
-            </div>
-
-            {/* Filters Section */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                        <input
-                            type="date"
-                            value={startDate}
-                            onChange={(e) => {
-                                setStartDate(e.target.value);
-                                setCurrentPage(0);
-                            }}
-                            className="w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
+             <div className="flex items-center justify-between  mb-8">
+                <h1 className="text-3xl font-bold text-gray-800 ">Orders Management</h1>
+                <div className="flex items-center ml-auto gap-4">
+                    <div className="relative w-80 ">
+                    <button
+                    onClick={handleToggleFilter}
+                    className="flex items-center justify-between gap-2 px-4 py-2 text-blue-600 hover:text-blue-800 
+                    bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-500 w-full transition-colors duration-200"
+                    >
+                        <FilterIcon className="w-5 h-5" />
+                        {isFilterCollapsed ? (
+                            <ChevronDown className="w-5 h-5" />
+                        ) : (
+                        <ChevronUp className="w-5 h-5" />
+                        )}
+                    </button>
+                        {!isFilterCollapsed && (
+                            <div className="absolute z-10 top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg p-4">
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                                    <input
+                                        type="date"
+                                        value={startDate}
+                                        onChange={(e) => setStartDate(e.target.value)}
+                                        className="w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                                    <input
+                                        type="date"
+                                        value={endDate}
+                                        onChange={(e) => setEndDate(e.target.value)}
+                                        className="w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                    <select
+                                        value={selectedStatus}
+                                        onChange={(e) => setSelectedStatus(e.target.value)}
+                                        className="w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    >
+                                        {STATUS_OPTIONS.map(status => (
+                                            <option key={status} value={status}>{status}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="flex justify-end gap-2">
+                                    <button
+                                        onClick={handleApplyFilters}
+                                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
+                                    >
+                                        Apply Filters
+                                    </button>
+                                    <button
+                                        onClick={resetFilters}
+                                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200"
+                                    >
+                                        Reset Filters
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                        
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                        <input
-                            type="date"
-                            value={endDate}
-                            onChange={(e) => {
-                                setEndDate(e.target.value);
-                                setCurrentPage(0);
-                            }}
-                            className="w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                        <select
-                            value={selectedStatus}
-                            onChange={(e) => {
-                                setSelectedStatus(e.target.value);
-                                setCurrentPage(0);
-                            }}
-                            className="w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                            {STATUS_OPTIONS.map(status => (
-                                <option key={status} value={status}>{status}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="flex items-end">
-                        <button
-                            onClick={resetFilters}
-                            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 
-                                     bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
-                        >
-                            Reset Filters
-                        </button>
-                    </div>
+                    <span className="text-sm text-gray-500 right-48 ">Total Orders: {orders.length}</span>
                 </div>
             </div>
 
             <Line />
 
             <div className="grid gap-6">
-                {orders.map((order) => (
+                {filteredOrders.map((order) => (
                     <div key={order.id} 
                          className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200 overflow-hidden">
                         <div className="p-6">
@@ -262,10 +292,11 @@ const AdminOrders = () => {
                             </div>
                         </div>
                     </div>
-                ))}
+                )) }
             </div>
 
             {/* Pagination Controls */}
+            {orders.length > 0 && (
             <div className="flex items-center justify-between mt-6 bg-white p-4 rounded-lg shadow-sm">
                 <div className="text-sm text-gray-700">
                     Showing {orders.length} of {totalElements} orders
@@ -292,6 +323,7 @@ const AdminOrders = () => {
                     </button>
                 </div>
             </div>
+        )}
 
             {selectedOrder && (
                 <OrderDetailsModal
