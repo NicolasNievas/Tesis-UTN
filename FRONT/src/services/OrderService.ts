@@ -32,6 +32,13 @@ class OrderService {
             throw error;
         }
     }
+    static async updateOrderStatus(orderId: string, status: string): Promise<void> {
+        try {
+            await axios.put(`${$URLADMIN}/orders/${orderId}/status?status=${status}`);
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 export default OrderService;
