@@ -19,6 +19,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-toastify": "^10.0.5",
+    "recharts": "^2.13.2",
     "sweetalert2": "^11.14.1"
   },
   "devDependencies": {
