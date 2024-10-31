@@ -31,7 +31,7 @@ const AdminOrders = () => {
 
     useEffect(() => {
         loadOrders();
-    }, [currentPage, selectedStatus]);
+    }, [currentPage, selectedStatus, startDate, endDate]);
 
     const loadOrders = async () => {
         try {
@@ -39,7 +39,9 @@ const AdminOrders = () => {
             const response = await OrderService.getAllOrders(
                 currentPage,
                 pageSize,
-                selectedStatus === 'ALL' ? undefined : selectedStatus
+                selectedStatus === 'ALL' ? undefined : selectedStatus,
+                startDate,
+                endDate
             );
             setOrders(response.content);
             setFilteredOrders(response.content);
@@ -61,8 +63,8 @@ const AdminOrders = () => {
         setStartDate('');
         setEndDate('');
         setSelectedStatus('');
-        setFilteredOrders(orders);
         setCurrentPage(0);
+        loadOrders(); // Load orders without filters
     };
 
     const handleOpenModal = (order: OrderResponse) => {
@@ -80,15 +82,29 @@ const AdminOrders = () => {
     };
 
     const handleApplyFilters = () => {
-        setCurrentPage(0);
-        setFilteredOrders(
-            orders.filter((order) => {
-                if (selectedStatus !== 'ALL' && order.status !== selectedStatus) {
-                    return false;
-                }
-                return true;
-            })
-        );
+        setCurrentPage(0); 
+        loadOrders(); 
+        setIsFilterCollapsed(true);
+    };
+
+    const validateDateRange = () => {
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            if (start > end) {
+                toast.error('Start date cannot be later than end date');
+                return false;
+            }
+        }
+        return true;
+    };
+
+    const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setStartDate(e.target.value);
+    };
+
+    const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEndDate(e.target.value);
     };
 
     const handleOrderUpdate = (updatedOrder: OrderResponse) => {
@@ -180,7 +196,8 @@ const AdminOrders = () => {
                                     <input
                                         type="date"
                                         value={startDate}
-                                        onChange={(e) => setStartDate(e.target.value)}
+                                        onChange={handleStartDateChange}
+                                        max={endDate || undefined}
                                         className="w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     />
                                 </div>
@@ -189,7 +206,8 @@ const AdminOrders = () => {
                                     <input
                                         type="date"
                                         value={endDate}
-                                        onChange={(e) => setEndDate(e.target.value)}
+                                        onChange={handleEndDateChange}
+                                        min={startDate || undefined}
                                         className="w-full rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     />
                                 </div>
@@ -207,8 +225,12 @@ const AdminOrders = () => {
                                 </div>
                                 <div className="flex justify-end gap-2">
                                     <button
-                                        onClick={handleApplyFilters}
-                                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
+                                    onClick={() => {
+                                        if (validateDateRange()) {
+                                            handleApplyFilters();
+                                        }
+                                    }}
+                                        className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200"
                                     >
                                         Apply Filters
                                     </button>

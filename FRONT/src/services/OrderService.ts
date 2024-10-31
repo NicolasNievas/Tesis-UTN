@@ -9,6 +9,8 @@ class OrderService {
         page: number = 0,
         size: number = 5,
         status?: string,
+        startDate?: string,
+        endDate?: string
     ): Promise<PaginatedResponse<OrderResponse>> {
         try {
             const params = new URLSearchParams({
@@ -17,6 +19,19 @@ class OrderService {
             });
             if (status && status !== 'ALL') {
                 params.append('status', status);
+            }
+            if (startDate) {
+                // Convert date string to ISO format with time
+                const startDateTime = new Date(startDate);
+                startDateTime.setHours(0, 0, 0, 0);
+                params.append('startDate', startDateTime.toISOString());
+            }
+
+            if (endDate) {
+                // Convert date string to ISO format with time
+                const endDateTime = new Date(endDate);
+                endDateTime.setHours(23, 59, 59, 999);
+                params.append('endDate', endDateTime.toISOString());
             }
             const response = await axios.get(`${$URLADMIN}/orders?${params.toString()}`);
             return response.data;
