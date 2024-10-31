@@ -45,7 +45,7 @@ public class SecurityConfig {
                         authRequest
                                 .requestMatchers("/auth/**", "/swagger-ui.html", "/swagger-ui/**",  "/v3/api-docs/**", "/products/**", "/brands/**", "/mail/**").permitAll()
                                 .requestMatchers("/admin/**").hasRole("ADMINISTRATOR")
-                                .requestMatchers("/reports/**").permitAll()
+                                .requestMatchers("/reports/**").hasRole("ADMINISTRATOR")
                                 .requestMatchers("/cart/**").hasRole("CUSTOMER")
                                 .requestMatchers("/webhook").permitAll()
                                 .requestMatchers("/webhook/swagger-config").permitAll()
