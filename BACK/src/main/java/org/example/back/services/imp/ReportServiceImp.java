@@ -2,7 +2,6 @@ package org.example.back.services.imp;
 
 import lombok.RequiredArgsConstructor;
 import org.example.back.dtos.PaymentMethodReportDTO;
-import org.example.back.dtos.ProductSalesDTO;
 import org.example.back.dtos.TopProductReportDTO;
 import org.example.back.repositories.OrderRepository;
 import org.example.back.services.ReportService;
@@ -10,9 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
