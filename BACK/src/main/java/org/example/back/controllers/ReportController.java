@@ -15,12 +15,12 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/reports")
+@RequestMapping("/admin")
 @CrossOrigin(origins = "http://localhost:3000")
 public class ReportController {
     private final ReportService reportService;
 
-    @GetMapping("/payment-methods")
+    @GetMapping("/reports/payment-methods")
     @Operation(summary = "Get payment method report", description = "Get the sales report by payment method")
     @ApiResponse(responseCode = "200", description = "Successful operation")
     @ApiResponse(responseCode = "403", description = "Unauthorized")
@@ -34,7 +34,7 @@ public class ReportController {
         return ResponseEntity.ok(reportService.getPaymentMethodSalesReport(startDate, endDate));
     }
 
-    @GetMapping("/top-selling-products")
+    @GetMapping("/reports/top-selling-products")
     @Operation(summary = "Get top selling products report", description = "Get the top selling products report")
     @ApiResponse(responseCode = "200", description = "Successful operation")
     @ApiResponse(responseCode = "403", description = "Unauthorized")
