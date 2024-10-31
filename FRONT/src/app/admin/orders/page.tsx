@@ -91,6 +91,16 @@ const AdminOrders = () => {
         );
     };
 
+    const handleOrderUpdate = (updatedOrder: OrderResponse) => {
+        // Update the order in both the orders and filteredOrders arrays
+        const updateOrderInList = (ordersList: OrderResponse[]) =>
+          ordersList.map(order => order.id === updatedOrder.id ? updatedOrder : order);
+        
+        setOrders(updateOrderInList(orders));
+        setFilteredOrders(updateOrderInList(filteredOrders));
+        setSelectedOrder(updatedOrder);
+      };
+
     const formatDate = (dateArray: any) => {
         if (Array.isArray(dateArray)) {
             const [year, month, day, hour, minute, second] = dateArray;
@@ -330,6 +340,7 @@ const AdminOrders = () => {
                     order={selectedOrder}
                     isOpen={isModalOpen}
                     onClose={handleCloseModal}
+                    onOrderUpdated={handleOrderUpdate}
                 />
             )}
         </div>

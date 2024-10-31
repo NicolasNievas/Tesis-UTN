@@ -1,15 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { OrderResponse } from '@/interfaces/data.interfaces';
 import Line from '../atoms/Line';
-import { User, Mail, Phone, MapPin, Building } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Building, ChevronDown } from 'lucide-react';
+import OrderStatusUpdate from './OrderStatusUpdate';
 
 interface OrderDetailsModalProps {
     order: OrderResponse;
     onClose: () => void;
     isOpen: boolean;
+    onOrderUpdated?: (updatedOrder: OrderResponse) => void;
 }
 
-const OrderDetailsModal = ({ order, onClose, isOpen }: OrderDetailsModalProps) => {
+const OrderDetailsModal = ({ order, onClose, isOpen, onOrderUpdated  }: OrderDetailsModalProps) => {
+    const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+
     if (!isOpen) return null;
 
     const formatDate = (dateArray: any) => {
@@ -60,6 +64,11 @@ const OrderDetailsModal = ({ order, onClose, isOpen }: OrderDetailsModalProps) =
         }
     };
 
+    const handleStatusUpdate = (updatedOrder: OrderResponse) => {
+        if (onOrderUpdated) {
+          onOrderUpdated(updatedOrder);
+        }
+    };
     return (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
             <div className="bg-gray-800 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto text-white">
@@ -118,25 +127,41 @@ const OrderDetailsModal = ({ order, onClose, isOpen }: OrderDetailsModalProps) =
                             </div>
                         </div>
 
-                        {/* Status */}
-                        <div className="bg-gray-700 p-4 rounded-lg flex items-center space-x-4 hover:bg-gray-600 transition-colors">
+                        {/* Status card */}
+                        <div className="bg-gray-700 p-4 rounded-lg flex items-center space-x-4 hover:bg-gray-600 transition-colors relative">
                             <div className="flex-shrink-0 text-yellow-400">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                                    <polyline points="22 4 12 14.01 9 11.01"/>
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
                                 </svg>
                             </div>
                             <div>
                                 <p className="text-sm font-medium text-gray-300">Status</p>
-                                <span className={`px-2 py-1 rounded-full text-sm ${
-                                    order.status === 'COMPLETED' ? 'bg-green-900 text-green-200' :
-                                    order.status === 'PENDING' ? 'bg-yellow-900 text-yellow-200' :
-                                    order.status === 'CANCELLED' ? 'bg-red-900 text-red-200' :
-                                    'bg-blue-900 text-blue-200'
-                                }`}>
-                                    {order.status}
-                                </span>
+                                <div className="flex items-center space-x-2">
+                                    <span className={`px-2 py-1 rounded-full text-sm ${
+                                        order.status === 'COMPLETED' ? 'bg-green-900 text-green-200' :
+                                        order.status === 'PENDING' ? 'bg-yellow-900 text-yellow-200' :
+                                        order.status === 'CANCELLED' ? 'bg-red-900 text-red-200' :
+                                        'bg-blue-900 text-blue-200'
+                                        }`}>
+                                            {order.status}
+                                    </span>
+                                    <button 
+                                    onClick={() => setShowStatusDropdown(!showStatusDropdown)} 
+                                    className="text-gray-400 hover:text-white"
+                                    >
+                                        <ChevronDown className={`w-4 h-4 transition-transform ${showStatusDropdown ? 'rotate-180' : ''}`} />
+                                    </button>
+                                </div>
                             </div>
+                            {showStatusDropdown && (
+                                <div className="absolute top-full left-0 mt-2  z-50">
+                                    <OrderStatusUpdate
+                                    order={order}
+                                    onStatusUpdated={onOrderUpdated || (() => {})}
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
 
