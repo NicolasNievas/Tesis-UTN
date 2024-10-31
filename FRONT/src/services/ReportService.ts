@@ -1,18 +1,7 @@
 import axios from "axios";
+import { PaymentMethodReport, TopProductReport } from "@/interfaces/data.interfaces";
 
 const $URL = process.env.NEXT_PUBLIC_API_URL_ADMIN;
-
-interface PaymentMethodReport {
-  paymentMethod: string;
-  orderCount: number;
-  totalSales: number;
-}
-
-interface TopProductReport {
-  productName: string;
-  totalQuantity: number;
-  totalSales: number;
-}
 
 class ReportService {
   static async getPaymentMethodReport(

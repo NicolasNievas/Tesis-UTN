@@ -6,18 +6,7 @@ import ReportService from '@/services/ReportService';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { toast } from 'react-toastify';
 import Line from '@/components/atoms/Line';
-
-interface PaymentMethodReport {
-  paymentMethod: string;
-  orderCount: number;
-  totalSales: number;
-}
-
-interface TopProductReport {
-  productName: string;
-  totalQuantity: number;
-  totalSales: number;
-}
+import { PaymentMethodReport, TopProductReport } from '@/interfaces/data.interfaces';
 
 const ReportsPage = () => {
   const [startDate, setStartDate] = useState<string>(new Date().toISOString().split('T')[0]);

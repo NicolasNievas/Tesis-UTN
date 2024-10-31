@@ -176,3 +176,16 @@ export interface PaginatedResponse<T> {
   totalElements: number;
   totalPages: number;
 }
+
+// Reports interfaces
+export interface PaymentMethodReport {
+  paymentMethod: string;
+  orderCount: number;
+  totalSales: number;
+}
+
+export interface TopProductReport {
+  productName: string;
+  totalQuantity: number;
+  totalSales: number;
+}
