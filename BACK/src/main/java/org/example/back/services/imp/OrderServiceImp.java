@@ -106,13 +106,15 @@ public class OrderServiceImp implements OrderService {
     }
     @Override
     public PageResponse<OrderResponse> getAllOrders(
-
             OrderStatus status,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
             int page,
             int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<OrderEntity> orderPage = orderRepository.findOrdersByFilters(status, pageable);
+        String statusStr = status != null ? status.name() : null;
+        Page<OrderEntity> orderPage = orderRepository.findOrdersByFilters(statusStr,startDate, endDate, pageable);
 
         List<OrderResponse> orders = orderPage.getContent().stream()
                 .map(this::convertToOrderResponse)

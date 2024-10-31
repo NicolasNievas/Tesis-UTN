@@ -6,6 +6,7 @@ import org.example.back.entities.OrderStatus;
 import org.example.back.models.OrderRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -13,6 +14,6 @@ public interface OrderService {
     OrderResponse createOrder (OrderRequest orderRequest, String userEmail);
     List<OrderResponse> getUserOrders();
     List<OrderResponse> getAllOrders();
-   PageResponse<OrderResponse> getAllOrders( OrderStatus status, int page, int size);
+   PageResponse<OrderResponse> getAllOrders(OrderStatus status, LocalDateTime startDate,  LocalDateTime endDate, int page, int size);
    OrderResponse updateOrderStatus(Long orderId, OrderStatus status);
 }

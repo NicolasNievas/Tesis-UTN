@@ -7,10 +7,12 @@ import org.example.back.dtos.response.PageResponse;
 import org.example.back.dtos.response.OrderResponse;
 import org.example.back.entities.OrderStatus;
 import org.example.back.services.OrderService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -38,14 +40,18 @@ public class OrderController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     @PreAuthorize("hasRole('ADMINISTRATOR')")
     public ResponseEntity<PageResponse<OrderResponse>> getAllOrders(
-
             @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size
     ) {
         PageResponse<OrderResponse> response = orderService.getAllOrders(
-
                 status,
+                startDate,
+                endDate,
                 page,
                 size
         );
