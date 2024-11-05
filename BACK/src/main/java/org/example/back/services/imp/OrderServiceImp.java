@@ -38,6 +38,7 @@ public class OrderServiceImp implements OrderService {
     private final PaymentMethodRepository paymentMethodRepository;
     private final ShippingRepository shippingRepository;
     private final UserRepository userRepository;
+    private final ReplenishmentRepository replenishmentRepository;
 
     @Override
     public OrderResponse createOrder(OrderRequest orderRequest, String userEmail) {
@@ -71,6 +72,14 @@ public class OrderServiceImp implements OrderService {
             }
             product.setStock(product.getStock() - detailRequest.getQuantity());
             productRepository.save(product);
+
+            // Registro de movimiento de stock
+            ReplenishmentEntity replenishment = new ReplenishmentEntity();
+            replenishment.setProduct(product);
+            replenishment.setQuantity(detailRequest.getQuantity());
+            replenishment.setDate(LocalDateTime.now());
+            replenishment.setMovementType(MovementType.EXPENSE);
+            replenishmentRepository.save(replenishment);
 
             detail.setOrder(order);
             detail.setProduct(product);
