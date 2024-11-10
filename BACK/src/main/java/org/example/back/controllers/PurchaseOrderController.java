@@ -17,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/purchase-orders")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000")
 public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
