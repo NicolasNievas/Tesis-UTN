@@ -12,9 +12,17 @@ import useAdminApi from "@/hooks/UseAdminApi";
 import Swal from "sweetalert2";
 import { withAdmin } from "@/hoc/isAdmin";
 import Line from "@/components/atoms/Line";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const AdminProductsPage: React.FC = () => {
-    const { data: products, loading, error } = useAdminApi<IProductData[]>('/products/allProducts');
+    const [currentPage, setCurrentPage] = useState(0);
+    const pageSize = 10;
+    //const { data: products, loading, error } = useAdminApi<IProductData[]>('/products/allProducts');
+    const { data: products, loading, error } = useAdminApi<{
+        content: IProductData[];
+        totalPages: number;
+        totalElements: number;
+    }>(`/products/allProducts?page=${currentPage}&size=${pageSize}`);
     const [brands, setBrands] = useState<IBrandData[]>([]);
     const [categories, setCategories] = useState<ICategoryData[]>([]);
     const [selectedBrand, setSelectedBrand] = useState<number | null>(null);
@@ -23,6 +31,10 @@ const AdminProductsPage: React.FC = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [currentProduct, setCurrentProduct] = useState<IProductData | null>(null);
     const [filterNoStock, setFilterNoStock] = useState(false);
+
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage);
+    };
 
     useEffect(() => {
         const loadBrands = async () => {
@@ -131,7 +143,7 @@ const AdminProductsPage: React.FC = () => {
         }
     };
 
-    const filteredProducts = products?.filter(product => {
+    const filteredProducts = products?.content?.filter(product => {
         if (selectedBrand && product.brandId !== selectedBrand) {
             return false;
         }
@@ -151,7 +163,10 @@ const AdminProductsPage: React.FC = () => {
 
     return (
         <main className="container mx-auto px-4 py-8" style={{ minHeight: "100vh" }}>
+            <div className="flex items-center justify-between">
             <h1 className="text-3xl flex justify-center font-semibold text-gray-800 mb-6">Admin Products</h1>
+            <span className="text-sm text-gray-500 right-48 ">Total Products: {products?.content?.length}</span>
+            </div>
             <Line />
             <div className="mb-6 flex items-center space-x-4">
                 <select
@@ -203,6 +218,7 @@ const AdminProductsPage: React.FC = () => {
             ) : error ? (
                 <p className="text-center py-10 text-red-500">{error.message}</p>
             ) : (
+                <>
                 <table className="min-w-full bg-white">
                     <thead>
                         <tr className="text-center">
@@ -228,6 +244,37 @@ const AdminProductsPage: React.FC = () => {
                         )}
                     </tbody>
                 </table>
+                
+                {products && products.totalPages > 0 && (
+                    <div className="flex items-center justify-between mt-6 bg-white p-4 rounded-lg shadow-sm">
+                    <div className="text-sm text-gray-700">
+                        Showing {products.content.length} of {products.totalElements} products
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 0}
+                            className="p-2 rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed
+                                     hover:bg-gray-50 transition-colors duration-200"
+                        >
+                            <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <span className="text-sm text-gray-700">
+                            Page {currentPage + 1} of {products.totalPages}
+                        </span>
+                        <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage >= products.totalPages - 1}
+                            className="p-2 rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed
+                                     hover:bg-gray-50 transition-colors duration-200"
+                        >
+                            <ChevronRight className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+                )}
+
+                </>
             )}
 
             <NewProductModal
