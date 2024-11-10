@@ -21,7 +21,7 @@ const AccountLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   }
 
   return (
-    <div className="account-layout min-h-screen">
+    <div className="account-layout flex min-h-screen">
       {/* Mobile menu button */}
       <button
         onClick={toggleMenu}
