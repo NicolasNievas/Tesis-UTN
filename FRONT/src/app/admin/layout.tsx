@@ -83,6 +83,15 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               </Link>
             </li>
             <li>
+              <Link href="/admin/stock-movements">
+                <span className={`block w-full p-4 rounded-md transition-colors duration-200 cursor-pointer ${
+                  pathname === "/admin/stock-movements" ? "bg-gray-700 text-white" : "hover:bg-gray-700"
+                }`}>
+                  Stock Movements
+                </span>
+              </Link>
+            </li>
+            <li>
               <Link href="/admin/brands">
                 <span
                   className={`block w-full p-4 rounded-md transition-colors duration-200 cursor-pointer ${
