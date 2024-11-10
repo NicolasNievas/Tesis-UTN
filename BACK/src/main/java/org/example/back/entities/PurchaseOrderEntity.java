@@ -1,19 +1,17 @@
 package org.example.back.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-@Table(name = "invoice")
+@Table(name = "purchase_orders")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class InvoiceEntity {
+public class PurchaseOrderEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,19 +21,21 @@ public class InvoiceEntity {
     private ProviderEntity provider;
 
     @Column(nullable = false)
-    private LocalDate date;
-
-    @Column(nullable = false)
-    private Double totalEntered;
+    private LocalDate orderDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus orderStatus;
 
-    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
-    private List<InvoiceDetailEntity> invoiceDetails;
+    @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL)
+    private List<PurchaseOrderDetailEntity> orderDetails;
 
-    @OneToOne
-    @JoinColumn(name = "purchase_order_id")
-    private PurchaseOrderEntity purchaseOrder;
+    @OneToOne(mappedBy = "purchaseOrder")
+    private InvoiceEntity invoice;
+
+    @Column
+    private Integer expectedDeliveryDays;
+
+    public PurchaseOrderEntity(Long providerId, LocalDate now, OrderStatus orderStatus) {
+    }
 }
