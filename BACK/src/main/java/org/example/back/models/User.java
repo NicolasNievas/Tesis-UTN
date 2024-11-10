@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.back.entities.Role;
+import org.example.back.enums.Role;
 
 @Data
 @Builder

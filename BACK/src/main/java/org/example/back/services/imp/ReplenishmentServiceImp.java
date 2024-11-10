@@ -1,7 +1,7 @@
 package org.example.back.services.imp;
 
 import lombok.RequiredArgsConstructor;
-import org.example.back.entities.MovementType;
+import org.example.back.enums.MovementType;
 import org.example.back.entities.ReplenishmentEntity;
 import org.example.back.models.*;
 import org.example.back.repositories.ReplenishmentRepository;

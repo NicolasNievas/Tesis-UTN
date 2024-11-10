@@ -2,7 +2,7 @@ package org.example.back.services;
 
 import org.example.back.dtos.response.PageResponse;
 import org.example.back.dtos.response.OrderResponse;
-import org.example.back.entities.OrderStatus;
+import org.example.back.enums.OrderStatus;
 import org.example.back.models.OrderRequest;
 import org.springframework.stereotype.Service;
 

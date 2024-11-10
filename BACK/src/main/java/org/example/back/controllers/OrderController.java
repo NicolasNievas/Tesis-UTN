@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.example.back.dtos.response.PageResponse;
 import org.example.back.dtos.response.OrderResponse;
-import org.example.back.entities.OrderStatus;
+import org.example.back.enums.OrderStatus;
 import org.example.back.services.OrderService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;

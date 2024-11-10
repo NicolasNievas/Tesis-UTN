@@ -5,6 +5,8 @@ import org.example.back.dtos.response.PageResponse;
 import org.example.back.dtos.response.OrderDetailResponse;
 import org.example.back.dtos.response.OrderResponse;
 import org.example.back.entities.*;
+import org.example.back.enums.MovementType;
+import org.example.back.enums.OrderStatus;
 import org.example.back.models.CustomerInfo;
 import org.example.back.models.OrderDetailRequest;
 import org.example.back.models.OrderRequest;

@@ -1,7 +1,6 @@
 package org.example.back.services;
 
-import org.example.back.entities.MovementType;
-import org.example.back.entities.ReplenishmentEntity;
+import org.example.back.enums.MovementType;
 import org.example.back.models.Replenishment;
 import org.springframework.stereotype.Service;
 

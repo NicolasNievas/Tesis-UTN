@@ -2,6 +2,7 @@ package org.example.back.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.back.enums.OrderStatus;
 
 import java.time.LocalDate;
 import java.util.List;

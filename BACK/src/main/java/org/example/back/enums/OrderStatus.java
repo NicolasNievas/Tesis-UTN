@@ -1,4 +1,4 @@
-package org.example.back.entities;
+package org.example.back.enums;
 
 public enum OrderStatus {
     PENDING,

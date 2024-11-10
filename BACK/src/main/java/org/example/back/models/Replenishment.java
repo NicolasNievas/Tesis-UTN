@@ -1,7 +1,7 @@
 package org.example.back.models;
 
 import lombok.*;
-import org.example.back.entities.MovementType;
+import org.example.back.enums.MovementType;
 
 import java.time.LocalDateTime;
 

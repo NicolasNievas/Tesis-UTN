@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.back.dtos.CartItemDTO;
 import org.example.back.dtos.UserDTO;
 import org.example.back.entities.CartEntity;
-import org.example.back.entities.OrderStatus;
+import org.example.back.enums.OrderStatus;
 import org.example.back.entities.PaymentMethodEntity;
 import org.example.back.entities.UserEntity;
 import org.example.back.models.OrderDetailRequest;

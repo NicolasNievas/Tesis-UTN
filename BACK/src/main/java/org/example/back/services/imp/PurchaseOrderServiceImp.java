@@ -8,6 +8,8 @@ import org.example.back.enums.DeliveryStatus;
 
 import org.example.back.dtos.response.InvoiceResponse;
 import org.example.back.dtos.response.SimulatedDeliveryResponse;
+import org.example.back.enums.MovementType;
+import org.example.back.enums.OrderStatus;
 import org.example.back.services.PurchaseOrderService;
 
 import org.example.back.models.*;
