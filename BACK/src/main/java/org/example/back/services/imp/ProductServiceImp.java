@@ -165,6 +165,17 @@ public class ProductServiceImp implements ProductService{
     }
 
     @Override
+    public Page<Product> getAllProductsActive(Pageable pageable) {
+        Page<ProductEntity> entityPage = productRepository.findByActiveTrue(pageable);
+
+        if (entityPage.isEmpty()) {
+            throw new IllegalArgumentException("No products found active");
+        }
+        
+        return entityPage.map(entity -> modelMapper.map(entity, Product.class));
+    }
+
+    @Override
 public List<Product> getAllProductsByCategory(Long categoryId) {
 
     if (categoryId == null) {

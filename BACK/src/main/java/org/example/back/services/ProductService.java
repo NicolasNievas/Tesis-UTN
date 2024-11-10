@@ -14,6 +14,7 @@ public interface ProductService {
     List<Product> getAllProducts();
     Page<Product> getAllProducts(Pageable pageable);
     List<Product> getAllProductsActive();
+    Page<Product> getAllProductsActive(Pageable pageable);
     List<Product> getAllProductsByCategory(Long categoryId);
     List<Product> getAllProductsByBrand(Long brandId);
     List<Product> getAllProductsDesactive();
