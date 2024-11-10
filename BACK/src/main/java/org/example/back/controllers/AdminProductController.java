@@ -7,6 +7,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.example.back.models.Product;
 import org.example.back.services.ProductService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -56,13 +59,30 @@ public class AdminProductController {
         Product product = productService.reactiveProduct(productId);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
-
+/*
     @GetMapping("/products/allProducts")
     @Operation(summary = "Obtener todos los productos", description = "Obtiene todos los productos.")
     @ApiResponse(responseCode = "200", description = "Operación exitosa", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Product.class)))
     public ResponseEntity<List<Product>> getAllProducts() {
         List<Product> products = productService.getAllProducts();
         return new ResponseEntity<>(products, HttpStatus.OK);
+    }
+*/
+    @GetMapping("/products/allProducts")
+    @Operation(summary = "Obtener todos los productos paginados",
+            description = "Obtiene todos los productos con paginación.")
+    @ApiResponse(responseCode = "200",
+            description = "Operación exitosa",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = Page.class)))
+    @ApiResponse(responseCode = "403", description = "Unauthorized", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class)))
+    public ResponseEntity<Page<Product>> getAllProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Product> productPage = productService.getAllProducts(pageable);
+        return new ResponseEntity<>(productPage, HttpStatus.OK);
     }
 
     @GetMapping("/products/allProductsDesactive")
