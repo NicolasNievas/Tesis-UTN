@@ -6,6 +6,7 @@ import org.example.back.entities.ReplenishmentEntity;
 import org.example.back.models.*;
 import org.example.back.repositories.ReplenishmentRepository;
 import org.example.back.services.ReplenishmentService;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +25,10 @@ public class ReplenishmentServiceImp implements ReplenishmentService {
         List<ReplenishmentEntity> replenishments;
 
         if (movementType == null && productId == null && startDate == null && endDate == null) {
-            // Si no hay filtros, devolver todos
-            replenishments = replenishmentRepository.findAll();
+            // Si no hay filtros, devolver todos ordenados por fecha descendente
+            replenishments = replenishmentRepository.findAll(
+                    Sort.by(Sort.Direction.DESC, "date")
+            );
         } else {
             // Usar especificación para construir filtros dinámicamente
             Specification<ReplenishmentEntity> spec = Specification.where(null);
@@ -51,7 +54,11 @@ public class ReplenishmentServiceImp implements ReplenishmentService {
                         cb.lessThanOrEqualTo(root.get("date"), endDate));
             }
 
-            replenishments = replenishmentRepository.findAll(spec);
+            // Agregar ordenamiento a la especificación
+            replenishments = replenishmentRepository.findAll(
+                    spec,
+                    Sort.by(Sort.Direction.DESC, "date")
+            );
         }
 
         return replenishments.stream()
