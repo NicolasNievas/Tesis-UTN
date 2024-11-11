@@ -21,11 +21,11 @@ const AccountLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   }
 
   return (
-    <div className="account-layout flex min-h-screen">
+    <div className="account-layout flex min-h-screen bg-gray-100">
       {/* Mobile menu button */}
       <button
         onClick={toggleMenu}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-gray-800 text-white"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-gray-800 text-white transition-colors"
       >
         {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
@@ -40,9 +40,10 @@ const AccountLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
       {/* Account Menu */}
       <div className={`
-        fixed lg:static w-64 z-40 h-full
-        transform transition-transform duration-300 ease-in-out
+        fixed lg:sticky top-0 h-screen w-64 bg-gray-800 text-white
+        transform transition-transform duration-300 ease-in-out z-40
         ${isMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        
       `}>
         <AccountMenu />
       </div>
@@ -50,7 +51,7 @@ const AccountLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       {/* Main Content */}
       <main className={`
         flex-grow p-4 lg:p-8
-        ${isAuthenticated ? 'lg:ml-64' : 'w-full'}
+        ${isAuthenticated ? 'w-full' : 'w-full'}
       `}>
         {children}
       </main>
