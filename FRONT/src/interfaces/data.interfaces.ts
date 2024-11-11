@@ -189,3 +189,48 @@ export interface TopProductReport {
   totalQuantity: number;
   totalSales: number;
 }
+
+//Purchase interfaces
+
+export interface ProviderOrderDetail {
+  productId: number;
+  requestedQuantity: number;
+  purchasePrice: number;
+}
+
+export interface SimulatedDeliveryDetail {
+  productId: number;
+  productName: string;
+  status: 'COMPLETE' | 'PARTIAL' | 'NOT_AVAILABLE';
+  requestedQuantity: number;
+  expectedQuantity: number;
+  finalPrice: number;
+  statusMessage: string;
+}
+
+export interface PurchaseOrderResponse {
+  orderId: number;
+  orderDate: string;
+  status: string;
+  expectedDeliveryDays: number;
+  simulatedDelivery: SimulatedDeliveryDetail[];
+}
+
+export interface DeliveryConfirmationDetail {
+  productId: number;
+  receivedQuantity: number;
+}
+
+export interface InvoiceResponse {
+  invoiceId: number;
+  deliveryDate: string;
+  totalAmount: number;
+  details: {
+    productId: number;
+    productName: string;
+    requestedQuantity: number;
+    receivedQuantity: number;
+    finalPrice: number;
+    variance: number;
+  }[];
+}

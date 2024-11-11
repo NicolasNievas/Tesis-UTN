@@ -92,6 +92,15 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               </Link>
             </li>
             <li>
+              <Link href="/admin/purchase-orders">
+                <span className={`block w-full p-4 rounded-md transition-colors duration-200 cursor-pointer ${
+                  pathname === "/admin/purchase-orders" ? "bg-gray-700 text-white" : "hover:bg-gray-700"
+                }`}>
+                  Purchase Orders
+                </span>
+              </Link>
+            </li>
+            <li>
               <Link href="/admin/brands">
                 <span
                   className={`block w-full p-4 rounded-md transition-colors duration-200 cursor-pointer ${
