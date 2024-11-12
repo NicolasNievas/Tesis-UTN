@@ -234,3 +234,14 @@ export interface InvoiceResponse {
     variance: number;
   }[];
 }
+
+//Provider interfaces
+
+export interface IProviderData {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  street: string;
+}

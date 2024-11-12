@@ -19,6 +19,21 @@ export const fetchActiveProducts = async (page: number = 0, size: number = 12) =
   }
 };
 
+export const fetchActiveProductsOrder = async (page: number = 0, size: number = 12) => {
+  try {
+      const response = await axios.get(`${$URL}/allProductsActive`, {
+          params: {
+              page,
+              size
+          }
+      });
+      return response.data.content; // Asegúrate de devolver la lista de productos
+  } catch (error) {
+      console.error("Error fetching active products:", error);
+      throw error;
+  }
+};
+
 export const fetchProductByBrand = async (brand: number): Promise<IProductData[]> => {
     try {
       const response = await axios.get<IProductData[]>(`${$URL}/allProductsByBrand/${brand}`);
