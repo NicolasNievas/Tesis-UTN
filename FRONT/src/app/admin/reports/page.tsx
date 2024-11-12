@@ -7,12 +7,20 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, Resp
 import { toast } from 'react-toastify';
 import Line from '@/components/atoms/Line';
 import { PaymentMethodReport, TopProductReport } from '@/interfaces/data.interfaces';
+import { FileSpreadsheet, FileDown } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const ReportsPage = () => {
   const [startDate, setStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [endDate, setEndDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [paymentMethodData, setPaymentMethodData] = useState<PaymentMethodReport[]>([]);
   const [topProductsData, setTopProductsData] = useState<TopProductReport[]>([]);
+
+  const paymentChartRef = React.useRef<HTMLDivElement>(null);
+  const productsChartRef = React.useRef<HTMLDivElement>(null);
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
@@ -130,6 +138,122 @@ const ReportsPage = () => {
     </div>
   );
 
+  // Función para exportar a Excel
+  const exportToExcel = () => {
+    try {
+      // Preparar datos de métodos de pago para Excel
+      const paymentMethodSheet = paymentMethodData.map(item => ({
+        'Payment Method': item.paymentMethod,
+        'Order Count': item.orderCount,
+        'Total Sales': formatCurrency(item.totalSales)
+      }));
+
+      // Preparar datos de productos para Excel
+      const topProductsSheet = topProductsData.map(item => ({
+        'Product Name': item.productName,
+        'Quantity Sold': item.totalQuantity,
+        'Total Sales': formatCurrency(item.totalSales)
+      }));
+
+      // Crear libro de Excel
+      const wb = XLSX.utils.book_new();
+      
+      // Agregar hojas
+      const ws1 = XLSX.utils.json_to_sheet(paymentMethodSheet);
+      const ws2 = XLSX.utils.json_to_sheet(topProductsSheet);
+      
+      XLSX.utils.book_append_sheet(wb, ws1, "Payment Methods");
+      XLSX.utils.book_append_sheet(wb, ws2, "Top Products");
+
+      // Generar archivo
+      XLSX.writeFile(wb, `Sales_Report_${startDate}_${endDate}.xlsx`);
+      toast.success('Excel file downloaded successfully');
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+      toast.error('Error generating Excel file');
+    }
+  };
+
+  // Función para exportar a PDF
+  const exportToPDF = async () => {
+    try {
+      // Crear nuevo documento PDF
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      let yOffset = 10;
+
+      // Agregar título y fechas
+      pdf.setFontSize(16);
+      pdf.text('Sales Report', 105, yOffset, { align: 'center' });
+      pdf.setFontSize(12);
+      pdf.text(`Period: ${startDate} to ${endDate}`, 105, yOffset + 10, { align: 'center' });
+      yOffset += 30;
+
+      // Capturar y agregar gráfico de métodos de pago
+      if (paymentChartRef.current) {
+        const paymentCanvas = await html2canvas(paymentChartRef.current);
+        const paymentImgData = paymentCanvas.toDataURL('image/png');
+        pdf.text('Payment Methods Distribution', 105, yOffset, { align: 'center' });
+        pdf.addImage(paymentImgData, 'PNG', 10, yOffset + 5, 190, 100);
+        yOffset += 110;
+      }
+
+      // Agregar tabla de métodos de pago
+      pdf.setFontSize(12);
+      pdf.text('Payment Methods Summary', 105, yOffset, { align: 'center' });
+      yOffset += 10;
+
+      const paymentTableHeaders = [['Payment Method', 'Order Count', 'Total Sales']];
+      const paymentTableData = paymentMethodData.map(item => [
+        item.paymentMethod,
+        item.orderCount.toString(),
+        formatCurrency(item.totalSales)
+      ]);
+
+      autoTable(pdf, {
+        startY: yOffset,
+        head: paymentTableHeaders,
+        body: paymentTableData,
+        margin: { top: 10 },
+      });
+      yOffset = (pdf as any).lastAutoTable.finalY + 20;
+
+      // Agregar nueva página para el gráfico de productos
+      pdf.addPage();
+      yOffset = 10;
+
+      // Capturar y agregar gráfico de productos
+      if (productsChartRef.current) {
+        const productsCanvas = await html2canvas(productsChartRef.current);
+        const productsImgData = productsCanvas.toDataURL('image/png');
+        pdf.text('Top Selling Products', 105, yOffset, { align: 'center' });
+        pdf.addImage(productsImgData, 'PNG', 10, yOffset + 5, 190, 100);
+        yOffset += 110;
+      }
+
+      // Agregar tabla de productos
+      const productTableHeaders = [['Product Name', 'Quantity Sold', 'Total Sales']];
+      const productTableData = topProductsData.map(item => [
+        item.productName,
+        item.totalQuantity.toString(),
+        formatCurrency(item.totalSales)
+      ]);
+
+      autoTable(pdf, {
+        startY: yOffset,
+        head: productTableHeaders,
+        body: productTableData,
+        margin: { top: 10 },
+      });
+
+      // Guardar PDF
+      pdf.save(`Sales_Report_${startDate}_${endDate}.pdf`);
+      toast.success('PDF file downloaded successfully');
+    } catch (error) {
+      console.error('Error exporting to PDF:', error);
+      toast.error('Error generating PDF file');
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -137,35 +261,56 @@ const ReportsPage = () => {
 
         <Line />
         
-        <div className="flex flex-wrap gap-4 items-center mb-6">
-          <div className="flex flex-col">
-            <label className="mb-2 font-medium">Start Date:</label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => handleStartDateChange(e.target.value)}
-              max={endDate} 
-              className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+        <div className="flex flex-wrap items-center justify-between mb-6">
+          <div className="flex flex-wrap gap-4 items-center">
+            <div className="flex flex-col">
+              <label className="mb-2 font-medium">Start Date:</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => handleStartDateChange(e.target.value)}
+                max={endDate} 
+                className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="mb-2 font-medium">End Date:</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => handleEndDateChange(e.target.value)}
+                min={startDate} 
+                className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <button
+              onClick={fetchReports}
+              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors mt-6"
+            >
+              Generate Reports
+            </button>
           </div>
 
-          <div className="flex flex-col">
-            <label className="mb-2 font-medium">End Date:</label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => handleEndDateChange(e.target.value)}
-              min={startDate} 
-              className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <button
-            onClick={fetchReports}
-            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors mt-6"
-          >
-            Generate Reports
-          </button>
+          {(paymentMethodData.length >= 0 || topProductsData.length >= 0) && (
+            <div className="flex gap-2 mt-6">
+              <button
+                onClick={exportToExcel}
+                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
+              >
+                <FileSpreadsheet size={20} />
+                Export Excel
+              </button>
+              <button
+                onClick={exportToPDF}
+                className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
+              >
+                <FileDown size={20} />
+                Export PDF
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Payment Methods Chart */}
