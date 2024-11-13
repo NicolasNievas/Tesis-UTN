@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.back.enums.OrderStatus;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -34,4 +35,8 @@ public class InvoiceEntity {
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
     private List<InvoiceDetailEntity> invoiceDetails;
+
+    @OneToOne
+    @JoinColumn(name = "purchase_order_id")
+    private PurchaseOrderEntity purchaseOrder;
 }

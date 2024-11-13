@@ -1,9 +1,12 @@
 package org.example.back.services.imp;
 
 import lombok.RequiredArgsConstructor;
+import org.example.back.dtos.response.PageResponse;
 import org.example.back.dtos.response.OrderDetailResponse;
 import org.example.back.dtos.response.OrderResponse;
 import org.example.back.entities.*;
+import org.example.back.enums.MovementType;
+import org.example.back.enums.OrderStatus;
 import org.example.back.models.CustomerInfo;
 import org.example.back.models.OrderDetailRequest;
 import org.example.back.models.OrderRequest;
@@ -12,6 +15,9 @@ import org.example.back.repositories.*;
 import org.example.back.services.CartService;
 import org.example.back.services.OrderService;
 import org.example.back.services.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +40,7 @@ public class OrderServiceImp implements OrderService {
     private final PaymentMethodRepository paymentMethodRepository;
     private final ShippingRepository shippingRepository;
     private final UserRepository userRepository;
+    private final ReplenishmentRepository replenishmentRepository;
 
     @Override
     public OrderResponse createOrder(OrderRequest orderRequest, String userEmail) {
@@ -68,6 +75,14 @@ public class OrderServiceImp implements OrderService {
             product.setStock(product.getStock() - detailRequest.getQuantity());
             productRepository.save(product);
 
+            // Registro de movimiento de stock
+            ReplenishmentEntity replenishment = new ReplenishmentEntity();
+            replenishment.setProduct(product);
+            replenishment.setQuantity(detailRequest.getQuantity());
+            replenishment.setDate(LocalDateTime.now());
+            replenishment.setMovementType(MovementType.EXPENSE);
+            replenishmentRepository.save(replenishment);
+
             detail.setOrder(order);
             detail.setProduct(product);
             detail.setQuantity(detailRequest.getQuantity());
@@ -87,7 +102,7 @@ public class OrderServiceImp implements OrderService {
     @Override
     public List<OrderResponse> getUserOrders() {
         User currentUser = userService.getCurrentUser();
-        List<OrderEntity> orders = orderRepository.findByCustomerId(currentUser.getId());
+        List<OrderEntity> orders = orderRepository.findByCustomerIdOrderByDateDesc(currentUser.getId());
         return orders.stream()
                 .map(this::convertToOrderResponse)
                 .collect(Collectors.toList());
@@ -99,6 +114,53 @@ public class OrderServiceImp implements OrderService {
         return orders.stream()
                 .map(this::convertToOrderResponse)
                 .collect(Collectors.toList());
+    }
+    @Override
+    public PageResponse<OrderResponse> getAllOrders(
+            OrderStatus status,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            int page,
+            int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        String statusStr = status != null ? status.name() : null;
+        Page<OrderEntity> orderPage = orderRepository.findOrdersByFilters(statusStr,startDate, endDate, pageable);
+
+        List<OrderResponse> orders = orderPage.getContent().stream()
+                .map(this::convertToOrderResponse)
+                .collect(Collectors.toList());
+
+        return PageResponse.<OrderResponse>builder()
+                .content(orders)
+                .pageNumber(orderPage.getNumber())
+                .pageSize(orderPage.getSize())
+                .totalElements(orderPage.getTotalElements())
+                .totalPages(orderPage.getTotalPages())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse updateOrderStatus(Long orderId, OrderStatus status) {
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada con ID: " + orderId));
+        validateStatusTransition(order.getStatus(), status);
+
+        order.setStatus(status);
+        OrderEntity updatedOrder = orderRepository.save(order);
+        return convertToOrderResponse(updatedOrder);
+    }
+
+    private void validateStatusTransition(OrderStatus currentStatus, OrderStatus newStatus) {
+        if (currentStatus == OrderStatus.COMPLETED &&
+                (newStatus == OrderStatus.IN_PROCESS || newStatus == OrderStatus.PENDING)) {
+            throw new RuntimeException("No se puede cambiar el estado de una orden completada a " + newStatus);
+        }
+
+        if (currentStatus == OrderStatus.CANCELLED && newStatus != OrderStatus.PENDING){
+            throw new RuntimeException("No se puede cambiar el estado de una orden cancelada a " + newStatus);
+        }
     }
 
     private OrderResponse convertToOrderResponse(OrderEntity order) {

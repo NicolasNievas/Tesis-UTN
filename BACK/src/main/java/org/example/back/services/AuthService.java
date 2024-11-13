@@ -1,6 +1,10 @@
 package org.example.back.services;
 
-import org.example.back.dtos.*;
+import org.example.back.dtos.request.LoginRequest;
+import org.example.back.dtos.request.RegisterRequest;
+import org.example.back.dtos.request.ResetPasswordRequest;
+import org.example.back.dtos.response.AuthResponse;
+import org.example.back.dtos.response.PasswordResetResponse;
 import org.springframework.stereotype.Service;
 
 @Service

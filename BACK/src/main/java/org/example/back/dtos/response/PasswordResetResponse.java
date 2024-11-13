@@ -1,4 +1,4 @@
-package org.example.back.dtos;
+package org.example.back.dtos.response;
 
 import lombok.*;
 

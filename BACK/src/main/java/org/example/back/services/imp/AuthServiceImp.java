@@ -1,8 +1,12 @@
 package org.example.back.services.imp;
 
 import lombok.RequiredArgsConstructor;
-import org.example.back.dtos.*;
-import org.example.back.entities.Role;
+import org.example.back.dtos.request.LoginRequest;
+import org.example.back.dtos.request.RegisterRequest;
+import org.example.back.dtos.request.ResetPasswordRequest;
+import org.example.back.dtos.response.AuthResponse;
+import org.example.back.dtos.response.PasswordResetResponse;
+import org.example.back.enums.Role;
 import org.example.back.entities.UserEntity;
 import org.example.back.jwt.JwtService;
 import org.example.back.repositories.UserRepository;

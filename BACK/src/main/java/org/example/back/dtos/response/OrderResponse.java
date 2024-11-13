@@ -1,7 +1,7 @@
 package org.example.back.dtos.response;
 
 import lombok.*;
-import org.example.back.entities.OrderStatus;
+import org.example.back.enums.OrderStatus;
 import org.example.back.models.CustomerInfo;
 
 import java.math.BigDecimal;

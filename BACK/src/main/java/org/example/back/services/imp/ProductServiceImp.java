@@ -14,6 +14,8 @@ import org.example.back.repositories.ProductRepository;
 import org.example.back.services.ProductService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -146,6 +148,11 @@ public class ProductServiceImp implements ProductService{
     }
 
     @Override
+    public Page<Product> getAllProducts(Pageable pageable) {
+        Page<ProductEntity> entityPage = productRepository.findAll(pageable);
+        return entityPage.map(entity -> modelMapper.map(entity, Product.class));
+    }
+    @Override
     public List<Product> getAllProductsActive() {
         List<ProductEntity> entities = productRepository.findByActiveTrue();
 
@@ -155,6 +162,17 @@ public class ProductServiceImp implements ProductService{
         return entities.stream()
                 .map(entity -> modelMapper.map(entity, Product.class))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<Product> getAllProductsActive(Pageable pageable) {
+        Page<ProductEntity> entityPage = productRepository.findByActiveTrue(pageable);
+
+        if (entityPage.isEmpty()) {
+            throw new IllegalArgumentException("No products found active");
+        }
+        
+        return entityPage.map(entity -> modelMapper.map(entity, Product.class));
     }
 
     @Override

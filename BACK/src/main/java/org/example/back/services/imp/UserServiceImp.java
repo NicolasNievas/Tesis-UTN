@@ -1,6 +1,6 @@
 package org.example.back.services.imp;
 
-import org.example.back.dtos.UpdateUserRequest;
+import org.example.back.dtos.request.UpdateUserRequest;
 import org.example.back.entities.UserEntity;
 import org.example.back.models.User;
 import org.example.back.repositories.UserRepository;

@@ -1,7 +1,10 @@
 "use client"
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { CheckCircle, XCircle, Clock, ArrowLeft, CreditCard, Calendar, User, Package } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, ArrowLeft, CreditCard, Calendar, User, Package, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import autoTable from 'jspdf-autotable';
 
 interface PaymentResultPageProps {
 
@@ -90,16 +93,16 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = ({ type }) => {
       case 'approved':
         return {
           icon: <CheckCircle className="h-12 w-12 text-green-500" />,
-          title: '¡Gracias por tu compra!',
-          message: 'Tu pedido ha sido procesado correctamente.',
+          title: 'Thank you for your purchase!',
+          message: 'Your order has been successfully processed.',
           bgColor: 'bg-green-50',
           textColor: 'text-green-800'
         };
       case 'pending':
         return {
             icon: <Clock className="h-12 w-12 text-yellow-500" />,
-            title: 'Pago pendiente',
-            message: 'Tu pago está siendo procesado.',
+            title: 'Pending payment',
+            message: 'Your payment is being processed.',
             bgColor: 'bg-yellow-50',
             textColor: 'text-yellow-800'
           };
@@ -107,8 +110,8 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = ({ type }) => {
       default:
         return {
             icon: <XCircle className="h-12 w-12 text-red-500" />,
-            title: 'No se pudo procesar tu pago',
-            message: 'Hubo un problema al procesar tu pago. Por favor, intenta nuevamente.',
+            title: 'Your payment could not be processed',
+            message: 'There was a problem processing your payment. Please try again.',
             bgColor: 'bg-red-50',
             textColor: 'text-red-800'
           };
@@ -137,13 +140,88 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = ({ type }) => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4">Cargando detalles del pago...</p>
+          <p className="mt-4">Loading payment details...</p>
         </div>
       </div>
     );
   }
 
   const statusInfo = getStatusInfo();
+
+  const generatePDF = async () => {
+    const doc = new jsPDF('p', 'mm', 'a4');
+    
+    // Configuración inicial del documento
+    doc.setFont('helvetica');
+    
+    // Añadir encabezado
+    doc.setFontSize(22);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Purchase receipt', 105, 20, { align: 'center' });
+    
+    // Añadir estado del pago
+    doc.setFontSize(16);
+    const statusText = status === 'approved' ? 'APPROVED' : 
+                      status === 'pending' ? 'PENDING' : 'FAILED';
+    const statusColor = status === 'approved' ? [39, 174, 96] : 
+                       status === 'pending' ? [241, 196, 15] : [231, 76, 60];
+    doc.setTextColor(...statusColor);
+    doc.text(statusText, 105, 30, { align: 'center' });
+    
+    // Información del comprador
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Buyer Information', 20, 45);
+    doc.setFontSize(10);
+    doc.text(`Name: ${first_name} ${last_name}`, 20, 55);
+    doc.text(`Email: ${email}`, 20, 62);
+    if (paymentDetails?.payer?.identification) {
+      doc.text(`${paymentDetails.payer.identification.type}: ${paymentDetails.payer.identification.number}`, 20, 69);
+    }
+
+    // Información del pago
+    doc.setFontSize(12);
+    doc.text('Payment Details', 20, 85);
+    doc.setFontSize(10);
+    doc.text(`Payment Method: ${paymentDetails?.payment_type_id}`, 20, 95);
+    doc.text(`Date: ${formatDate(paymentDetails?.date_created || '')}`, 20, 102);
+    doc.text(`Transaction ID: ${payment_id}`, 20, 109);
+
+    // Tabla de productos
+    const headers = [['Product', 'Quantity', 'Unit Price', 'Subtotal']];
+    const data = paymentDetails?.additional_info.items.map(item => [
+      item.title,
+      item.quantity,
+      formatCurrency(Number(item.unit_price)),
+      formatCurrency(Number(item.unit_price) * Number(item.quantity))
+    ]) || [];
+
+    autoTable(doc,{
+      head: headers,
+      body: data,
+      startY: 120,
+      theme: 'grid',
+      headStyles: { fillColor: [51, 51, 51] },
+      styles: { fontSize: 9 },
+      margin: { top: 20 }
+    });
+
+    // Total
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Total: ${formatCurrency(paymentDetails?.transaction_amount || 0)}`, 
+      195, finalY, { align: 'right' });
+
+    // Pie de página
+    doc.setFontSize(8);
+    doc.setTextColor(128, 128, 128);
+    doc.text('This document is a proof of purchase.', 105, 280, { align: 'center' });
+    doc.text('© ' + new Date().getFullYear() + 'Coffee Craze.', 105, 285, { align: 'center' });
+
+    // Guardar el PDF
+    doc.save(`voucher-${payment_id}.pdf`);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
@@ -164,10 +242,10 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = ({ type }) => {
           <div className="bg-white shadow-lg rounded-lg overflow-hidden">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold">Detalles de la compra</h2>
+                <h2 className="text-xl font-semibold">Purchase details</h2>
                 <div className={`px-4 py-2 rounded-full ${statusInfo.bgColor} ${statusInfo.textColor}`}>
-                  {status === 'approved' ? 'Aprobado' : 
-                   status === 'pending' ? 'Pendiente' : 'Fallido'}
+                  {status === 'approved' ? 'Approved' : 
+                   status === 'pending' ? 'Pending' : 'Failed'}
                 </div>
               </div>
 
@@ -184,7 +262,7 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = ({ type }) => {
                     <div className="ml-4 flex-grow">
                       <h3 className="font-medium">{item.title}</h3>
                       <p className="text-sm text-gray-500">
-                        Cantidad: {item.quantity} × {formatCurrency(Number(item.unit_price))}
+                        Quantity: {item.quantity} × {formatCurrency(Number(item.unit_price))}
                       </p>
                     </div>
                     <div className="text-right">
@@ -199,7 +277,7 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = ({ type }) => {
                 <div className="p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-center space-x-2 mb-2">
                         <User className="h-5 w-5 text-gray-400" />
-                        <p className="text-sm text-gray-500">Datos del comprador</p>
+                        <p className="text-sm text-gray-500">Buyer's information</p>
                         </div>
                         <p className="font-medium">
                             {first_name} {last_name}
@@ -216,7 +294,7 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = ({ type }) => {
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-center space-x-2 mb-2">
                       <CreditCard className="h-5 w-5 text-gray-400" />
-                      <p className="text-sm text-gray-500">Método de Pago</p>
+                      <p className="text-sm text-gray-500">Payment Method</p>
                     </div>
                     <p className="font-medium">
                       {paymentDetails.payment_type_id}
@@ -225,7 +303,7 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = ({ type }) => {
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-center space-x-2 mb-2">
                       <Calendar className="h-5 w-5 text-gray-400" />
-                      <p className="text-sm text-gray-500">Fecha de Compra</p>
+                      <p className="text-sm text-gray-500">Date of Purchase</p>
                     </div>
                     <p className="font-medium">
                       {formatDate(paymentDetails.date_created)}
@@ -246,13 +324,21 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = ({ type }) => {
           </div>
         )}
 
-        <div className="mt-6">
+        <div className="mt-6 flex space-x-4 justify-between">
           <button
             onClick={() => router.push('/')}
-            className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-txt rounded-md hover:bg-gray-50"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Volver al inicio
+            Back to home
+          </button>
+          
+          <button
+            onClick={generatePDF}
+            className="txt-end flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-txt rounded-md hover:bg-gray-50"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Download Voucher
           </button>
         </div>
       </div>

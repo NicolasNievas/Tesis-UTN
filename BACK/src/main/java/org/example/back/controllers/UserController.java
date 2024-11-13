@@ -1,7 +1,7 @@
 package org.example.back.controllers;
 
-import org.example.back.dtos.AuthResponse;
-import org.example.back.dtos.UpdateUserRequest;
+import org.example.back.dtos.response.AuthResponse;
+import org.example.back.dtos.request.UpdateUserRequest;
 import org.example.back.models.User;
 import org.example.back.services.UserService;
 import org.springframework.http.ResponseEntity;

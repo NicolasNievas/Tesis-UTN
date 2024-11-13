@@ -1,7 +1,7 @@
 package org.example.back.models;
 
 import lombok.*;
-import org.example.back.entities.OrderStatus;
+import org.example.back.enums.OrderStatus;
 
 import java.util.List;
 
