@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
 import { StockMovementService, StockMovement } from '@/services/ReplenishmentService';
 import { Alert } from '@/components/atoms/Alert';
+import { withAdmin } from '@/hoc/isAdmin';
 
 const StockMovementsPage = () => {
   const [movements, setMovements] = useState<StockMovement[]>([]);
@@ -181,4 +182,4 @@ const StockMovementsPage = () => {
   );
 };
 
-export default StockMovementsPage;
+export default withAdmin(StockMovementsPage);

@@ -10,7 +10,9 @@ const ADMIN_ROUTES = [
   '/admin/orders',
   '/admin/reports',
   '/admin/brands',
-  '/admin/categories'
+  '/admin/categories',
+  '/admin/purchase-orders',
+  '/admin/stock-movements',
 ];
 
 export function withAdmin<P extends object>(WrappedComponent: React.ComponentType<P>) {
