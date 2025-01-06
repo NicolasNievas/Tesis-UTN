@@ -52,7 +52,7 @@ public class AuthServiceImp implements AuthService {
 
     @Override
     public AuthResponse register(RegisterRequest request) {
-
+        System.out.println("TypeDoc received: " + request.getTypeDoc());
         Optional<UserEntity> existingUserEmail = userRepository.findByEmail(request.getEmail());
         if (existingUserEmail.isPresent()) {
             throw new IllegalArgumentException("Email already exists");
@@ -61,6 +61,11 @@ public class AuthServiceImp implements AuthService {
         Optional<UserEntity> existingUserPhoneNumber = userRepository.findByPhoneNumber(request.getPhoneNumber());
         if (existingUserPhoneNumber.isPresent()) {
             throw new IllegalArgumentException("Phone number already exists");
+        }
+
+        Optional<UserEntity> existingUserDoc = userRepository.findByNroDoc(request.getNroDoc());
+        if (existingUserDoc.isPresent()) {
+            throw new IllegalArgumentException("Document already exists");
         }
 
         String verificationCode = mailService.generateVerificationCode();
@@ -74,6 +79,8 @@ public class AuthServiceImp implements AuthService {
                 .phoneNumber(request.getPhoneNumber())
                 .address(request.getAddress())
                 .city(request.getCity())
+                .nroDoc(request.getNroDoc())
+                .typeDoc(request.getTypeDoc())
                 .role(Role.CUSTOMER)
                 .emailVerified(false)
                 .verificationCode(verificationCode)

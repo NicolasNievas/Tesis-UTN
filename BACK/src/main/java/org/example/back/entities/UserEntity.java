@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.back.enums.Role;
+import org.example.back.enums.TypeDoc;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -49,6 +50,13 @@ public class UserEntity implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type_doc", nullable = false)
+    private TypeDoc typeDoc;
+
+    @Column(nullable = false, unique = true)
+    private String nroDoc;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
     private List<OrderEntity> orderEntities;
