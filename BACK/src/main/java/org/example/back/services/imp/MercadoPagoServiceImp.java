@@ -37,7 +37,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@PropertySource("classpath:mercadopago.properties")
 @Slf4j
 public class MercadoPagoServiceImp implements MercadoPagoService {
 

@@ -33,6 +33,5 @@ build/
 .vscode/
 
 email.properties
-mercadopago.properties
 application-prod.properties
 .env
