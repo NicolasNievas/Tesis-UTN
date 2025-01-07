@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 @Configuration
-@PropertySource("classpath:mercadopago.properties")
 public class MercadoPagoConfig {
 
     @Value("${mercadopago.access.token}")
