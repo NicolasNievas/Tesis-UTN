@@ -37,6 +37,7 @@ const CartPage: React.FC = () => {
       await removeFromCart(productId);
     } catch (error) {
       toast.error('Error removing product from cart');
+      console.error(error);
     }
   };
 
@@ -65,6 +66,7 @@ const CartPage: React.FC = () => {
       }
     } catch (err) {
       setError('Error initiating payment. Please try again.');
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -74,15 +76,15 @@ const CartPage: React.FC = () => {
     return <p> <LoadingSpinner /> </p>;
   }
 
-  const handleCheckoutClick = () => {
-    toast.info('This functionality is not implemented yet.');
-  };
+  // const handleCheckoutClick = () => {
+  //   toast.info('This functionality is not implemented yet.');
+  // };
 
   return (
     <div className="container mx-auto h-screen py-8">
       <h2 className="text-2xl font-semibold mb-4">Cart</h2>
       {!cart?.items?.length ? (
-        <p>You don't have anything in your cart.</p>
+        <p>You don&apos;t have anything in your cart.</p>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 p-2 ps-4 pe-4 m-2 shadow-[0_3px_10px_rgb(0,0,0,0.2)] rounded-md">

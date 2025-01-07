@@ -23,6 +23,7 @@ export default function Home() {
         setError(null);
         const data = await fetchActiveProducts(currentPage, pageSize);
         setProducts(data);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
         setError(
           "Error al cargar los productos. Por favor, intente de nuevo más tarde."
@@ -46,7 +47,7 @@ export default function Home() {
     const totalPages = products.totalPages;
 
     let startPage = Math.max(0, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
+    const endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
 
     // Adjust start if we're near the end
     if (endPage - startPage + 1 < maxVisiblePages) {

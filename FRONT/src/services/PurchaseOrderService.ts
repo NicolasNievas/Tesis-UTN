@@ -8,7 +8,6 @@ export class PurchaseOrderService {
   static async createOrder(providerId: number, details: ProviderOrderDetail[]): Promise<PurchaseOrderResponse> {
     try {
       const token = JWTService.getToken();
-      console.log('Sending request to create order with details:', details); // Debugging line
       const response = await axios.post(
         `${$URL}/${providerId}`,
         details,
@@ -19,8 +18,7 @@ export class PurchaseOrderService {
         }
       );
       return response.data;
-    } catch (error : any) {
-      console.error('Error creating order:', error.response?.data || error.message); // Debugging line
+    } catch (error) {
       throw this.handleError(error);
     }
   }
@@ -37,8 +35,7 @@ export class PurchaseOrderService {
         }
       );
       return response.data;
-    } catch (error: any) {
-      console.error('Error simulating delivery:', error.response?.data || error.message); // Debugging line
+    } catch (error) {
       throw this.handleError(error);
     }
   }
@@ -56,13 +53,12 @@ export class PurchaseOrderService {
         }
       );
       return response.data;
-    } catch (error: any) {
-      console.error('Error confirming delivery:', error.response?.data || error.message); // Debugging line
+    } catch (error) {
       throw this.handleError(error);
     }
   }
 
-  private static handleError(error: any): Error {
+  private static handleError(error): Error {
     if (error.response) {
       const message = error.response.data.message || 'An error occurred';
       return new Error(message);

@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import JWTService from '@/jwt/JwtService';
 
 const $URL = process.env.NEXT_PUBLIC_API_URL_CART;
@@ -16,7 +16,7 @@ class CartService {
 
       return response.data;
     } catch (error) {
-      throw this.handleError(error);
+      throw this.handleError(error as AxiosError);
     }
   }
 
@@ -33,11 +33,14 @@ class CartService {
       }
 
       return response.data;
-    } catch (error: any) {
-      if (error.response?.status === 400 && error.response?.data?.message?.includes('already in cart')) {
-        throw new Error('PRODUCT_ALREADY_IN_CART');
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) { // Verificamos si es un error de Axios
+        if (error.response?.status === 400 && error.response?.data?.message?.includes('already in cart')) {
+          throw new Error('PRODUCT_ALREADY_IN_CART');
+        }
+        throw new Error(error.message || 'An unknown error occurred');
       }
-      throw this.handleError(error);
+      throw this.handleError(error as AxiosError);
     }
   }
 
@@ -55,7 +58,7 @@ class CartService {
 
       return response.data;
     } catch (error) {
-      throw this.handleError(error);
+      throw this.handleError(error as AxiosError);
     }
   }
 
@@ -71,13 +74,14 @@ class CartService {
 
       return true;
     } catch (error) {
-      throw this.handleError(error);
+      throw this.handleError(error as AxiosError);
     }
   }
 
-  private static handleError(error: any) {
+  private static handleError(error: AxiosError) {
     if (error.response) {
-      const message = error.response.data.message || 'Error en el servidor';
+      const data = error.response?.data as { message?: string };
+      const message = data?.message || 'Error en el servidor';
       throw new Error(message);
     } else if (error.request) {
       throw new Error('No se pudo conectar con el servidor');
