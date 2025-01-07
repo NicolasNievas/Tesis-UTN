@@ -35,3 +35,4 @@ build/
 email.properties
 mercadopago.properties
 application-prod.properties
+.env
