@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import JWTService from '@/jwt/JwtService';
 import { DeliveryConfirmationDetail, InvoiceResponse, ProviderOrderDetail, PurchaseOrderResponse } from '@/interfaces/data.interfaces';
 
@@ -58,9 +58,9 @@ export class PurchaseOrderService {
     }
   }
 
-  private static handleError(error): Error {
-    if (error.response) {
-      const message = error.response.data.message || 'An error occurred';
+  private static handleError(error: AxiosError | unknown): Error {
+    if (axios.isAxiosError(error)) {
+      const message = error.response?.data?.message || 'An error occurred';
       return new Error(message);
     }
     return new Error('Network error occurred');

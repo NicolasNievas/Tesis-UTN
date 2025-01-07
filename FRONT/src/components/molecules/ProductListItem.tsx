@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import { IProductData } from "@/interfaces/data.interfaces";
 
 interface ProductListItemProps {
@@ -12,7 +13,15 @@ const ProductListItem: React.FC<ProductListItemProps> = ({ product, onEdit, onDe
     return (
       <tr className="border-b text-center">
         <td className="p-2 flex justify-center items-center">
-          <img src={product.imageUrls[0]} alt={product.name} className="w-16 h-16 object-cover" />
+          <div className="relative w-16 h-16">
+            <Image
+             src={product.imageUrls[0]} 
+             alt={product.name} 
+             fill
+             sizes="64px"
+             className="object-cover"
+            />
+          </div>
         </td>
         <td className="p-2">{product.name}</td>
         <td className="p-2">{product.price}</td>
