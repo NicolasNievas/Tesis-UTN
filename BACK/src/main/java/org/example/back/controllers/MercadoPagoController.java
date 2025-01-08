@@ -21,7 +21,6 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("")
-@CrossOrigin(origins = "http://localhost:3000")
 @Slf4j
 public class MercadoPagoController {
 
