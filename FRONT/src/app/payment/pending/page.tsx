@@ -1,3 +1,4 @@
+"use client"
 import { Suspense } from "react";
 import PaymentResultPage from "@/components/organisms/PaymentResult";
 
