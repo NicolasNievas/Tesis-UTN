@@ -1,6 +1,11 @@
-"use client"
+// pages/payment/success.tsx (and similar for pending/failure)
 import { Suspense } from "react";
-import PaymentResultPage from "@/components/organisms/PaymentResult";
+import dynamic from 'next/dynamic';
+
+const PaymentResultPage = dynamic(
+  () => import('@/components/organisms/PaymentResult'),
+  { ssr: false }
+);
 
 export default function SuccessPage() {
   return (
