@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import React, { useState, FormEvent, ChangeEvent } from 'react';
 import { sendEmail } from '@/services/MailService';

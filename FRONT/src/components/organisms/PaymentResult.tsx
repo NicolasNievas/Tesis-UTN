@@ -88,7 +88,7 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = () => {
     if (payment_id !== 'N/A') {
       fetchPaymentDetails();
     }
-  }, [payment_id]);
+  }, [$TOKEN, payment_id]);
 
   const getStatusInfo = () => {
     switch (status) {

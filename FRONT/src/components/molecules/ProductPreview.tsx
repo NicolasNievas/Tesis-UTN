@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { IProductData } from '@/interfaces/data.interfaces';

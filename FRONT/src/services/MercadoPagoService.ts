@@ -21,6 +21,4 @@ const initiatePayment = async () => {
   return response.data;
 };
 
-export default {
-  initiatePayment,
-};
+export default initiatePayment;
