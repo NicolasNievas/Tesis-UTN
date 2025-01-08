@@ -260,7 +260,15 @@ const OrderDetailsModal = ({ order, onClose, isOpen, onOrderUpdated  }: OrderDet
                                         <tr key={detail.id} className="hover:bg-gray-600 transition-colors">
                                             <td className="px-6 py-4">
                                                 {detail.imageUrl ? (
-                                                    <img src={detail.imageUrl} alt={detail.productName} className="h-16 w-16 object-cover rounded" />
+                                                    <div className="relative h-16 w-16">
+                                                        <Image
+                                                            src={detail.imageUrl}
+                                                            alt={detail.productName}
+                                                            fill
+                                                            sizes="64px"
+                                                            className="object-cover rounded"
+                                                            />
+                                                    </div>
                                                 ) : (
                                                     <div className="h-16 w-16 bg-gray-600 rounded flex items-center justify-center text-gray-400">
                                                         No image

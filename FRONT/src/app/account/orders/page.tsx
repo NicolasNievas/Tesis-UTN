@@ -1,8 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 import React, { useEffect, useState } from 'react';
 import { Calendar, Package, Truck, CreditCard, AlertCircle } from 'lucide-react';
 import OrderService from '@/services/OrderService';
-import { OrderResponse, OrderDetailResponse } from '@/interfaces/data.interfaces';
+import { OrderResponse } from '@/interfaces/data.interfaces';
 import { toast } from 'react-toastify';
 import Line from '@/components/atoms/Line';
 
@@ -27,7 +28,7 @@ const UserOrders = () => {
         }
     };
 
-    const formatDate = (dateArray: any) => {
+    const formatDate = (dateArray: string | number[]  ) => {
         if (Array.isArray(dateArray)) {
             const [year, month, day] = dateArray;
             return new Date(year, month - 1, day).toLocaleDateString('es-AR', {
@@ -192,7 +193,7 @@ const UserOrders = () => {
                 <div className="text-center py-12">
                     <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900">No orders found</h3>
-                    <p className="text-gray-500">You haven't placed any orders yet.</p>
+                    <p className="text-gray-500">You haven&apos;t placed any orders yet.</p>
                 </div>
             )}
         </div>

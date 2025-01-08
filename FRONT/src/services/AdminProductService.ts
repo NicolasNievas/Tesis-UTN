@@ -36,6 +36,7 @@ export const postProduct = async (productData: Partial<IProductData>) => {
       const response = await adminAxios.put(`${$URL}/products/update/${product.id}`, product);
       return response.data;
     } catch(error){
+      console.log(error);
       throw new Error("Error updating product");
     }
   }
