@@ -21,4 +21,5 @@ const initiatePayment = async () => {
   return response.data;
 };
 
-export default initiatePayment;
+// eslint-disable-next-line import/no-anonymous-default-export
+export default { initiatePayment };
