@@ -91,6 +91,7 @@ const MyProfile: React.FC = () => {
             setIsEditing(false);
             setError(null);
         } catch (err) {
+            console.error(err);
             setError('Error updating profile');
         } finally {
             setLoading(false);

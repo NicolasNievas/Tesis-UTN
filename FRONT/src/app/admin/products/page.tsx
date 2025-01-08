@@ -42,6 +42,7 @@ const AdminProductsPage: React.FC = () => {
                 const data = await getAllActiveBrands();
                 setBrands(data);
             } catch (err) {
+                console.log(err);
                 toast.error("Error al cargar las marcas. Por favor, intente de nuevo más tarde.");
             }
         };
@@ -56,6 +57,7 @@ const AdminProductsPage: React.FC = () => {
                     const data = await fetchCategoriesByBrand(selectedBrand);
                     setCategories(data);
                 } catch (err) {
+                    console.log(err);
                     toast.error("Error al cargar las categorías. Por favor, intente de nuevo más tarde.");
                 }
             } else {
@@ -84,6 +86,7 @@ const AdminProductsPage: React.FC = () => {
             setIsModalOpen(false);
             window.location.reload();
         } catch (error) {
+            console.log(error);
             toast.error("Error creating the product. Please try again later.");
         }
     };
@@ -95,6 +98,7 @@ const AdminProductsPage: React.FC = () => {
             setIsEditModalOpen(false);
             window.location.reload();
         } catch (error) {
+            console.log(error);
             toast.error("Error updating the product. Please try again later.");
         }
     };
@@ -117,6 +121,7 @@ const AdminProductsPage: React.FC = () => {
                 window.location.reload();
             }
         } catch (error) {
+            console.log(error);
             toast.error("Error deleting the product. Please try again later.");
         }
     };
@@ -139,6 +144,7 @@ const AdminProductsPage: React.FC = () => {
                 window.location.reload();
             }
         } catch (error) {
+            console.log(error);
             toast.error("Error reactivating the product. Please try again later.");
         }
     };

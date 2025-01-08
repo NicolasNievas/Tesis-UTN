@@ -31,6 +31,7 @@ const AdminOrders = () => {
 
     useEffect(() => {
         loadOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage, selectedStatus, startDate, endDate]);
 
     const loadOrders = async () => {
@@ -117,7 +118,7 @@ const AdminOrders = () => {
         setSelectedOrder(updatedOrder);
       };
 
-    const formatDate = (dateArray: any) => {
+    const formatDate = (dateArray: unknown) => {
         if (Array.isArray(dateArray)) {
             const [year, month, day, hour, minute, second] = dateArray;
             const date = new Date(year, month - 1, day, hour, minute, second);

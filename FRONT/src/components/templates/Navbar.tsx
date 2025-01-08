@@ -27,6 +27,7 @@ const Navbar = () => {
         const data = await getAllActiveBrands();
         setBrands(data);
       } catch (error) {
+        console.log('Error fetching brands:', error);
         setError('Error fetching brands');
       } finally {
         setLoading(false);

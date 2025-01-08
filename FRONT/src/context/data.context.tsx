@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 import { createContext, useContext, useEffect, useState } from 'react';
 import AuthService from '@/services/AuthService';
@@ -129,7 +130,8 @@ export const AuthProvider = ({ children }: IDataProvideProps) => {
       setCartLoading(true);
       const cartData = await CartService.getCart();
       setCart(cartData);
-    } catch (error: any) {
+    } catch (error) {
+      console.log(error)
       toast.error('Error getting the cart');
     } finally {
       setCartLoading(false);
@@ -187,6 +189,7 @@ export const AuthProvider = ({ children }: IDataProvideProps) => {
       setCart(updatedCart);
       toast.success('Cart updated successfully');
     } catch (error) {
+      console.log(error)
       toast.error('Error updating cart');
     } finally {
       setCartLoading(false);

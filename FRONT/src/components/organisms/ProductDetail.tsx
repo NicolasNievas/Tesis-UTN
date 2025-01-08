@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import React from 'react';
 import { IProductData, IBrandData, ICategoryData } from '@/interfaces/data.interfaces';
 import Button from '@/components/atoms/Button';
@@ -29,7 +30,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, brand, category 
 
     try {
       await addToCart(product.id);
-    } catch (error: any) {
+    } catch (error) {
+      console.log(error);
       toast.error('Error adding to cart');
     }
   };

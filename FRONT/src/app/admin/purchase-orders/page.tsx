@@ -5,7 +5,7 @@ import PurchaseOrderService from '@/services/PurchaseOrderService';
 import { fetchActiveProductsOrder } from '@/services/ProductService';
 import axios from 'axios';
 import { Plus, CheckCircle, RefreshCw, Trash2 } from 'lucide-react';
-import { PurchaseOrderResponse, SimulatedDeliveryDetail } from '@/interfaces/data.interfaces';
+import { ProviderOrderDetail, PurchaseOrderResponse, SimulatedDeliveryDetail } from '@/interfaces/data.interfaces';
 import { withAdmin } from '@/hoc/isAdmin';
 import Line from '@/components/atoms/Line';
 
@@ -22,7 +22,7 @@ const PurchaseOrderManagement = () => {
   
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [providers, setProviders] = useState<{ id: number; name: string }[]>([]);
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<{ id: number; name: string }[]>([]);
   const [selectedProvider, setSelectedProvider] = useState<number | null>(null);
   const [items, setItems] = useState([{ productId: '', requestedQuantity: '', purchasePrice: '' }]);
   
@@ -37,6 +37,7 @@ const PurchaseOrderManagement = () => {
         setProviders(providersResponse.data);
         setProducts(productsData);
       } catch (err) {
+        console.log(err);
         toast.error("Error loading initial data");
       }
     };
@@ -47,17 +48,36 @@ const PurchaseOrderManagement = () => {
 
   const removeItem = (index: number) => setItems(items.filter((_, i) => i !== index));
 
-  const updateItem = (index: number, field: keyof typeof items[0], value: any) => {
+  const updateItem = (index: number, field: keyof typeof items[0], value: unknown) => {
     const newItems = [...items];
-    newItems[index][field] = value;
+    newItems[index][field] = value as string;
     setItems(newItems);
   };
 
   const createOrder = async () => {
     try {
-      const token = localStorage.getItem('token');
       if (selectedProvider !== null) {
-        const response = await PurchaseOrderService.createOrder(selectedProvider, items);
+        // Convert string values to numbers and create ProviderOrderDetail array
+        const formattedItems: ProviderOrderDetail[] = items.map(item => ({
+          productId: parseInt(item.productId),
+          requestedQuantity: parseInt(item.requestedQuantity),
+          purchasePrice: parseFloat(item.purchasePrice)
+        }));
+
+        // Validate the converted values
+        const isValid = formattedItems.every(item => 
+          !isNaN(item.productId) && 
+          !isNaN(item.requestedQuantity) && 
+          !isNaN(item.purchasePrice)
+        );
+
+        if (!isValid) {
+          toast.error("Please enter valid numbers for all fields");
+          return;
+        }
+
+        const response = await PurchaseOrderService.createOrder(selectedProvider, formattedItems);
+        
         const newOrder: PurchaseOrder = {
           orderId: response.orderId,
           status: response.status,
@@ -65,12 +85,14 @@ const PurchaseOrderManagement = () => {
           expectedDeliveryDays: response.expectedDeliveryDays,
           simulatedDelivery: response.simulatedDelivery,
         };
+
         setOrders([...orders, newOrder]);
         toast.success("Order created successfully");
       } else {
         toast.error("Please select a provider");
       }
     } catch (error) {
+      console.log(error);
       toast.error("Error creating order");
     }
   };
@@ -81,6 +103,7 @@ const PurchaseOrderManagement = () => {
       setOrders(orders.map(order => order.orderId === orderId ? { ...order, ...response } : order));
       toast.success("Simulation completed");
     } catch (error) {
+      console.log(error);
       toast.error("Error simulating delivery");
     }
   };
@@ -88,9 +111,11 @@ const PurchaseOrderManagement = () => {
   const confirmDelivery = async (orderId: number, deliveryDetails: { productId: number; receivedQuantity: number }[]) => {
     try {
       const response = await PurchaseOrderService.confirmDelivery(orderId, deliveryDetails);
+      console.log(response);
       setOrders(orders.map(order => order.orderId === orderId ? { ...order, status: 'COMPLETED' } : order));
       toast.success("Delivery confirmed and stock updated");
     } catch (error) {
+      console.log(error);
       toast.error("Error confirming delivery");
     }
   };
@@ -145,7 +170,7 @@ interface OrderItem {
   purchasePrice: string;
 }
 
-const OrderItems = ({ items, products, updateItem, removeItem, addItem }: { items: OrderItem[], products: any[], updateItem: (index: number, field: keyof OrderItem, value: any) => void, removeItem: (index: number) => void, addItem: () => void }) => (
+const OrderItems = ({ items, products, updateItem, removeItem, addItem }: { items: OrderItem[], products: unknown[], updateItem: (index: number, field: keyof OrderItem, value: unknown) => void, removeItem: (index: number) => void, addItem: () => void }) => (
   <div className="space-y-4">
     <div className="flex justify-between items-center">
       <h3 className="text-lg font-medium">Products</h3>
@@ -159,7 +184,7 @@ const OrderItems = ({ items, products, updateItem, removeItem, addItem }: { item
         <select value={item.productId} onChange={(e) => updateItem(index, 'productId', e.target.value)} className="p-2 border rounded-lg">
           <option value="">Select a product</option>
           {Array.isArray(products) && products.map(product => (
-            <option key={product.id} value={product.id}>{product.name}</option>
+            <option key={(product as { id: number; name: string }).id} value={(product as { id: number; name: string }).id}>{(product as { id: number; name: string }).name}</option>
           ))}
         </select>
         <input type="number" value={item.requestedQuantity} onChange={(e) => updateItem(index, 'requestedQuantity', e.target.value)} placeholder="Quantity" className="p-2 border rounded-lg" />

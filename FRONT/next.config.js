@@ -1,8 +1,12 @@
 module.exports = {
-    images: {
-      domains: [
-        'lh3.googleusercontent.com',
-        'http2.mlstatic.com'
-      ],
-    },
-  };
+  images: {
+    domains: ['*'], // Esto no es recomendado
+    // O usar remotePatterns con un patrón más permisivo
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+  },
+};

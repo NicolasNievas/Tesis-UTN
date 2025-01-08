@@ -9,7 +9,7 @@ import Line from '@/components/atoms/Line';
 
 const BrandsPage: React.FC = () => {
   const [brands, setBrands] = useState<IBrandData[]>([]);
-  const [selectedBrand, setSelectedBrand] = useState<IBrandData | null>(null);
+  const [selectedBrand] = useState<IBrandData | null>(null);
   const [newBrandName, setNewBrandName] = useState('');
 
   useEffect(() => {
@@ -21,6 +21,7 @@ const BrandsPage: React.FC = () => {
       const data = await getAllBrands();
       setBrands(data);
     } catch (error) {
+      console.log(error);
       toast.error("Error fetching brands");
     }
   };
@@ -34,6 +35,7 @@ const BrandsPage: React.FC = () => {
       setNewBrandName('');
       fetchBrands();
     } catch (error) {
+      console.log(error);
       toast.error("Error creating brand");
     }
   };
@@ -66,6 +68,7 @@ const BrandsPage: React.FC = () => {
         fetchBrands();
       }
     } catch (error) {
+      console.log(error);
       toast.error("Error deactivating brand");
     }
   };
@@ -86,6 +89,7 @@ const BrandsPage: React.FC = () => {
         fetchBrands();
       }
     } catch (error) {
+      console.log(error);
       toast.error("Error reactivating brand");
     }
   };

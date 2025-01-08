@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { OrderResponse } from '@/interfaces/data.interfaces';
 import Line from '../atoms/Line';
 import { User, Mail, Phone, MapPin, Building, ChevronDown } from 'lucide-react';
@@ -16,7 +17,7 @@ const OrderDetailsModal = ({ order, onClose, isOpen, onOrderUpdated  }: OrderDet
 
     if (!isOpen) return null;
 
-    const formatDate = (dateArray: any) => {
+    const formatDate = (dateArray: unknown) => {
         if (Array.isArray(dateArray)) {
             const [year, month, day, hour, minute, second] = dateArray;
             const date = new Date(year, month - 1, day, hour, minute, second);
@@ -64,11 +65,11 @@ const OrderDetailsModal = ({ order, onClose, isOpen, onOrderUpdated  }: OrderDet
         }
     };
 
-    const handleStatusUpdate = (updatedOrder: OrderResponse) => {
-        if (onOrderUpdated) {
-          onOrderUpdated(updatedOrder);
-        }
-    };
+    // const handleStatusUpdate = (updatedOrder: OrderResponse) => {
+    //     if (onOrderUpdated) {
+    //       onOrderUpdated(updatedOrder);
+    //     }
+    // };
     return (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
             <div className="bg-gray-800 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto text-white">
@@ -259,11 +260,7 @@ const OrderDetailsModal = ({ order, onClose, isOpen, onOrderUpdated  }: OrderDet
                                         <tr key={detail.id} className="hover:bg-gray-600 transition-colors">
                                             <td className="px-6 py-4">
                                                 {detail.imageUrl ? (
-                                                    <img
-                                                        src={detail.imageUrl}
-                                                        alt={detail.productName}
-                                                        className="h-16 w-16 object-cover rounded"
-                                                    />
+                                                    <img src={detail.imageUrl} alt={detail.productName} className="h-16 w-16 object-cover rounded" />
                                                 ) : (
                                                     <div className="h-16 w-16 bg-gray-600 rounded flex items-center justify-center text-gray-400">
                                                         No image

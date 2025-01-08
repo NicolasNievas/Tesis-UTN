@@ -17,7 +17,7 @@ const BrandProductsPage: React.FC = () => {
   const [categories, setCategories] = useState<ICategoryData[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -31,6 +31,7 @@ const BrandProductsPage: React.FC = () => {
           setProducts(productData);
           setCategories(categoryData);
         } catch (err) {
+          console.log(err);
           toast.error("Error fetching initial data.");
         } finally {
           setLoading(false);
@@ -53,6 +54,7 @@ const BrandProductsPage: React.FC = () => {
             setProducts(data);
           }
         } catch (err) {
+          console.log(err);
             toast.error("Products not found.");
         } finally {
           setLoading(false);
@@ -71,6 +73,7 @@ const BrandProductsPage: React.FC = () => {
         setProducts(data);
         setSelectedCategory(null);
       } catch (err) {
+        console.log(err);
         toast.error("Error fetching products.");
       } finally {
         setLoading(false);

@@ -1,9 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 "use client"
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { CheckCircle, XCircle, Clock, ArrowLeft, CreditCard, Calendar, User, Package, Download } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, ArrowLeft, CreditCard, Calendar, User, Download } from 'lucide-react';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import autoTable from 'jspdf-autotable';
 
 interface PaymentResultPageProps {
@@ -45,11 +45,12 @@ interface PaymentDetails {
   };
 }
 
-const PaymentResultPage: React.FC<PaymentResultPageProps> = ({ type }) => {
+const PaymentResultPage: React.FC<PaymentResultPageProps> = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string | null>(null);
 
   const email = paymentDetails?.external_reference.split('|||')[1];
@@ -77,6 +78,7 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = ({ type }) => {
         const data = await response.json();
         setPaymentDetails(data);
       } catch (err) {
+        console.error(err);
         setError('Error al obtener los detalles del pago');
       } finally {
         setLoading(false);
@@ -163,9 +165,11 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = ({ type }) => {
     doc.setFontSize(16);
     const statusText = status === 'approved' ? 'APPROVED' : 
                       status === 'pending' ? 'PENDING' : 'FAILED';
-    const statusColor = status === 'approved' ? [39, 174, 96] : 
-                       status === 'pending' ? [241, 196, 15] : [231, 76, 60];
-    doc.setTextColor(...statusColor);
+    // Define el tipo explícito para el array de colores
+    const statusColor: [number, number, number] = status === 'approved' ? [39, 174, 96] : 
+                                                status === 'pending' ? [241, 196, 15] : [231, 76, 60];
+    
+    doc.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
     doc.text(statusText, 105, 30, { align: 'center' });
     
     // Información del comprador
@@ -207,6 +211,7 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = ({ type }) => {
     });
 
     // Total
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const finalY = (doc as any).lastAutoTable.finalY + 10;
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
@@ -277,7 +282,7 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = ({ type }) => {
                 <div className="p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-center space-x-2 mb-2">
                         <User className="h-5 w-5 text-gray-400" />
-                        <p className="text-sm text-gray-500">Buyer's information</p>
+                        <p className="text-sm text-gray-500">Buyer&apos;s information</p>
                         </div>
                         <p className="font-medium">
                             {first_name} {last_name}

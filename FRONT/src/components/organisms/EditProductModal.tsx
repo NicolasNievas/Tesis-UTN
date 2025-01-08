@@ -40,6 +40,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
           const data = await fetchCategoriesByBrand(selectedBrand);
           setCategories(data);
         } catch (err) {
+          console.log(err);
           toast.error("Error al cargar las categorías. Por favor, intente de nuevo más tarde.");
         }
       } else {

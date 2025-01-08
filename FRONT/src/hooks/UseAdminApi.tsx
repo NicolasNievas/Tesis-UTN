@@ -49,6 +49,7 @@ export const useApi = <T,>(path?: string) => {
         if(path){
             fetchData(path);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [path]);
 
     return { data, loading, error };

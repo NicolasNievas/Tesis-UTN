@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Calendar } from 'lucide-react';
 import { StockMovementService, StockMovement } from '@/services/ReplenishmentService';
 import { Alert } from '@/components/atoms/Alert';

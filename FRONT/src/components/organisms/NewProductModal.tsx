@@ -126,7 +126,7 @@ const NewProductModal: React.FC<NewProductModalProps> = ({ isOpen, onClose, onSu
     setError(null);
   };
 
-  const isCategorySelectDisabled = !selectedBrand || categories.length === 0;
+  //const isCategorySelectDisabled = !selectedBrand || categories.length === 0;
 
   if (!isOpen) return null;
 

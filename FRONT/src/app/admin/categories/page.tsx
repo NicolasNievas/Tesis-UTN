@@ -26,6 +26,7 @@ const CategoriesPage: React.FC = () => {
       const data = await getAllBrands();
       setBrands(data);
     } catch (error) {
+      console.log(error);
       toast.error("Error fetching brands");
     }
   };
@@ -35,6 +36,7 @@ const CategoriesPage: React.FC = () => {
       const data = await fetchAllCategoriesByBrand(brandId);
       setCategories(data);
     } catch (error) {
+      console.log(error);
       toast.error("Error fetching categories");
     }
   };
@@ -52,6 +54,7 @@ const CategoriesPage: React.FC = () => {
       setNewCategoryName('');
       fetchCategories(selectedBrand);
     } catch (error) {
+      console.log(error);
       toast.error("Error creating category");
     }
   };
@@ -68,6 +71,7 @@ const CategoriesPage: React.FC = () => {
       fetchCategories(selectedBrand);
       closeModal();
     } catch (error) {
+      console.log(error);
       toast.error("Error updating category");
     }
   };
@@ -90,6 +94,7 @@ const CategoriesPage: React.FC = () => {
             fetchCategories(selectedBrand!);
         }
     } catch (error) {
+      console.log(error);
         toast.error("Error deactivating category");
     }
 };
@@ -112,6 +117,7 @@ const CategoriesPage: React.FC = () => {
         fetchCategories(selectedBrand!);
       }
     } catch (error) {
+      console.log(error);
       toast.error("Error reactivating category");
     }
   };
