@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-import { LOGIN_VIEW } from '@/interfaces/enums';
+import { LOGIN_VIEW, TypeDocument } from '@/interfaces/enums';
 import { useAuthContext } from '@/context/data.context';
 import Button from '@/components/atoms/Button';
 
@@ -18,7 +18,9 @@ const Register = ({ setCurrentView }: IRegisterProps) => {
     lastname: '',
     phoneNumber: '',
     address: '',
-    city: ''
+    city: '',
+    nroDoc: '',
+    typeDoc: 'DNI' as unknown as TypeDocument
   });
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -26,7 +28,7 @@ const Register = ({ setCurrentView }: IRegisterProps) => {
   const [isDisabled, setIsDisabled] = useState(true);
 
   useEffect(() => {
-    setIsDisabled(!(formData.email && formData.password && formData.firstname && formData.lastname && formData.phoneNumber && formData.address && formData.city));
+    setIsDisabled(!(formData.email && formData.password && formData.firstname && formData.lastname && formData.phoneNumber && formData.address && formData.city && formData.nroDoc && formData.typeDoc));
   }, [formData]);
 
   useEffect(() => {
@@ -36,7 +38,7 @@ const Register = ({ setCurrentView }: IRegisterProps) => {
     }
   }, [isAuthenticated, router]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -75,6 +77,72 @@ const Register = ({ setCurrentView }: IRegisterProps) => {
           </h2>
           <p className="text-">Create your Member profile, and get access to an enhanced shopping experience.</p>
           <form className="relative" onSubmit={handleSubmit}>
+
+           {/* Name Fields */}
+           <div className="grid grid-cols-2 gap-4">
+              <div>
+                <input
+                  type="text"
+                  id="firstname"
+                  name="firstname"
+                  placeholder="First Name"
+                  title="Enter your first name"
+                  value={formData.firstname}
+                  onChange={handleChange}
+                  className="border m-2 text-xl bg-white p-2 w-full rounded-lg font-extralight"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  id="lastname"
+                  name="lastname"
+                  placeholder="Last Name"
+                  title="Enter your last name"
+                  value={formData.lastname}
+                  onChange={handleChange}
+                  className="border m-2 text-xl bg-white p-2 w-full rounded-lg font-extralight"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+
+            {/* Type Document */}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <select
+                id="typeDocument"
+                name="typeDoc"
+                value={formData.typeDoc}
+                onChange={handleChange}
+                className="border m-2 text-xl bg-white p-2 w-full rounded-lg font-extralight"
+                required
+                disabled={isLoading}
+                >
+                  <option value="DNI">DNI</option>
+                  <option value="PASSPORT">Passport</option>
+                </select>
+              </div>
+              <div>
+                <input
+                  type="text"
+                  id="nroDoc"
+                  name="nroDoc"
+                  placeholder="Document Number"
+                  title="Enter your document number"
+                  value={formData.nroDoc}
+                  onChange={handleChange}
+                  className="border m-2 text-xl bg-white p-2 w-full rounded-lg font-extralight"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+
             {/* Email Field */}
             <div>
               <input
@@ -106,38 +174,6 @@ const Register = ({ setCurrentView }: IRegisterProps) => {
                 disabled={isLoading}
                 minLength={6}
               />
-            </div>
-  
-            {/* Name Fields */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <input
-                  type="text"
-                  id="firstname"
-                  name="firstname"
-                  placeholder="First Name"
-                  title="Enter your first name"
-                  value={formData.firstname}
-                  onChange={handleChange}
-                  className="border m-2 text-xl bg-white p-2 w-full rounded-lg font-extralight"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              <div>
-                <input
-                  type="text"
-                  id="lastname"
-                  name="lastname"
-                  placeholder="Last Name"
-                  title="Enter your last name"
-                  value={formData.lastname}
-                  onChange={handleChange}
-                  className="border m-2 text-xl bg-white p-2 w-full rounded-lg font-extralight"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
             </div>
   
             {/* Contact Information */}

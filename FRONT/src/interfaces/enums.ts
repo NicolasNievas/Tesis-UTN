@@ -16,3 +16,8 @@ export enum RESPONSE_STATUS {
     CREATED = 201,
     BAD_REQUEST = 400
 }
+
+export enum TypeDocument{
+    DNI,
+    PASAPORTE
+} 

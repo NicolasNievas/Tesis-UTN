@@ -1,3 +1,5 @@
+import { TypeDocument } from "./enums";
+
 export interface IProductData{
     id: number;
     name: string;
@@ -48,6 +50,8 @@ export interface RegisterRequest {
   phoneNumber: string;
   address: string;
   city: string;
+  nroDoc: string;
+  typeDoc: TypeDocument;
 }
   
 export interface AuthResponse {
