@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -75,10 +76,14 @@ public class MercadoPagoServiceImp implements MercadoPagoService {
 
     @Override
     public String createPreference(List<CartItemDTO> items, UserDTO user) throws MPException, MPApiException {
-        PreferenceClient client = new PreferenceClient();
+        //PreferenceClient client = new PreferenceClient();
 
         if (user == null || user.getEmail() == null) {
             throw new IllegalArgumentException("User and email are required");
+        }
+
+        if (items == null || items.isEmpty()) {
+            throw new IllegalArgumentException("Items cannot be null or empty");
         }
 
         String orderId = "ORDER|||" + user.getEmail() + "|||" + System.currentTimeMillis();
@@ -119,15 +124,22 @@ public class MercadoPagoServiceImp implements MercadoPagoService {
                 .statementDescriptor(statementDescriptor)
                 .externalReference(orderId)
                 .expires(true)  // Activar expiración
-                .expirationDateFrom(OffsetDateTime.now())  // Fecha de inicio
+                .expirationDateFrom(OffsetDateTime.now(ZoneOffset.UTC))  // Fecha de inicio
                 .expirationDateTo(OffsetDateTime.now().plusDays(2))  // Expiración en 2 días
                 .build();
 
-        Preference preference = client.create(preferenceRequest);
-        log.info("Preference created with ID: {} and external reference: {}",
-                preference.getId(), orderId);
-        System.out.println("Preference created: " + preference.getId());
-        return preference.getId();
+        try {
+            PreferenceClient client = new PreferenceClient();
+            Preference preference = client.create(preferenceRequest);
+            log.info("Preference created id={} extRef={}", preference.getId(), orderId);
+            return preference.getId();
+        } catch (MPApiException e) {
+            log.error("MPApiException status={} body={}", e.getApiResponse().getStatusCode(), e.getApiResponse().getContent(), e);
+            throw e;
+        } catch (MPException e) {
+            log.error("MPException {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
