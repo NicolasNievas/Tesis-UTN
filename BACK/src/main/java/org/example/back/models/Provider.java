@@ -13,4 +13,8 @@ public class Provider {
     private String email;
     private String phone;
     private String street;
+    private Boolean isActive = true;
+    private String createdAt;
+    private String updatedAt;
+    private String deletedAt;
 }
