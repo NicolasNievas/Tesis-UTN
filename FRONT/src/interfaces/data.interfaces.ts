@@ -241,11 +241,30 @@ export interface InvoiceResponse {
 
 //Provider interfaces
 
-export interface IProviderData {
+// export interface IProviderData {
+//   id: number;
+//   name: string;
+//   email: string;
+//   phone: string;
+//   address: string;
+//   street: string;
+// }
+
+export type IProviderData = {
   id: number;
   name: string;
   email: string;
   phone: string;
-  address: string;
   street: string;
-}
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
+};
+
+export type ProviderRequest = {
+  name: string;
+  email: string;
+  phone: string;
+  street: string;
+};
