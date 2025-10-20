@@ -4,7 +4,8 @@ import {
   Menu, X,
   ShoppingCart, BarChart3,
   Package, Tag, FolderTree,
-  Truck, FilePlus2, Boxes
+  Truck, FilePlus2, Boxes,
+  LucideIcon
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -13,7 +14,7 @@ import { useState } from "react";
 function NavItem({ href, label, Icon, onClick }: {
   href: string;
   label: string;
-  Icon?: React.ComponentType<{ size?: number; className?: string }>;
+  Icon?: LucideIcon;
   onClick?: () => void;
 }) {
   const pathname = usePathname();
