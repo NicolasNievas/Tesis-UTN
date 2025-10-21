@@ -2,9 +2,12 @@ package org.example.back.services.imp;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.velocity.exception.ResourceNotFoundException;
+import org.example.back.dtos.common.InvalidOperationException;
 import org.example.back.dtos.request.ProviderRequest;
 import org.example.back.entities.ProviderEntity;
+import org.example.back.entities.UserEntity;
 import org.example.back.models.Provider;
+import org.example.back.models.User;
 import org.example.back.repositories.ProviderRepository;
 import org.example.back.services.UserService;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,13 @@ public class ProviderServiceImp implements ProviderService {
                         .email(providerEntity.getEmail())
                         .phone(providerEntity.getPhone())
                         .street(providerEntity.getStreet())
+                        .isActive(providerEntity.getIsActive())
+                        .createdBy(providerEntity.getCreatedBy())
+                        .updatedBy(providerEntity.getUpdatedBy())
+                        .deletedBy(providerEntity.getDeletedBy())
+                        .createdAt(providerEntity.getCreatedAt())
+                        .updatedAt(providerEntity.getUpdatedAt())
+                        .deletedAt(providerEntity.getDeletedAt())
                         .build())
                 .toList();
     }
@@ -38,18 +48,10 @@ public class ProviderServiceImp implements ProviderService {
     @Override
     @Transactional
     public Provider getProviderById(Long id) {;
-        ProviderEntity providerEntity = providerRepository.findById(id).orElse(null);
-        if (providerEntity == null || providerEntity.getId() == null) {
-            IllegalArgumentException e = new IllegalArgumentException("Provider not found with id: " + id);
-        }
+        ProviderEntity entity = providerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Provider not found with id: " + id));
 
-        return Provider.builder()
-                .id(providerEntity.getId())
-                .name(providerEntity.getName())
-                .email(providerEntity.getEmail())
-                .phone(providerEntity.getPhone())
-                .street(providerEntity.getStreet())
-                .build();
+        return mapToProvider(entity);
     }
 
     @Override
@@ -92,7 +94,7 @@ public class ProviderServiceImp implements ProviderService {
         }
         entity.setIsActive(false);
         entity.setDeletedAt(LocalDateTime.now());
-        entity.setDeletedBy(currentUsernameOrSystem());
+        //entity.setDeletedBy(currentUsernameOrSystem());
         ProviderEntity saved = providerRepository.save(entity);
         return mapToProvider(saved);
     }
@@ -103,10 +105,11 @@ public class ProviderServiceImp implements ProviderService {
         ProviderEntity entity = providerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Provider not found with id: " + id));
         if (Boolean.TRUE.equals(entity.getIsActive())) {
-            return mapToProvider(entity);
+            throw new InvalidOperationException("Provider with id " + id + " is already active");
         }
         entity.setIsActive(true);
         entity.setDeletedAt(null);
+        entity.setDeletedBy(null);
         ProviderEntity saved = providerRepository.save(entity);
         return mapToProvider(saved);
     }
@@ -119,8 +122,12 @@ public class ProviderServiceImp implements ProviderService {
     }
 
     private String currentUsernameOrSystem() {
-        try { return userService.getCurrentUser().getEmail(); }
-        catch (Exception e) { return "system"; }
+        try {
+            User user = userService.getCurrentUser();
+            return user != null ? user.getEmail() : "system";
+        } catch (Exception e) {
+            return "system";
+        }
     }
 
     private Provider mapToProvider(ProviderEntity providerEntity) {
@@ -130,6 +137,13 @@ public class ProviderServiceImp implements ProviderService {
                 .email(providerEntity.getEmail())
                 .phone(providerEntity.getPhone())
                 .street(providerEntity.getStreet())
+                .isActive(providerEntity.getIsActive())
+                .createdBy(providerEntity.getCreatedBy())
+                .updatedBy(providerEntity.getUpdatedBy())
+                .deletedBy(providerEntity.getDeletedBy())
+                .createdAt(providerEntity.getCreatedAt())
+                .updatedAt(providerEntity.getUpdatedAt())
+                .deletedAt(providerEntity.getDeletedAt())
                 .build();
     }
 }

@@ -1,6 +1,8 @@
 package org.example.back.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
@@ -14,7 +16,13 @@ public class Provider {
     private String phone;
     private String street;
     private Boolean isActive = true;
-    private String createdAt;
-    private String updatedAt;
-    private String deletedAt;
+    private String createdBy;
+    private String updatedBy;
+    private String deletedBy;
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    private LocalDateTime createdAt;
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    private LocalDateTime updatedAt;
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    private LocalDateTime deletedAt;
 }
