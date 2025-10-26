@@ -28,20 +28,7 @@ public class ProviderServiceImp implements ProviderService {
     public List<Provider> getAllProviders() {
         List<ProviderEntity> providerEntities = providerRepository.findAll();
         return providerEntities.stream()
-                .map(providerEntity -> Provider.builder()
-                        .id(providerEntity.getId())
-                        .name(providerEntity.getName())
-                        .email(providerEntity.getEmail())
-                        .phone(providerEntity.getPhone())
-                        .street(providerEntity.getStreet())
-                        .isActive(providerEntity.getIsActive())
-                        .createdBy(providerEntity.getCreatedBy())
-                        .updatedBy(providerEntity.getUpdatedBy())
-                        .deletedBy(providerEntity.getDeletedBy())
-                        .createdAt(providerEntity.getCreatedAt())
-                        .updatedAt(providerEntity.getUpdatedAt())
-                        .deletedAt(providerEntity.getDeletedAt())
-                        .build())
+                .map(this::mapToProvider)
                 .toList();
     }
 
@@ -75,13 +62,14 @@ public class ProviderServiceImp implements ProviderService {
         ProviderEntity entity = providerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Provider not found with id: " + id));
 
-        if (providerRepository.existsByEmailIgnoreCaseAndIdNot(req.getEmail(), id)) {
+        if (req.getEmail() != null && !req.getEmail().equalsIgnoreCase(entity.getEmail()) &&
+                providerRepository.existsByEmailIgnoreCaseAndIdNot(req.getEmail(), id)) {
             throw new IllegalArgumentException("Email is already in use: " + req.getEmail());
         }
 
         applyRequest(entity, req);
-        ProviderEntity saved = providerRepository.save(entity);
-        return mapToProvider(saved);
+        //ProviderEntity saved = providerRepository.save(entity);
+        return mapToProvider(entity);
     }
 
     @Override
@@ -93,7 +81,6 @@ public class ProviderServiceImp implements ProviderService {
             return mapToProvider(entity);
         }
         entity.setIsActive(false);
-        entity.setDeletedAt(LocalDateTime.now());
         //entity.setDeletedBy(currentUsernameOrSystem());
         ProviderEntity saved = providerRepository.save(entity);
         return mapToProvider(saved);
@@ -108,8 +95,6 @@ public class ProviderServiceImp implements ProviderService {
             throw new InvalidOperationException("Provider with id " + id + " is already active");
         }
         entity.setIsActive(true);
-        entity.setDeletedAt(null);
-        entity.setDeletedBy(null);
         ProviderEntity saved = providerRepository.save(entity);
         return mapToProvider(saved);
     }
@@ -138,12 +123,6 @@ public class ProviderServiceImp implements ProviderService {
                 .phone(providerEntity.getPhone())
                 .street(providerEntity.getStreet())
                 .isActive(providerEntity.getIsActive())
-                .createdBy(providerEntity.getCreatedBy())
-                .updatedBy(providerEntity.getUpdatedBy())
-                .deletedBy(providerEntity.getDeletedBy())
-                .createdAt(providerEntity.getCreatedAt())
-                .updatedAt(providerEntity.getUpdatedAt())
-                .deletedAt(providerEntity.getDeletedAt())
                 .build();
     }
 }
