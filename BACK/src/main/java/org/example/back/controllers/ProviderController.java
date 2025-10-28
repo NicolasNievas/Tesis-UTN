@@ -25,7 +25,23 @@ public class ProviderController {
     @ApiResponse(responseCode = "200", description = "Successful operation")
     @ApiResponse(responseCode = "403", description = "Unauthorized")
     public ResponseEntity<Iterable<Provider>> getAllProviders() {
-        return ResponseEntity.ok(providerService.getAllProviders());
+        try {
+            return ResponseEntity.ok(providerService.getAllProviders());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/allActive")
+    @Operation(summary = "Get all active providers", description = "Get all active providers")
+    @ApiResponse(responseCode = "200", description = "Successful operation")
+    @ApiResponse(responseCode = "403", description = "Unauthorized")
+    public ResponseEntity<Iterable<Provider>> getAllActiveProviders() {
+        try {
+            return ResponseEntity.ok(providerService.getAllActiveProviders());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/{id}")

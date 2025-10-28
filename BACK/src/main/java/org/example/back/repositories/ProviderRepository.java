@@ -6,6 +6,8 @@ import org.example.back.entities.ProviderEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ProviderRepository extends JpaRepository<ProviderEntity, Long> {
     boolean existsByNameIgnoreCase(String name);
@@ -13,4 +15,6 @@ public interface ProviderRepository extends JpaRepository<ProviderEntity, Long> 
     boolean existsByEmailIgnoreCase(String email);
 
     boolean existsByEmailIgnoreCaseAndIdNot(@NotBlank(message = "email is required") @Email(message = "email must be valid") String email, Long id);
+
+    List<ProviderEntity> findByIsActiveTrue();
 }

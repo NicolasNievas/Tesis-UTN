@@ -1,13 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { adminAxios } from "@/services/AdminAxiosInstance";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import AdminProviderService from "@/services/AdminProviderService";
 import { IProviderData, ProviderRequest } from "@/interfaces/data.interfaces";
-// Si ya tenés SweetAlert2 instalado (lo vi en deps), usamos import dinámico para no romper SSR
-const swal = () => import("sweetalert2").then(m => m.default);
+import Swal from "sweetalert2";
 
 export default function ProvidersPage() {
   const [data, setData] = useState<IProviderData[]>([]);
@@ -25,7 +22,7 @@ export default function ProvidersPage() {
       const items = await AdminProviderService.list();
       setData(items);
     } catch (e: any) {
-      toast.error(e?.response?.data?.message ?? "No se pudieron cargar los proveedores");
+      toast.error(e?.response?.data?.message ?? "Error loading providers");
     }
     setLoading(false);
   };
@@ -59,45 +56,58 @@ export default function ProvidersPage() {
   };
 
   const onDelete = async (prov: IProviderData) => {
-    const Swal = await swal();
-    const res = await Swal.fire({
-      title: "¿Desactivar proveedor?",
-      text: `Se desactivará ${prov.name}. Podrás reactivarlo luego.`,
-      icon: "warning",
+    // Confirmación simple con confirm nativo
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: `¿Desactivar proveedor?\n\nSe desactivará ${prov.name}. Podrás reactivarlo luego.`,
+      icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: "Sí, desactivar",
-      cancelButtonText: "Cancelar",
-      confirmButtonColor: "#d33",
-    });
-    if (!res.isConfirmed) return;
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, deactivate it!'
+    })
+    if (!result.isConfirmed) return;
 
     try {
       await AdminProviderService.remove(prov.id);
-      toast.success("Proveedor desactivado");
+      toast.success("Proveedor deactivated successfully");
       load();
     } catch (e: any) {
-      toast.error(e?.response?.data?.message ?? "No se pudo desactivar");
+      toast.error(e?.response?.data?.message ?? "Error deactivating provider");
     }
   };
 
   const onReactivate = async (prov: IProviderData) => {
-    try {
-      await AdminProviderService.reactivate(prov.id);
-      toast.success("Proveedor reactivado");
-      load();
-    } catch (e: any) {
-      toast.error(e?.response?.data?.message ?? "No se pudo reactivar");
-    }
-  };
+  const result = await Swal.fire({
+    title: '¿Reactivar proveedor?',
+    text: `Se reactivará ${prov.name}`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Sí, reactivar',
+    cancelButtonText: 'Cancelar'
+  });
+  
+  if (!result.isConfirmed) return;
+
+  try {
+    await AdminProviderService.reactivate(prov.id);
+    toast.success("Provider reactivated successfully");
+    load();
+  } catch (e: any) {
+    toast.error(e?.response?.data?.message ?? "Error reactivating provider");
+  }
+};
 
   const onSubmit = async (payload: ProviderRequest, id?: number) => {
     try {
       if (id) {
         await AdminProviderService.update(id, payload);
-        toast.success("Proveedor actualizado");
+        toast.success("Updated provider successfully");
       } else {
         await AdminProviderService.create(payload);
-        toast.success("Proveedor creado");
+        toast.success("Created provider successfully");
       }
       setShowModal(false);
       setEditing(null);
@@ -106,53 +116,64 @@ export default function ProvidersPage() {
       const msg =
         e?.response?.data?.message ??
         e?.response?.data?.errors?.[0]?.defaultMessage ??
-        "Error guardando proveedor";
+        "Error saving provider";
       toast.error(msg);
     }
   };
 
   return (
-    <div className="container-fluid py-3">
-      <div className="d-flex align-items-center justify-content-between mb-3">
+    <div className="container mx-auto px-4 py-6 max-w-7xl">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="mb-0">Proveedores</h3>
-          <small className="text-muted">ABM de proveedores</small>
+          <h3 className="text-2xl font-bold text-black mb-1">Suppliers</h3>
         </div>
-        <button className="btn btn-primary" onClick={onCreate}>
-          <i className="bi bi-plus-lg me-1" /> Nuevo proveedor
+        <button 
+          className="bg-blue hover:bg-blue/90 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+          onClick={onCreate}
+        >
+          <span className="text-xl">+</span>
+          New supplier
         </button>
       </div>
 
-      <div className="card shadow-sm">
-        <div className="card-body">
-          <div className="row g-2 mb-3">
-            <div className="col-md-6">
+      {/* Card */}
+      <div className="bg-white rounded-lg shadow-md">
+        <div className="p-6">
+          {/* Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 mb-6">
+            <div className="md:col-span-6">
               <input
-                className="form-control"
-                placeholder="Buscar por nombre, email, teléfono o calle..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent"
+                placeholder="Search by name, email, phone number or street address..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
             </div>
-            <div className="col-md-3">
+            <div className="md:col-span-3">
               <select
-                className="form-select"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent"
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value as any)}
               >
-                <option value="all">Todos</option>
-                <option value="active">Activos</option>
-                <option value="inactive">Inactivos</option>
+                <option value="all">All</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
               </select>
             </div>
-            <div className="col-md-3 text-md-end">
-              <button className="btn btn-outline-secondary" onClick={load} disabled={loading}>
-                <i className="bi bi-arrow-clockwise me-1" />
+            {/* <div className="md:col-span-3">
+              <button 
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                onClick={load} 
+                disabled={loading}
+              >
+                <span className="text-lg">↻</span>
                 {loading ? "Actualizando..." : "Actualizar"}
               </button>
-            </div>
+            </div> */}
           </div>
 
+          {/* Table */}
           <ProvidersTable
             items={filtered}
             loading={loading}
@@ -163,6 +184,7 @@ export default function ProvidersPage() {
         </div>
       </div>
 
+      {/* Modal */}
       {showModal && (
         <ProviderModal
           show={showModal}
@@ -171,8 +193,6 @@ export default function ProvidersPage() {
           editing={editing}
         />
       )}
-
-      <ToastContainer position="bottom-right" />
     </div>
   );
 }
@@ -192,56 +212,81 @@ function ProvidersTable({
   onReactivate: (p: IProviderData) => void;
 }) {
   if (loading) {
-    return <div className="text-muted">Cargando proveedores...</div>;
+    return <div className="text-gray-txt py-8 text-center">Loading Suppliers...</div>;
   }
   if (!items.length) {
-    return <div className="text-muted">No hay resultados para el filtro actual.</div>;
+    return <div className="text-gray-txt py-8 text-center">There are no results for the current filter.</div>;
   }
 
   return (
-    <div className="table-responsive">
-      <table className="table table-hover align-middle">
-        <thead className="table-light">
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead className="bg-gray-bg border-b border-gray-200">
           <tr>
-            <th style={{width: 52}}>#</th>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Teléfono</th>
-            <th>Calle</th>
-            <th className="text-center" style={{width: 120}}>Estado</th>
-            <th className="text-end" style={{width: 220}}>Acciones</th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-black w-12">#</th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-black">Name</th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-black">Email</th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-black">Phone</th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-black">Street</th>
+            <th className="px-4 py-3 text-center text-sm font-semibold text-black w-28">State</th>
+            <th className="px-4 py-3 text-center text-sm font-semibold text-black w-56">Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-gray-200">
           {items.map((p, idx) => (
-            <tr key={p.id}>
-              <td>{idx + 1}</td>
-              <td className="fw-semibold">{p.name}</td>
-              <td>{p.email}</td>
-              <td>{p.phone}</td>
-              <td>{p.street}</td>
-              <td className="text-center">
+            <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+              <td className="px-4 py-3 text-sm text-gray-txt">{idx + 1}</td>
+              <td className="px-4 py-3 text-sm font-semibold text-black">{p.name}</td>
+              <td className="px-4 py-3 text-sm text-gray-txt">{p.email}</td>
+              <td className="px-4 py-3 text-sm text-gray-txt">{p.phone}</td>
+              <td className="px-4 py-3 text-sm text-gray-txt">{p.street}</td>
+              <td className="px-4 py-3 text-center">
                 {p.isActive ? (
-                  <span className="badge bg-success-subtle text-success">Activo</span>
+                  <span className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                    Active
+                  </span>
                 ) : (
-                  <span className="badge bg-secondary">Inactivo</span>
+                  <span className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-gray-200 text-gray-600">
+                    Inactive
+                  </span>
                 )}
               </td>
-              <td className="text-end">
-                <div className="btn-group">
-                  <button className="btn btn-sm btn-outline-primary" onClick={() => onEdit(p)}>
-                    <i className="bi bi-pencil-square me-1" />
-                    Editar
+              <td className="px-4 py-3">
+                <div className="flex justify-center gap-2">
+                  {/* Botón Editar - Siempre visible */}
+                  <button 
+                    onClick={() => onEdit(p)} 
+                    className="bg-yellow-500 p-2 rounded-md hover:bg-yellow-600 border border-yellow-600 transition-colors"
+                    title="Edit"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-pencil-square" viewBox="0 0 16 16">
+                      <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                      <path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                    </svg>
                   </button>
+
+                  {/* Condicional: Desactivar o Reactivar */}
                   {p.isActive ? (
-                    <button className="btn btn-sm btn-outline-danger" onClick={() => onDelete(p)}>
-                      <i className="bi bi-trash3 me-1" />
-                      Desactivar
+                    <button 
+                      onClick={() => onDelete(p)} 
+                      className="bg-red-500 p-2 rounded-md hover:bg-red-600 border border-red-600 transition-colors"
+                      title="Deactivate"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-trash" viewBox="0 0 16 16">
+                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                      </svg>
                     </button>
                   ) : (
-                    <button className="btn btn-sm btn-outline-success" onClick={() => onReactivate(p)}>
-                      <i className="bi bi-arrow-counterclockwise me-1" />
-                      Reactivar
+                    <button 
+                      onClick={() => onReactivate(p)} 
+                      className="bg-green-500 p-2 rounded-md hover:bg-green-600 border border-green-600 transition-colors"
+                      title="Reactivate"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
+                        <path fillRule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 1 0-.908-.418A6 6 0 1 0 8 2v1z"/>
+                        <path d="M8 1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0v-4A.5.5 0 0 1 8 1z"/>
+                      </svg>
                     </button>
                   )}
                 </div>
@@ -274,16 +319,15 @@ function ProviderModal({
   }));
   const [saving, setSaving] = useState(false);
 
-  const title = editing ? "Editar proveedor" : "Nuevo proveedor";
+  const title = editing ? "Edit Supplier" : "New Supplier";
 
   const handleChange = (k: keyof ProviderRequest, v: string) => {
     setForm(prev => ({ ...prev, [k]: v }));
   };
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!form.name.trim() || !form.email.trim() || !form.phone.trim() || !form.street.trim()) {
-      toast.warn("Completá todos los campos");
+      toast.warn("Please fill in all fields");
       return;
     }
     setSaving(true);
@@ -298,74 +342,99 @@ function ProviderModal({
     ).finally(() => setSaving(false));
   };
 
-  // Modal estilo Bootstrap sin depender de jQuery
+  if (!show) return null;
+
   return (
-    <div className={`modal fade ${show ? "show d-block" : ""}`} tabIndex={-1} role="dialog">
-      <div className="modal-dialog modal-dialog-centered" role="document">
-        <div className="modal-content shadow">
-          <div className="modal-header">
-            <h5 className="modal-title">{title}</h5>
-            <button type="button" className="btn-close" onClick={onClose} aria-label="Close" />
+    <>
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity"
+        onClick={onClose}
+      />
+      
+      {/* Modal */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <h5 className="text-xl font-semibold text-black">{title}</h5>
+            <button 
+              type="button" 
+              className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+              onClick={onClose}
+            >
+              ×
+            </button>
           </div>
-          <form onSubmit={submit}>
-            <div className="modal-body">
-              <div className="row g-3">
-                <div className="col-12">
-                  <label className="form-label">Nombre</label>
-                  <input
-                    className="form-control"
-                    value={form.name}
-                    onChange={e => handleChange("name", e.target.value)}
-                    maxLength={80}
-                    required
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label">Email</label>
+          
+          {/* Body */}
+          <div className="px-6 py-4">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-black mb-1">Name</label>
+                <input
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent"
+                  value={form.name}
+                  onChange={e => handleChange("name", e.target.value)}
+                  maxLength={80}
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">Email</label>
                   <input
                     type="email"
-                    className="form-control"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent"
                     value={form.email}
                     onChange={e => handleChange("email", e.target.value)}
                     maxLength={120}
-                    required
                   />
                 </div>
-                <div className="col-md-6">
-                  <label className="form-label">Teléfono</label>
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">Phone</label>
                   <input
-                    className="form-control"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent"
                     value={form.phone}
                     onChange={e => handleChange("phone", e.target.value)}
                     maxLength={40}
-                    required
-                  />
-                </div>
-                <div className="col-12">
-                  <label className="form-label">Calle</label>
-                  <input
-                    className="form-control"
-                    value={form.street}
-                    onChange={e => handleChange("street", e.target.value)}
-                    maxLength={120}
-                    required
                   />
                 </div>
               </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-black mb-1">Street</label>
+                <input
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent"
+                  value={form.street}
+                  onChange={e => handleChange("street", e.target.value)}
+                  maxLength={120}
+                />
+              </div>
             </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-outline-secondary" onClick={onClose} disabled={saving}>
-                Cancelar
-              </button>
-              <button type="submit" className="btn btn-primary" disabled={saving}>
-                {saving ? "Guardando..." : "Guardar"}
-              </button>
-            </div>
-          </form>
+          </div>
+          
+          {/* Footer */}
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200">
+            <button 
+              type="button" 
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              onClick={onClose} 
+              disabled={saving}
+            >
+              Cancel
+            </button>
+            <button 
+              type="button" 
+              className="px-4 py-2 bg-blue text-white rounded-lg hover:bg-blue/90 transition-colors disabled:opacity-50"
+              onClick={handleSubmit}
+              disabled={saving}
+            >
+              {saving ? "Saving..." : "Save"}
+            </button>
+          </div>
         </div>
       </div>
-      {/* backdrop */}
-      <div className="modal-backdrop fade show" onClick={onClose} />
-    </div>
+    </>
   );
 }

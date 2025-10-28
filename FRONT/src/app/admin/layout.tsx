@@ -87,7 +87,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
             {/* Procurement */}
             <li className="text-xs uppercase tracking-wide text-gray-400 px-2 mt-2">Procurement</li>
-            <NavItem href="/admin/providers" label="Providers" Icon={Truck} onClick={closeSidebar} />
+            <NavItem href="/admin/providers" label="Suppliers" Icon={Truck} onClick={closeSidebar} />
             <NavItem href="/admin/purchase-orders" label="Purchase Orders" Icon={FilePlus2} onClick={closeSidebar} />
             <NavItem href="/admin/stock-movements" label="Stock Movements" Icon={Boxes} onClick={closeSidebar} />
           </ul>

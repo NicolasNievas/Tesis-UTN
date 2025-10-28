@@ -33,6 +33,14 @@ public class ProviderServiceImp implements ProviderService {
     }
 
     @Override
+    public List<Provider> getAllActiveProviders() {
+        List<ProviderEntity> providerEntities = providerRepository.findByIsActiveTrue();
+        return providerEntities.stream()
+                .map(this::mapToProvider)
+                .toList();
+    }
+
+    @Override
     @Transactional
     public Provider getProviderById(Long id) {;
         ProviderEntity entity = providerRepository.findById(id)

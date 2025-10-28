@@ -24,7 +24,7 @@ async function update(id: number, payload: ProviderRequest): Promise<IProviderDa
 }
 
 async function remove(id: number): Promise<void> {
-  await adminAxios.delete(`${BASE}/delete/${id}`); // 204
+  await adminAxios.put(`${BASE}/delete/${id}`); // 204
 }
 
 async function reactivate(id: number): Promise<IProviderData> {
