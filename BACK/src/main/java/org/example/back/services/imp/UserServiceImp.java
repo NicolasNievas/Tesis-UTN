@@ -21,6 +21,9 @@ public class UserServiceImp implements UserService {
     @Override
     public User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new IllegalStateException("No authenticated user in context");
+        }
         String email = authentication.getName();
         return getUserProfile(email);
     }

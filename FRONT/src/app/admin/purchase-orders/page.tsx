@@ -30,7 +30,7 @@ const PurchaseOrderManagement = () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const providersResponse = await axios.get(`${$URL}/all`, {
+        const providersResponse = await axios.get(`${$URL}/allActive`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const productsData = await fetchActiveProductsOrder();

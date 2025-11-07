@@ -1,23 +1,23 @@
 package org.example.back.entities;
 
-
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.List;
+import lombok.*;
 
 @Entity
 @Table(name = "providers")
-@Data
+@Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 public class ProviderEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
+    @ToString.Include
     @Column(nullable = false)
     private String name;
 
@@ -30,9 +30,12 @@ public class ProviderEntity {
     @Column(nullable = false)
     private String street;
 
-    @OneToMany(mappedBy = "provider", cascade = CascadeType.ALL)
-    private List<ProductEntity> products;
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
 
-    @OneToMany(mappedBy = "provider", cascade = CascadeType.ALL)
-    private List<InvoiceEntity> invoices;
+    @PrePersist
+    void onCreate() {
+        if (isActive == null) this.isActive = true;
+    }
 }
+

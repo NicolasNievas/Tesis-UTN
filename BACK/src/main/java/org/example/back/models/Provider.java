@@ -1,6 +1,8 @@
 package org.example.back.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
@@ -13,4 +15,5 @@ public class Provider {
     private String email;
     private String phone;
     private String street;
+    private Boolean isActive = true;
 }

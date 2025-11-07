@@ -6,6 +6,7 @@ import org.example.back.repositories.ProviderRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -48,6 +49,7 @@ public class ProviderInitializer implements CommandLineRunner {
         provider.setEmail(email);
         provider.setPhone(phone);
         provider.setStreet(street);
+        provider.setIsActive(true);
         return provider;
     }
 }
