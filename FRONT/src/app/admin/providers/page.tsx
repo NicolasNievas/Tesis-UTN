@@ -70,10 +70,10 @@ export default function ProvidersPage() {
 
     try {
       await AdminProviderService.remove(prov.id);
-      toast.success("Proveedor deactivated successfully");
+      toast.success("Supplier deactivated successfully");
       load();
     } catch (e: any) {
-      toast.error(e?.response?.data?.message ?? "Error deactivating provider");
+      toast.error(e?.response?.data?.message ?? "Error desactivating Supplier");
     }
   };
 
@@ -93,10 +93,10 @@ export default function ProvidersPage() {
 
   try {
     await AdminProviderService.reactivate(prov.id);
-    toast.success("Provider reactivated successfully");
+    toast.success("Supplier reactivated successfully");
     load();
   } catch (e: any) {
-    toast.error(e?.response?.data?.message ?? "Error reactivating provider");
+    toast.error(e?.response?.data?.message ?? "Error reactivating Supplier");
   }
 };
 
@@ -104,10 +104,10 @@ export default function ProvidersPage() {
     try {
       if (id) {
         await AdminProviderService.update(id, payload);
-        toast.success("Updated provider successfully");
+        toast.success("Supplier updated successfully");
       } else {
         await AdminProviderService.create(payload);
-        toast.success("Created provider successfully");
+        toast.success("Supplier created  successfully");
       }
       setShowModal(false);
       setEditing(null);
@@ -116,7 +116,7 @@ export default function ProvidersPage() {
       const msg =
         e?.response?.data?.message ??
         e?.response?.data?.errors?.[0]?.defaultMessage ??
-        "Error saving provider";
+        "Error saving Supplier";
       toast.error(msg);
     }
   };
