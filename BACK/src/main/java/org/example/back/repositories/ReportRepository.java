@@ -1,0 +1,250 @@
+package org.example.back.repositories;
+
+import org.example.back.entities.OrderEntity;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.Param;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@org.springframework.stereotype.Repository
+public interface ReportRepository extends Repository<OrderEntity, Long> {
+    // ==================== REPORTES DE VENTAS ====================
+
+    /**
+     * Ventas agrupadas por período (día/semana/mes)
+     */
+    @Query(value = """
+        SELECT 
+            DATE_TRUNC(:periodType, o.date) as period,
+            COUNT(o.id) as orderCount,
+            SUM(od.price * od.quantity) as totalSales
+        FROM orders o
+        JOIN order_details od ON o.id = od.order_id
+        WHERE o.date BETWEEN :startDate AND :endDate
+        GROUP BY period
+        ORDER BY period DESC
+        """, nativeQuery = true)
+    List<Object[]> getSalesByPeriod(
+            @Param("periodType") String periodType,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    /**
+     * Ticket promedio y estadísticas de pedidos
+     */
+    @Query("""
+        SELECT 
+            COUNT(DISTINCT o.id) as totalOrders,
+            AVG(od.price * od.quantity) as averageTicket,
+            MAX(od.price * od.quantity) as maxTicket,
+            MIN(od.price * od.quantity) as minTicket
+        FROM OrderEntity o
+        JOIN o.details od
+        WHERE o.date BETWEEN :startDate AND :endDate
+    """)
+    List<Object[]> getOrderStatistics(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    // ==================== REPORTES DE CLIENTES ====================
+
+    /**
+     * Estadísticas por cliente
+     */
+    @Query("""
+        SELECT 
+            u.id as customerId,
+            CONCAT(u.firstName, ' ', u.lastName) as customerName,
+            u.email as email,
+            u.city as city,
+            COUNT(DISTINCT o.id) as totalOrders,
+            SUM(od.price * od.quantity) as totalSpent,
+            AVG(od.price * od.quantity) as averageOrderValue,
+            MAX(o.date) as lastPurchaseDate
+        FROM OrderEntity o
+        JOIN o.customer u
+        JOIN o.details od
+        WHERE o.date BETWEEN :startDate AND :endDate
+        GROUP BY u.id, u.firstName, u.lastName, u.email, u.city
+        ORDER BY totalSpent DESC
+    """)
+    List<Object[]> getCustomerStatistics(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    /**
+     * Top clientes
+     */
+    @Query("""
+        SELECT 
+            u.id,
+            CONCAT(u.firstName, ' ', u.lastName) as customerName,
+            COUNT(DISTINCT o.id) as totalOrders,
+            SUM(od.price * od.quantity) as totalSpent
+        FROM OrderEntity o
+        JOIN o.customer u
+        JOIN o.details od
+        WHERE o.status = 'COMPLETED'
+        GROUP BY u.id, u.firstName, u.lastName
+        ORDER BY totalSpent DESC
+        LIMIT :limit
+    """)
+    List<Object[]> getTopCustomers(@Param("limit") int limit);
+
+    // ==================== REPORTES DE INVENTARIO ====================
+
+    /**
+     * Estado del inventario
+     */
+    @Query(value = """
+        SELECT 
+            p.id,
+            p.name,
+            p.stock as currentStock,
+            p.price,
+            (p.stock * p.price) as inventoryValue,
+            COALESCE(sales.total_sold, 0) as totalSold,
+            CASE 
+                WHEN p.stock = 0 THEN 'OUT_OF_STOCK'
+                WHEN p.stock <= 10 THEN 'LOW_STOCK'
+                WHEN p.stock <= 50 THEN 'AVERAGE_STOCK'
+                ELSE 'HIGH_STOCK'
+            END as stockStatus
+        FROM products p
+        LEFT JOIN (
+            SELECT 
+                od.product_id,
+                SUM(od.quantity) as total_sold
+            FROM order_details od
+            JOIN orders o ON od.order_id = o.id
+            WHERE o.date BETWEEN :startDate AND :endDate
+            GROUP BY od.product_id
+        ) sales ON p.id = sales.product_id
+        WHERE p.active = true
+        ORDER BY inventoryValue DESC
+        """, nativeQuery = true)
+    List<Object[]> getInventoryReport(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    /**
+     * Productos sin movimiento
+     */
+    @Query(value = """
+        SELECT 
+            p.id,
+            p.name,
+            p.stock,
+            p.price,
+            (p.stock * p.price) as inventoryValue,
+            MAX(r.date) as lastMovementDate
+        FROM products p
+        LEFT JOIN replenishments r ON p.id = r.product_id
+        WHERE p.active = true
+        AND NOT EXISTS (
+            SELECT 1 FROM order_details od
+            JOIN orders o ON od.order_id = o.id
+            WHERE od.product_id = p.id
+            AND o.date >= :startDate
+        )
+        GROUP BY p.id, p.name, p.stock, p.price
+        ORDER BY lastMovementDate ASC NULLS FIRST
+        """, nativeQuery = true)
+    List<Object[]> getProductsWithoutMovement(
+            @Param("startDate") LocalDateTime startDate
+    );
+
+    // ==================== REPORTES DE CATEGORÍAS Y MARCAS ====================
+
+    /**
+     * Ventas por categoría
+     */
+    @Query("""
+        SELECT 
+            c.id,
+            c.name as categoryName,
+            b.name as brandName,
+            COUNT(DISTINCT od.id) as itemsSold,
+            SUM(od.quantity) as totalQuantity,
+            SUM(od.price * od.quantity) as totalSales
+        FROM OrderEntity o
+        JOIN o.details od
+        JOIN od.product p
+        JOIN p.category c
+        JOIN p.brand b
+        WHERE o.date BETWEEN :startDate AND :endDate
+        GROUP BY c.id, c.name, b.name
+        ORDER BY totalSales DESC
+    """)
+    List<Object[]> getSalesByCategory(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    /**
+     * Ventas por marca
+     */
+    @Query("""
+        SELECT 
+            b.id,
+            b.name as brandName,
+            COUNT(DISTINCT od.id) as itemsSold,
+            SUM(od.quantity) as totalQuantity,
+            SUM(od.price * od.quantity) as totalSales
+        FROM OrderEntity o
+        JOIN o.details od
+        JOIN od.product p
+        JOIN p.brand b
+        WHERE o.date BETWEEN :startDate AND :endDate
+        GROUP BY b.id, b.name
+        ORDER BY totalSales DESC
+    """)
+    List<Object[]> getSalesByBrand(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    // ==================== REPORTES DE ESTADOS ====================
+
+    /**
+     * Distribución de órdenes por estado
+     */
+    @Query("""
+        SELECT 
+            o.status,
+            COUNT(o.id) as orderCount,
+            SUM(od.price * od.quantity) as totalAmount
+        FROM OrderEntity o
+        JOIN o.details od
+        WHERE o.date BETWEEN :startDate AND :endDate
+        GROUP BY o.status
+        ORDER BY orderCount DESC
+    """)
+    List<Object[]> getOrdersByStatus(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    /**
+     * Tasa de conversión (completadas vs canceladas)
+     */
+    @Query("""
+        SELECT 
+            COUNT(CASE WHEN o.status = 'COMPLETED' THEN 1 END) as completed,
+            COUNT(CASE WHEN o.status = 'CANCELLED' THEN 1 END) as cancelled,
+            COUNT(CASE WHEN o.status = 'PENDING' THEN 1 END) as pending,
+            COUNT(o.id) as total
+        FROM OrderEntity o
+        WHERE o.date BETWEEN :startDate AND :endDate
+    """)
+    List<Object[]> getConversionRate(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+}

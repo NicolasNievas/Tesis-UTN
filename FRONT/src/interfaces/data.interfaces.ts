@@ -194,6 +194,39 @@ export interface TopProductReport {
   totalSales: number;
 }
 
+export interface SalesByPeriodReport {
+  period: string;
+  totalSales: number;
+  orderCount: number;
+}
+
+export interface CustomerStatistics {
+  customerId: number;
+  customerName: string;
+  customerEmail: string;
+  totalOrders: number;
+  totalSpent: number;
+  averageOrderValue: number;
+  lastOrderDate: string;
+}
+
+export interface TopCustomer {
+  customerId: number;
+  customerName: string;
+  customerEmail: string;
+  totalSpent: number;
+  orderCount: number;
+}
+
+export interface InventoryReport {
+  productId: number;
+  productName: string;
+  currentStock: number;
+  soldQuantity: number;
+  totalRevenue: number;
+  turnoverRate: number;
+}
+
 //Purchase interfaces
 
 export interface ProviderOrderDetail {
