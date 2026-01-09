@@ -1,6 +1,7 @@
 package org.example.back.services.imp;
 
 import lombok.RequiredArgsConstructor;
+import org.example.back.dtos.UserOrderStatisticsDTO;
 import org.example.back.dtos.response.PageResponse;
 import org.example.back.dtos.response.OrderDetailResponse;
 import org.example.back.dtos.response.OrderResponse;
@@ -150,6 +151,28 @@ public class OrderServiceImp implements OrderService {
         order.setStatus(status);
         OrderEntity updatedOrder = orderRepository.save(order);
         return convertToOrderResponse(updatedOrder);
+    }
+
+    @Override
+    public UserOrderStatisticsDTO getUserOrderStatistics() {
+        User currentUser = userService.getCurrentUser();
+        Long userId = currentUser.getId();
+
+        Long totalOrders = orderRepository.countByCustomerId(userId);
+        BigDecimal totalSpent = orderRepository.getTotalSpentByCustomer(userId);
+        Long pendingOrders = orderRepository.countByCustomerIdAndStatus(userId, OrderStatus.PENDING);
+        Long completedOrders = orderRepository.countByCustomerIdAndStatus(userId, OrderStatus.COMPLETED);
+        Long inProcessOrders = orderRepository.countByCustomerIdAndStatus(userId, OrderStatus.IN_PROCESS);
+        Long cancelledOrders = orderRepository.countByCustomerIdAndStatus(userId, OrderStatus.CANCELLED);
+
+        return UserOrderStatisticsDTO.builder()
+                .totalOrders(totalOrders)
+                .totalSpent(totalSpent != null ? totalSpent : BigDecimal.ZERO)
+                .pendingOrders(pendingOrders)
+                .completedOrders(completedOrders)
+                .inProcessOrders(inProcessOrders)
+                .cancelledOrders(cancelledOrders)
+                .build();
     }
 
     private void validateStatusTransition(OrderStatus currentStatus, OrderStatus newStatus) {

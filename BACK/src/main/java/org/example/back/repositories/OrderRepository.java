@@ -1,6 +1,7 @@
 package org.example.back.repositories;
 
 import org.example.back.entities.OrderEntity;
+import org.example.back.enums.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -69,4 +71,18 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
+    // Contar órdenes por usuario y estado
+    Long countByCustomerIdAndStatus(Long customerId, OrderStatus status);
+
+    // Obtener total gastado por usuario
+    @Query("""
+        SELECT COALESCE(SUM(od.price * od.quantity), 0) 
+        FROM OrderDetailEntity od 
+        JOIN od.order o 
+        WHERE o.customer.id = :customerId
+    """)
+    BigDecimal getTotalSpentByCustomer(@Param("customerId") Long customerId);
+
+    // Contar total de órdenes por usuario
+    Long countByCustomerId(Long customerId);
 }

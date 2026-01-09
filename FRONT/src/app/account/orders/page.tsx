@@ -1,19 +1,30 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 import React, { useEffect, useState } from 'react';
-import { Calendar, Package, Truck, CreditCard, AlertCircle } from 'lucide-react';
+import { Calendar, Package, Truck, CreditCard, AlertCircle, ShoppingCart, Clock, CheckCircle, DollarSign } from 'lucide-react';
 import OrderService from '@/services/OrderService';
 import { OrderResponse } from '@/interfaces/data.interfaces';
 import { toast } from 'react-toastify';
 import Line from '@/components/atoms/Line';
 
+interface OrderStatistics {
+    totalOrders: number;
+    totalSpent: number;
+    pendingOrders: number;
+    completedOrders: number;
+    inProcessOrders: number;
+    cancelledOrders: number;
+}
+
 const UserOrders = () => {
     const [orders, setOrders] = useState<OrderResponse[]>([]);
+    const [statistics, setStatistics] = useState<OrderStatistics | null>(null);
     const [loading, setLoading] = useState(true);
     const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
 
     useEffect(() => {
         loadOrders();
+        loadStatistics();
     }, []);
 
     const loadOrders = async () => {
@@ -28,7 +39,16 @@ const UserOrders = () => {
         }
     };
 
-    const formatDate = (dateArray: string | number[]  ) => {
+    const loadStatistics = async () => {
+        try {
+            const data = await OrderService.getUserOrderStatistics();
+            setStatistics(data);
+        } catch (error) {
+            console.error('Error loading statistics:', error);
+        }
+    };
+
+    const formatDate = (dateArray: string | number[]) => {
         if (Array.isArray(dateArray)) {
             const [year, month, day] = dateArray;
             return new Date(year, month - 1, day).toLocaleDateString('es-AR', {
@@ -92,9 +112,69 @@ const UserOrders = () => {
         <div className="container mx-auto px-4 py-8 max-w-6xl">
             <div className="flex items-center justify-between mb-8">
                 <h1 className="text-3xl font-bold text-gray-800">My Orders</h1>
-                <span className="text-sm text-gray-500">Total Orders: {orders.length}</span>
             </div>
             <Line />
+
+            {/* Statistics Cards */}
+            {statistics && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 mt-8">
+                    {/* Total Orders */}
+                    <div className="bg-white rounded-xl shadow-md p-5 border border-gray-100 hover:shadow-lg transition-shadow">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-blue-100 p-3 rounded-full flex-shrink-0">
+                                <ShoppingCart className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-500 font-medium mb-1">Total Orders</p>
+                                <p className="text-2xl font-bold text-gray-600">{statistics.totalOrders}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Pending Orders */}
+                    <div className="bg-white rounded-xl shadow-md p-5 border border-gray-100 hover:shadow-lg transition-shadow">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-yellow-100 p-3 rounded-full flex-shrink-0">
+                                <Clock className="w-5 h-5 text-yellow-600" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-500 font-medium mb-1">Pending</p>
+                                <p className="text-2xl font-bold text-gray-600">{statistics.pendingOrders}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Completed Orders */}
+                    <div className="bg-white rounded-xl shadow-md p-5 border border-gray-100 hover:shadow-lg transition-shadow">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-green-100 p-3 rounded-full flex-shrink-0">
+                                <CheckCircle className="w-5 h-5 text-green-600" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-500 font-medium mb-1">Completed</p>
+                                <p className="text-2xl font-bold text-gray-600">{statistics.completedOrders}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Total Spent */}
+                    <div className="bg-white rounded-xl shadow-md p-5 border border-gray-100 hover:shadow-lg transition-shadow">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-emerald-100 p-3 rounded-full flex-shrink-0">
+                                <DollarSign className="w-5 h-5 text-emerald-600" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-500 font-medium mb-1">Total Spent</p>
+                                <p className="text-2xl font-bold text-gray-600">
+                                    ${statistics.totalSpent.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Orders List */}
             <div className="space-y-6">
                 {orders.map((order) => (
                     <div key={order.id} className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
