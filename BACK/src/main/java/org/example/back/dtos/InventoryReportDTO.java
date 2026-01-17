@@ -16,5 +16,7 @@ public class InventoryReportDTO {
     private BigDecimal price;
     private BigDecimal inventoryValue;
     private Long totalSold;
+    private BigDecimal totalRevenue;
     private String stockStatus;
+    private BigDecimal turnoverRate;
 }

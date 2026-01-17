@@ -20,4 +20,5 @@ public interface ReportService {
     List<SalesByBrandDTO> getSalesByBrand(LocalDateTime startDate, LocalDateTime endDate);
     List<SalesByCategoryDTO> getSalesByCategory(LocalDateTime startDate, LocalDateTime endDate);
     List<ProductsWithoutMovementDTO> getProductsWithoutMovement(LocalDateTime startDate);
+    List<ShippingMethodReportDTO> getShippingMethodReport(LocalDateTime startDate, LocalDateTime endDate);
 }

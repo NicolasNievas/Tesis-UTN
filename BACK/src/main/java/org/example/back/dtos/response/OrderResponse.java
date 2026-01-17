@@ -18,9 +18,14 @@ public class OrderResponse {
     private OrderStatus status;
     private String paymentMethodName;
     private String shippingName;
+    private BigDecimal subtotal;
+    private BigDecimal shippingCost;
     private BigDecimal total;
     private String paymentId;
     private String mercadoPagoOrderId;
     private CustomerInfo customer;
     private List<OrderDetailResponse> details;
+    private String shippingAddress;
+    private String shippingCity;
+    private String shippingPostalCode;
 }

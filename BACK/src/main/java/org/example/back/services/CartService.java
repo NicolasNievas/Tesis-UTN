@@ -3,6 +3,8 @@ package org.example.back.services;
 import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
 import org.example.back.dtos.CartDTO;
+import org.example.back.dtos.CheckoutDTO;
+import org.example.back.dtos.request.UpdateShippingRequest;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,4 +15,6 @@ public interface CartService {
     void removeItemFromCart(Long productId);
     void clearCart(String email);
     String initiatePayment() throws MPException, MPApiException;
+    CartDTO updateShippingInfo(UpdateShippingRequest request);
+    CheckoutDTO getCheckoutInfo();
 }

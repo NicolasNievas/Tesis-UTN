@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { OrderResponse } from '@/interfaces/data.interfaces';
 import Line from '../atoms/Line';
-import { User, Mail, Phone, MapPin, Building, ChevronDown } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Building, ChevronDown, Truck } from 'lucide-react';
 import OrderStatusUpdate from './OrderStatusUpdate';
 
 interface OrderDetailsModalProps {
@@ -41,14 +41,18 @@ const OrderDetailsModal = ({ order, onClose, isOpen, onOrderUpdated  }: OrderDet
         return 'Fecha no disponible';
     };
 
-    const getShippingStatus = (status: string) => {
-        switch (status) {
+    const getShippingStatus = (shippingName: string) => {
+        switch (shippingName) {
             case 'LOCAL_PICKUP':
                 return 'Local Pickup';
-            case 'HOME_DELIVERY':
-                return 'Home Delivery';
+            case 'OCA':
+                return 'OCA';
+            case 'CORREO_ARGENTINO':
+                return 'Correo Argentino';
+            case 'ANDREANI':
+                return 'Andreani';
             default:
-                return 'N/A';
+                return shippingName || 'Not specified';
         }
     };
 
@@ -167,6 +171,53 @@ const OrderDetailsModal = ({ order, onClose, isOpen, onOrderUpdated  }: OrderDet
                     </div>
 
                     <Line />
+
+                    {/* Shipping Information Section */}
+<div className="space-y-4">
+    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+        <Truck className="w-5 h-5" />
+        Shipping Information
+    </h3>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Shipping Method Details */}
+        <div className="bg-gray-700 p-4 rounded-lg space-y-3 hover:bg-gray-600 transition-colors">
+            <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-300">Shipping Method:</span>
+                <span className="font-medium text-white">{getShippingStatus(order.shippingName)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-300">Shipping Cost:</span>
+                <span className="font-medium text-white">
+                    {order.shippingCost === 0 ? 'Free' : `$${order.shippingCost.toFixed(2)}`}
+                </span>
+            </div>
+        </div>
+
+        {/* Shipping Address */}
+        {(order.shippingAddress || order.shippingCity) && (
+            <div className="bg-gray-700 p-4 rounded-lg space-y-3 hover:bg-gray-600 transition-colors">
+                <div className="flex justify-between">
+                    <span className="text-sm font-medium text-gray-300">Shipping Address:</span>
+                    <span className="font-medium text-white text-right max-w-[200px] break-words">
+                        {order.shippingAddress}
+                    </span>
+                </div>
+                <div className="flex justify-between">
+                    <span className="text-sm font-medium text-gray-300">City:</span>
+                    <span className="font-medium text-white">{order.shippingCity}</span>
+                </div>
+                {order.shippingPostalCode && (
+                    <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-300">Postal Code:</span>
+                        <span className="font-medium text-white">{order.shippingPostalCode}</span>
+                    </div>
+                )}
+            </div>
+        )}
+    </div>
+</div>
+
+<Line />
                     
                     {/* Customer Info */}
                     <div className="space-y-4">

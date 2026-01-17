@@ -30,6 +30,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -75,7 +76,7 @@ public class MercadoPagoServiceImp implements MercadoPagoService {
     }
 
     @Override
-    public String createPreference(List<CartItemDTO> items, UserDTO user) throws MPException, MPApiException {
+    public String createPreference(List<CartItemDTO> items, UserDTO user, BigDecimal shippingCost, String shippingMethodName) throws MPException, MPApiException {
         //PreferenceClient client = new PreferenceClient();
 
         if (user == null || user.getEmail() == null) {
@@ -92,6 +93,20 @@ public class MercadoPagoServiceImp implements MercadoPagoService {
         List<PreferenceItemRequest> preferenceItems = items.stream()
                 .map(this::convertToPreferenceItem)
                 .collect(Collectors.toList());
+
+        // Agregar el envío como un ítem adicional si el costo es mayor a 0
+        if (shippingCost != null && shippingCost.compareTo(BigDecimal.ZERO) > 0) {
+            PreferenceItemRequest shippingItem = PreferenceItemRequest.builder()
+                    .id("shipping")
+                    .title("Envío - " + shippingMethodName)
+                    .description("Costo de envío")
+                    .categoryId("shipping")
+                    .quantity(1)
+                    .currencyId("ARS")
+                    .unitPrice(shippingCost)
+                    .build();
+            preferenceItems.add(shippingItem);
+        }
 
         // Crear datos del comprador
         PreferencePayerRequest payer = PreferencePayerRequest.builder()

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { TrendingUp, Users, Package, DollarSign, Calendar, FileSpreadsheet, FileDown, BarChart2, Clock, ShoppingCart, Star, Award, TrendingDown } from 'lucide-react';
+import { TrendingUp, Users, Package, DollarSign, Calendar, FileSpreadsheet, FileDown, BarChart2, Clock, ShoppingCart, Star, Award, TrendingDown, AlertCircle, Target, Activity, TrendingUpIcon, PackageX, Layers, Tag, Truck } from 'lucide-react';
 import { toast } from 'react-toastify';
 import ReportService, {
 
@@ -17,9 +17,16 @@ import {   PaymentMethodReport,
   SalesByPeriodReport,
   CustomerStatistics,
   TopCustomer,
-  InventoryReport } from '@/interfaces/data.interfaces';
+  InventoryReport, 
+  OrderStatistics,
+  OrdersByStatus,
+  ConversionRate,
+  SalesByBrand,
+  ProductsWithoutMovement,
+  ShippingMethodReport,
+  SalesByCategory} from '@/interfaces/data.interfaces';
 
-type ReportCategory = 'sales' | 'customers' | 'inventory';
+type ReportCategory = 'sales' | 'customers' | 'inventory' | 'analytics' | 'performance';
 
 const ReportsPage = () => {
   const [activeTab, setActiveTab] = useState<ReportCategory>('sales');
@@ -34,10 +41,20 @@ const ReportsPage = () => {
   const [customerStatsData, setCustomerStatsData] = useState<CustomerStatistics[]>([]);
   const [topCustomersData, setTopCustomersData] = useState<TopCustomer[]>([]);
   const [inventoryData, setInventoryData] = useState<InventoryReport[]>([]);
-
+  // En el componente ReportsPage, agrega estos estados
+  const [orderStatsData, setOrderStatsData] = useState<OrderStatistics | null>(null);
+  const [ordersByStatusData, setOrdersByStatusData] = useState<OrdersByStatus[]>([]);
+  const [conversionRateData, setConversionRateData] = useState<ConversionRate | null>(null);
+  const [salesByBrandData, setSalesByBrandData] = useState<SalesByBrand[]>([]);
+  const [salesByCategoryData, setSalesByCategoryData] = useState<SalesByCategory[]>([]);
+  const [productsWithoutMovementData, setProductsWithoutMovementData] = useState<ProductsWithoutMovement[]>([]);
+  const [shippingMethodData, setShippingMethodData] = useState<ShippingMethodReport[]>([]);
   // Parámetros adicionales
   const [period, setPeriod] = useState<string>('day');
   const [topCustomersLimit, setTopCustomersLimit] = useState<number>(10);
+  const [minStock, setMinStock] = useState<number | ''>('');
+  const [maxStock, setMaxStock] = useState<number | ''>('');
+  const [includeZeroStock, setIncludeZeroStock] = useState<boolean>(false);
 
   const tabs = [
     {
@@ -57,6 +74,18 @@ const ReportsPage = () => {
       label: 'Inventory Reports',
       icon: <Package className="w-5 h-5" />,
       description: 'Stock status and movements'
+    },
+    {
+      id: 'analytics' as ReportCategory,
+      label: 'Business Analytics',
+      icon: <BarChart2 className="w-5 h-5" />,
+      description: 'Conversion rates, status distribution'
+    },
+    {
+      id: 'performance' as ReportCategory,
+      label: 'Performance Reports',
+      icon: <Star className="w-5 h-5" />,
+      description: 'Brands, categories & trends'
     }
   ];
 
@@ -78,47 +107,77 @@ const ReportsPage = () => {
   };
 
   const handleGenerateReports = async () => {
-    if (startDate > endDate) {
-      toast.error('Start date cannot be later than end date');
-      return;
+  if (startDate > endDate) {
+    toast.error('Start date cannot be later than end date');
+    return;
+  }
+
+  setLoading(true);
+  try {
+    switch (activeTab) {
+      case 'sales':
+        const [paymentMethods, topProducts, salesByPeriod, orderStats, shippingMethods] = await Promise.all([
+          ReportService.getPaymentMethodReport(startDate, endDate),
+          ReportService.getTopProductsReport(startDate, endDate),
+          ReportService.getSalesByPeriodReport(period, startDate, endDate),
+          ReportService.getOrderStatistics(startDate, endDate),
+          ReportService.getShippingMethodReport(startDate, endDate) // Nuevo
+        ]);
+        setPaymentMethodData(paymentMethods);
+        setTopProductsData(topProducts);
+        setSalesByPeriodData(salesByPeriod);
+        setOrderStatsData(orderStats);
+        setShippingMethodData(shippingMethods || []);
+        break;
+
+      case 'customers':
+        const [customerStats, topCustomers ] = await Promise.all([
+          ReportService.getCustomerStatistics(startDate, endDate),
+          ReportService.getTopCustomers(topCustomersLimit),
+        ]);
+        setCustomerStatsData(customerStats);
+        setTopCustomersData(topCustomers);
+        // Guardar customerLocations en un estado si lo implementas
+        break;
+
+      case 'inventory':
+        const [inventory, productsNoMovement] = await Promise.all([
+          ReportService.getInventoryReport(startDate, endDate),
+          ReportService.getProductsWithoutMovement(startDate),
+          minStock || undefined, 
+          maxStock || undefined, 
+          includeZeroStock
+        ]);
+        setInventoryData(inventory);
+        setProductsWithoutMovementData(productsNoMovement);
+        break;
+
+      case 'analytics':
+        const [ordersByStatus, conversionRate] = await Promise.all([
+          ReportService.getOrdersByStatus(startDate, endDate),
+          ReportService.getConversionRate(startDate, endDate)
+        ]);
+        setOrdersByStatusData(ordersByStatus);
+        setConversionRateData(conversionRate);
+        break;
+
+      case 'performance':
+        const [salesByBrand, salesByCategory] = await Promise.all([
+          ReportService.getSalesByBrand(startDate, endDate),
+          ReportService.getSalesByCategory(startDate, endDate)
+        ]);
+        setSalesByBrandData(salesByBrand);
+        setSalesByCategoryData(salesByCategory);
+        break;
     }
-
-    setLoading(true);
-    try {
-      switch (activeTab) {
-        case 'sales':
-          const [paymentMethods, topProducts, salesByPeriod] = await Promise.all([
-            ReportService.getPaymentMethodReport(startDate, endDate),
-            ReportService.getTopProductsReport(startDate, endDate),
-            ReportService.getSalesByPeriodReport(period, startDate, endDate)
-          ]);
-          setPaymentMethodData(paymentMethods);
-          setTopProductsData(topProducts);
-          setSalesByPeriodData(salesByPeriod);
-          break;
-
-        case 'customers':
-          const [customerStats, topCustomers] = await Promise.all([
-            ReportService.getCustomerStatistics(startDate, endDate),
-            ReportService.getTopCustomers(topCustomersLimit)
-          ]);
-          setCustomerStatsData(customerStats);
-          setTopCustomersData(topCustomers);
-          break;
-
-        case 'inventory':
-          const inventory = await ReportService.getInventoryReport(startDate, endDate);
-          setInventoryData(inventory);
-          break;
-      }
-      toast.success('Reports generated successfully');
-    } catch (error) {
-      console.error('Error generating reports:', error);
-      toast.error('Error generating reports');
-    } finally {
-      setLoading(false);
-    }
-  };
+    toast.success('Reports generated successfully');
+  } catch (error) {
+    console.error('Error generating reports:', error);
+    toast.error('Error generating reports');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const exportToExcel = () => {
     const wb = XLSX.utils.book_new();
@@ -155,11 +214,11 @@ const ReportsPage = () => {
         if (customerStatsData.length > 0) {
           const ws1 = XLSX.utils.json_to_sheet(customerStatsData.map(item => ({
             'Customer': item.customerName,
-            'Email': item.customerEmail,
+            'Email': item.email,
             'Orders': item.totalOrders,
             'Total Spent': formatCurrency(item.totalSpent),
             'Avg Order': formatCurrency(item.averageOrderValue),
-            'Last Order': formatDate(item.lastOrderDate)
+            'Last Order': formatDate(item.lastPurchaseDate)
           })));
           XLSX.utils.book_append_sheet(wb, ws1, "Customer Statistics");
         }
@@ -168,7 +227,7 @@ const ReportsPage = () => {
             'Customer': item.customerName,
             'Email': item.customerEmail,
             'Total Spent': formatCurrency(item.totalSpent),
-            'Orders': item.orderCount
+            'Orders': item.totalOrders
           })));
           XLSX.utils.book_append_sheet(wb, ws2, "Top Customers");
         }
@@ -179,7 +238,7 @@ const ReportsPage = () => {
           const ws = XLSX.utils.json_to_sheet(inventoryData.map(item => ({
             'Product': item.productName,
             'Current Stock': item.currentStock,
-            'Sold': item.soldQuantity,
+            'Sold': item.totalSold,
             'Revenue': formatCurrency(item.totalRevenue),
             'Turnover Rate': `${(item.turnoverRate || 0).toFixed(1)}%`
           })));
@@ -249,7 +308,7 @@ const ReportsPage = () => {
               item.customerName,
               item.customerEmail,
               formatCurrency(item.totalSpent),
-              item.orderCount.toString()
+              item.totalOrders.toString()
             ])
           });
         }
@@ -266,7 +325,7 @@ const ReportsPage = () => {
             body: inventoryData.map(item => [
               item.productName,
               item.currentStock.toString(),
-              item.soldQuantity.toString(),
+              item.totalSold.toString(),
               formatCurrency(item.totalRevenue)
             ])
           });
@@ -276,6 +335,16 @@ const ReportsPage = () => {
 
     doc.save(`${activeTab}_report_${startDate}_${endDate}.pdf`);
     toast.success('PDF file downloaded successfully');
+  };
+
+  // Función para calcular el turnover rate
+  const calculateTurnoverRate = (item: any) => {
+    const sold = item.totalSold || 0;
+    const stock = item.currentStock || 0;
+    const total = sold + stock;
+    
+    if (total === 0) return 0;
+    return (sold / total) * 100;
   };
 
   // Función para determinar el color del indicador de rotación
@@ -332,6 +401,39 @@ const ReportsPage = () => {
         {`${(percent * 100).toFixed(0)}%`}
       </text>
     );
+  };
+
+  // Función para formatear porcentaje
+const formatPercentage = (value: number) => {
+  return `${value.toFixed(2)}%`;
+};
+
+// Función para formatear fecha más detallada
+const formatDateTime = (dateString: string) => {
+  if (!dateString) return 'Nunca';
+  return new Date(dateString).toLocaleString('en-US', { // es-AR para formato Arg
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+// Función para obtener color según estado
+const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'COMPLETED':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'PENDING':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'IN_PROCESS':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'CANCELLED':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
   };
 
   return (
@@ -432,6 +534,46 @@ const ReportsPage = () => {
                   />
                   <span className="text-sm text-gray-600">customers</span>
                 </div>
+              )}
+
+              {/* FILTROS PARA INVENTARIO - AQUÍ VAN */}
+              {activeTab === 'inventory' && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <Package className="w-4 h-4 text-gray-400" />
+                    <label className="text-sm text-gray-600">Stock Range:</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="Min"
+                      value={minStock}
+                      onChange={(e) => setMinStock(e.target.value ? parseInt(e.target.value) : '')}
+                      className="w-20 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span className="text-gray-400">-</span>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="Max"
+                      value={maxStock}
+                      onChange={(e) => setMaxStock(e.target.value ? parseInt(e.target.value) : '')}
+                      className="w-20 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="includeZeroStock"
+                      checked={includeZeroStock}
+                      onChange={(e) => setIncludeZeroStock(e.target.checked)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <label htmlFor="includeZeroStock" className="text-sm text-gray-600 whitespace-nowrap">
+                      Include zero stock
+                    </label>
+                  </div>
+                </>
               )}
 
               <div className="flex gap-2 ml-auto">
@@ -693,6 +835,77 @@ const ReportsPage = () => {
                 </div>
               )}
 
+              {/* Shipping Methods Report */}
+              {shippingMethodData.length > 0 && (
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-cyan-100 rounded-lg">
+                      <Truck className="w-6 h-6 text-cyan-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold text-gray-900">Shipping Methods</h2>
+                      <p className="text-sm text-gray-600">Distribution of orders by shipping method</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Gráfico de Torta */}
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={shippingMethodData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={renderCustomizedLabel}
+                            outerRadius={120}
+                            fill="#8884d8"
+                            dataKey="orderCount"
+                            nameKey="shippingMethod"
+                          >
+                            {shippingMethodData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip content={<CustomTooltip />} />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    {/* Tabla de Datos */}
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50 border-b border-gray-200">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Shipping Method</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Sales</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Avg. Shipping Cost</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {shippingMethodData.map((item, index) => (
+                            <tr key={index} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.shippingMethod}</td>
+                              <td className="px-6 py-4 text-sm text-gray-600">{item.orderCount}</td>
+                              <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
+                                {formatCurrency(item.totalSales)}
+                              </td>
+                              <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
+                                {formatCurrency(item.averageShippingCost)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+
               {paymentMethodData.length === 0 && topProductsData.length === 0 && salesByPeriodData.length === 0 && (
                 <div className="bg-white rounded-lg shadow-sm p-12 text-center">
                   <TrendingUp className="w-16 h-16 mx-auto mb-4 text-gray-300" />
@@ -763,7 +976,7 @@ const ReportsPage = () => {
                           <div>
                             <p className="font-medium text-gray-900">{customer.customerName}</p>
                             <p className="text-sm text-gray-600">{customer.customerEmail}</p>
-                            <p className="text-xs text-gray-500">{customer.orderCount} orders</p>
+                            <p className="text-xs text-gray-500">{customer.totalOrders} orders</p>
                           </div>
                         </div>
                         <div className="text-right">
@@ -805,11 +1018,11 @@ const ReportsPage = () => {
                         {customerStatsData.map((customer) => (
                           <tr key={customer.customerId} className="hover:bg-gray-50">
                             <td className="px-6 py-4 text-sm font-medium text-gray-900">{customer.customerName}</td>
-                            <td className="px-6 py-4 text-sm text-gray-600">{customer.customerEmail}</td>
+                            <td className="px-6 py-4 text-sm text-gray-600">{customer.email}</td>
                             <td className="px-6 py-4 text-sm text-gray-600">{customer.totalOrders}</td>
                             <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{formatCurrency(customer.totalSpent)}</td>
                             <td className="px-6 py-4 text-sm text-gray-600">{formatCurrency(customer.averageOrderValue)}</td>
-                            <td className="px-6 py-4 text-sm text-gray-600">{formatDate(customer.lastOrderDate)}</td>
+                            <td className="px-6 py-4 text-sm text-gray-600">{formatDate(customer.lastPurchaseDate)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -833,6 +1046,7 @@ const ReportsPage = () => {
             <>
               {/* Inventory Summary */}
               {inventoryData.length > 0 && (
+                
                 <div className="bg-white rounded-lg shadow-sm p-6">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-2 bg-orange-100 rounded-lg">
@@ -901,8 +1115,10 @@ const ReportsPage = () => {
                             <td className={`px-6 py-4 text-sm ${getStockColor(item.currentStock)}`}>
                               {item.currentStock}
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-600">{item.soldQuantity}</td>
-                            <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{formatCurrency(item.totalRevenue)}</td>
+                            <td className="px-6 py-4 text-sm text-gray-600">{item.totalSold}</td>
+                            <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
+                              {formatCurrency(item.totalRevenue)}
+                            </td>
                             <td className={`px-6 py-4 text-sm font-semibold ${getTurnoverColor(item.turnoverRate || 0)}`}>
                               {(item.turnoverRate || 0).toFixed(1)}%
                             </td>
@@ -953,7 +1169,7 @@ const ReportsPage = () => {
                         <span className="text-sm font-medium text-yellow-900">Total Sold</span>
                       </div>
                       <p className="text-2xl font-bold text-yellow-600 mt-2">
-                        {inventoryData.reduce((sum, item) => sum + item.soldQuantity, 0)}
+                        {inventoryData.reduce((sum, item) => sum + item.totalSold, 0)}
                       </p>
                     </div>
 
@@ -970,6 +1186,54 @@ const ReportsPage = () => {
                 </div>
               )}
 
+              {/* Inventory Reports Tab - Agregar esto después del reporte general de inventario */}
+              {productsWithoutMovementData.length > 0 && (
+                <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-red-100 rounded-lg">
+                      <PackageX className="w-6 h-6 text-red-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold text-gray-900">Products Without Movement</h2>
+                      <p className="text-sm text-gray-600">Products that haven't been sold recently</p>
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Inventory Value</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Movement</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {productsWithoutMovementData.map((product) => (
+                          <tr key={product.productId} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 text-sm font-medium text-gray-900">{product.productName}</td>
+                            <td className={`px-6 py-4 text-sm ${getStockColor(product.stock)}`}>
+                              {product.stock}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-600">
+                              {formatCurrency(product.price)}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
+                              {formatCurrency(product.inventoryValue)}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-600">
+                              {product.lastMovementDate ? formatDateTime(product.lastMovementDate) : 'Never'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
               {inventoryData.length === 0 && (
                 <div className="bg-white rounded-lg shadow-sm p-12 text-center">
                   <Package className="w-16 h-16 mx-auto mb-4 text-gray-300" />
@@ -979,6 +1243,415 @@ const ReportsPage = () => {
               )}
             </>
           )}
+
+          {/* Analytics Reports Tab */}
+        {activeTab === 'analytics' && (
+          <>
+            {/* Order Statistics Summary */}
+            {orderStatsData && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <BarChart2 className="w-6 h-6 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900">Order Statistics</h2>
+                    <p className="text-sm text-gray-600">Key metrics and performance indicators</p>
+                  </div>
+                </div>
+
+                {/* KPI Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <ShoppingCart className="w-5 h-5 text-blue-600" />
+                      <span className="text-sm font-medium text-blue-900">Total Orders</span>
+                    </div>
+                    <p className="text-2xl font-bold text-blue-600 mt-2">
+                      {orderStatsData.totalOrders}
+                    </p>
+                  </div>
+
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-green-600" />
+                      <span className="text-sm font-medium text-green-900">Average Ticket</span>
+                    </div>
+                    <p className="text-2xl font-bold text-green-600 mt-2">
+                      {formatCurrency(orderStatsData.averageTicket)}
+                    </p>
+                  </div>
+
+                  <div className="bg-yellow-50 p-4 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <TrendingUpIcon className="w-5 h-5 text-yellow-600" />
+                      <span className="text-sm font-medium text-yellow-900">Max Ticket</span>
+                    </div>
+                    <p className="text-2xl font-bold text-yellow-600 mt-2">
+                      {formatCurrency(orderStatsData.maxTicket)}
+                    </p>
+                  </div>
+
+                  <div className="bg-purple-50 p-4 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <TrendingDown className="w-5 h-5 text-purple-600" />
+                      <span className="text-sm font-medium text-purple-900">Min Ticket</span>
+                    </div>
+                    <p className="text-2xl font-bold text-purple-600 mt-2">
+                      {formatCurrency(orderStatsData.minTicket)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Orders by Status Report */}
+            {ordersByStatusData.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <Activity className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900">Orders by Status</h2>
+                    <p className="text-sm text-gray-600">Distribution of orders across different statuses</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Gráfico de Torta */}
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={ordersByStatusData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={renderCustomizedLabel}
+                          outerRadius={120}
+                          fill="#8884d8"
+                          dataKey="orderCount"
+                          nameKey="status"
+                        >
+                          {ordersByStatusData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Tabla de Datos */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order Count</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Amount</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Percentage</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {ordersByStatusData.map((item, index) => {
+                          const totalOrders = ordersByStatusData.reduce((sum, i) => sum + i.orderCount, 0);
+                          const percentage = totalOrders > 0 ? (item.orderCount / totalOrders) * 100 : 0;
+                          return (
+                            <tr key={index} className="hover:bg-gray-50">
+                              <td className="px-6 py-4">
+                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}>
+                                  {item.status}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 text-sm text-gray-600">{item.orderCount}</td>
+                              <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
+                                {formatCurrency(item.totalAmount)}
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-2">
+                                  <div className="flex-1 bg-gray-200 rounded-full h-2 max-w-[100px]">
+                                    <div 
+                                      className="bg-purple-600 h-2 rounded-full" 
+                                      style={{ width: `${percentage}%` }}
+                                    ></div>
+                                  </div>
+                                  <span className="text-sm text-gray-600">{percentage.toFixed(1)}%</span>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Conversion Rate Report */}
+            {conversionRateData && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Target className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900">Conversion Rate Analysis</h2>
+                    <p className="text-sm text-gray-600">Order completion and cancellation rates</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                  <div className="bg-green-50 p-6 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Target className="w-5 h-5 text-green-600" />
+                        <span className="text-sm font-medium text-green-900">Completion Rate</span>
+                      </div>
+                      <span className="text-2xl font-bold text-green-600">
+                        {formatPercentage(conversionRateData.completionRate)}
+                      </span>
+                    </div>
+                    <p className="text-sm text-green-700">
+                      {conversionRateData.completed} completed orders
+                    </p>
+                  </div>
+
+                  <div className="bg-red-50 p-6 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="w-5 h-5 text-red-600" />
+                        <span className="text-sm font-medium text-red-900">Cancellation Rate</span>
+                      </div>
+                      <span className="text-2xl font-bold text-red-600">
+                        {formatPercentage(conversionRateData.cancellationRate)}
+                      </span>
+                    </div>
+                    <p className="text-sm text-red-700">
+                      {conversionRateData.cancelled} cancelled orders
+                    </p>
+                  </div>
+
+                  <div className="bg-blue-50 p-6 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-5 h-5 text-blue-600" />
+                        <span className="text-sm font-medium text-blue-900">Pending Orders</span>
+                      </div>
+                      <span className="text-2xl font-bold text-blue-600">
+                        {conversionRateData.pending}
+                      </span>
+                    </div>
+                    <p className="text-sm text-blue-700">
+                      Orders awaiting processing
+                    </p>
+                  </div>
+                </div>
+
+                {/* Gráfico de barras para conversion rate */}
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={[
+                        { name: 'Completed', value: conversionRateData.completed, color: '#10b981' },
+                        { name: 'Cancelled', value: conversionRateData.cancelled, color: '#ef4444' },
+                        { name: 'Pending', value: conversionRateData.pending, color: '#3b82f6' }
+                      ]}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar 
+                        dataKey="value" 
+                        fill={(entry: { color: any; }) => entry.color}
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+
+            {!orderStatsData && ordersByStatusData.length === 0 && !conversionRateData && (
+              <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+                <BarChart2 className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <p className="text-lg text-gray-500 mb-2">No analytics data available</p>
+                <p className="text-sm text-gray-400">Select a date range and click "Generate Reports"</p>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Performance Reports Tab */}
+        {activeTab === 'performance' && (
+          <>
+            {/* Sales by Brand Report */}
+            {salesByBrandData.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <Tag className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900">Sales by Brand</h2>
+                    <p className="text-sm text-gray-600">Performance analysis by product brand</p>
+                  </div>
+                </div>
+
+                <div className="h-96 mb-6">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={salesByBrandData.slice(0, 10)}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="brandName" 
+                        angle={-45}
+                        textAnchor="end"
+                        height={60}
+                        interval={0}
+                        fontSize={12}
+                      />
+                      <YAxis />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend />
+                      <Bar 
+                        dataKey="totalSales" 
+                        name="Total Sales" 
+                        fill="#f97316"
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Bar 
+                        dataKey="totalQuantity" 
+                        name="Quantity Sold" 
+                        fill="#8b5cf6"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Brand</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Items Sold</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Quantity</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Sales</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {salesByBrandData.map((brand, index) => (
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 text-sm font-medium text-gray-900">{brand.brandName}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{brand.itemsSold}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{brand.totalQuantity}</td>
+                          <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
+                            {formatCurrency(brand.totalSales)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Sales by Category Report */}
+            {salesByCategoryData.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <Layers className="w-6 h-6 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900">Sales by Category</h2>
+                    <p className="text-sm text-gray-600">Performance analysis by product category</p>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto mb-6">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Brand</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Items Sold</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Quantity</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Sales</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {salesByCategoryData.map((category, index) => (
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                            {category.categoryName}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{category.brandName}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{category.itemsSold}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{category.totalQuantity}</td>
+                          <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
+                            {formatCurrency(category.totalSales)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Gráfico de categorías */}
+                <div className="h-96">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={salesByCategoryData.slice(0, 15)}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="categoryName" 
+                        angle={-45}
+                        textAnchor="end"
+                        height={60}
+                        interval={0}
+                        fontSize={12}
+                      />
+                      <YAxis />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend />
+                      <Bar 
+                        dataKey="totalSales" 
+                        name="Total Sales" 
+                        fill="#8b5cf6"
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Bar 
+                        dataKey="totalQuantity" 
+                        name="Quantity Sold" 
+                        fill="#06b6d4"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+
+            {salesByBrandData.length === 0 && salesByCategoryData.length === 0 && productsWithoutMovementData.length === 0 && (
+              <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+                <Star className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <p className="text-lg text-gray-500 mb-2">No performance data available</p>
+                <p className="text-sm text-gray-400">Select a date range and click "Generate Reports"</p>
+              </div>
+            )}
+          </>
+        )}
         </div>
       </div>
     </div>

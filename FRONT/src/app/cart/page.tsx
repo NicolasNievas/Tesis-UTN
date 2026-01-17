@@ -1,25 +1,17 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useAuthContext } from '@/context/data.context';
 import Button from "@/components/atoms/Button";
 import Line from "@/components/atoms/Line";
 import { useRouter } from 'next/navigation';
 import LoadingSpinner from '@/components/atoms/LoadingSpinner';
 import { toast } from 'react-toastify';
-import { Wallet } from '@mercadopago/sdk-react';
-import MercadoPagoService from '@/services/MercadoPagoService';
-
-const SHIPPING_COST = 0;
 
 const CartPage: React.FC = () => {
   const { cart, getCart, isAuthenticated, cartLoading, updateCartItem, removeFromCart } = useAuthContext();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [preferenceId, setPreferenceId] = useState<string | null>(null);
-  const [isDisabled, setIsDisabled] = useState<boolean>(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -50,36 +42,13 @@ const CartPage: React.FC = () => {
     return cart?.items?.reduce((subtotal, item) => subtotal + item.subtotal, 0) || 0;
   };
 
-  const calculateTotal = () => {
-    return calculateSubtotal() + SHIPPING_COST;
-  };
-
-  const initiatePayment = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await MercadoPagoService.initiatePayment();
-      if (data.preferenceId) {
-        setPreferenceId(data.preferenceId);
-        setIsDisabled(true); 
-      } else {
-        throw new Error('Failed to create payment preference');
-      }
-    } catch (err) {
-      setError('Error initiating payment. Please try again.');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+  const handleGoToCheckout = () => {
+    router.push('/checkout');
   };
 
   if (cartLoading) {
     return <p> <LoadingSpinner /> </p>;
   }
-
-  // const handleCheckoutClick = () => {
-  //   toast.info('This functionality is not implemented yet.');
-  // };
 
   return (
     <div className="container mx-auto h-screen py-8">
@@ -142,22 +111,13 @@ const CartPage: React.FC = () => {
               <p className="text-xl font-semibold pb-4">Summary</p>
               <Line />
               <p className="text-lg">Subtotal <span className="float-right">${calculateSubtotal()}</span></p>
-              <p className="text-lg">Shipping <span className="float-right">${SHIPPING_COST}</span></p>
               <Line />
-              <p className="text-lg">Total <span className="float-right">${calculateTotal()}</span></p>
-              <Line />
+              <p className="text-sm text-gray-600 mb-4">Shipping and taxes calculated at checkout</p>
               <Button 
-                name={loading ? 'Processing...' : 'Go to Checkout'}
-                onClick={initiatePayment} 
-                isDisabled={isDisabled} 
-                className='w-full h-[90px] p-2 h-auto text-xl bg-black-btn hover:bg-black-hover hover:text-white text-gray-bg-light rounded-md mt-4'
+                name='Go to Checkout'
+                onClick={handleGoToCheckout} 
+                className='w-full h-[90px] p-2 text-xl bg-black-btn hover:bg-black-hover hover:text-white text-gray-bg-light rounded-md mt-4'
               />
-              {error && <p style={{ color: 'red' }}>{error}</p>}
-              {preferenceId && (
-                <div id="wallet_container">
-                  <Wallet initialization={{ preferenceId }} customization={{ texts: { valueProp: 'smart_option' } }} />
-                </div>
-              )}
             </div>
           </div>
         </div>

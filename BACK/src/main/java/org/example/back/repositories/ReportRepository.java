@@ -19,7 +19,7 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
         SELECT 
             DATE_TRUNC(:periodType, o.date) as period,
             COUNT(o.id) as orderCount,
-            SUM(od.price * od.quantity) as totalSales
+            SUM(od.price * od.quantity) + SUM(COALESCE(o.shipping_cost, 0)) as totalSales
         FROM orders o
         JOIN order_details od ON o.id = od.order_id
         WHERE o.date BETWEEN :startDate AND :endDate
@@ -38,11 +38,10 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
     @Query("""
         SELECT 
             COUNT(DISTINCT o.id) as totalOrders,
-            AVG(od.price * od.quantity) as averageTicket,
-            MAX(od.price * od.quantity) as maxTicket,
-            MIN(od.price * od.quantity) as minTicket
+            AVG(o.subtotal + COALESCE(o.shippingCost, 0)) as averageTicket,
+            MAX(o.subtotal + COALESCE(o.shippingCost, 0)) as maxTicket,
+            MIN(o.subtotal + COALESCE(o.shippingCost, 0)) as minTicket
         FROM OrderEntity o
-        JOIN o.details od
         WHERE o.date BETWEEN :startDate AND :endDate
     """)
     List<Object[]> getOrderStatistics(
@@ -62,12 +61,11 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
             u.email as email,
             u.city as city,
             COUNT(DISTINCT o.id) as totalOrders,
-            SUM(od.price * od.quantity) as totalSpent,
-            AVG(od.price * od.quantity) as averageOrderValue,
+            SUM(o.subtotal + COALESCE(o.shippingCost, 0)) as totalSpent,
+            AVG(o.subtotal + COALESCE(o.shippingCost, 0)) as averageOrderValue,
             MAX(o.date) as lastPurchaseDate
         FROM OrderEntity o
         JOIN o.customer u
-        JOIN o.details od
         WHERE o.date BETWEEN :startDate AND :endDate
         GROUP BY u.id, u.firstName, u.lastName, u.email, u.city
         ORDER BY totalSpent DESC
@@ -85,10 +83,9 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
             u.id,
             CONCAT(u.firstName, ' ', u.lastName) as customerName,
             COUNT(DISTINCT o.id) as totalOrders,
-            SUM(od.price * od.quantity) as totalSpent
+            SUM(o.subtotal + COALESCE(o.shippingCost, 0)) as totalSpent
         FROM OrderEntity o
         JOIN o.customer u
-        JOIN o.details od
         WHERE o.status = 'COMPLETED'
         GROUP BY u.id, u.firstName, u.lastName
         ORDER BY totalSpent DESC
@@ -103,26 +100,35 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
      */
     @Query(value = """
         SELECT 
-            p.id,
-            p.name,
+            p.id as productId,
+            p.name as productName,
             p.stock as currentStock,
             p.price,
             (p.stock * p.price) as inventoryValue,
             COALESCE(sales.total_sold, 0) as totalSold,
+            COALESCE(sales.total_revenue, 0) as totalRevenue,
             CASE 
                 WHEN p.stock = 0 THEN 'OUT_OF_STOCK'
                 WHEN p.stock <= 10 THEN 'LOW_STOCK'
                 WHEN p.stock <= 50 THEN 'AVERAGE_STOCK'
                 ELSE 'HIGH_STOCK'
-            END as stockStatus
+            END as stockStatus,
+            CASE 
+                WHEN p.stock = 0 AND COALESCE(sales.total_sold, 0) > 0 THEN 100.00
+                WHEN p.stock > 0 THEN 
+                    (COALESCE(sales.total_sold, 0) * 100.00) / NULLIF(p.stock + COALESCE(sales.total_sold, 0), 0)
+                ELSE 0.00
+            END as turnoverRate
         FROM products p
         LEFT JOIN (
             SELECT 
                 od.product_id,
-                SUM(od.quantity) as total_sold
+                SUM(od.quantity) as total_sold,
+                SUM(od.price * od.quantity) as total_revenue
             FROM order_details od
             JOIN orders o ON od.order_id = o.id
             WHERE o.date BETWEEN :startDate AND :endDate
+            AND o.status = 'COMPLETED'
             GROUP BY od.product_id
         ) sales ON p.id = sales.product_id
         WHERE p.active = true
@@ -137,25 +143,46 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
      * Productos sin movimiento
      */
     @Query(value = """
-        SELECT 
-            p.id,
-            p.name,
-            p.stock,
-            p.price,
-            (p.stock * p.price) as inventoryValue,
-            MAX(r.date) as lastMovementDate
-        FROM products p
-        LEFT JOIN replenishments r ON p.id = r.product_id
-        WHERE p.active = true
-        AND NOT EXISTS (
-            SELECT 1 FROM order_details od
-            JOIN orders o ON od.order_id = o.id
-            WHERE od.product_id = p.id
-            AND o.date >= :startDate
-        )
-        GROUP BY p.id, p.name, p.stock, p.price
-        ORDER BY lastMovementDate ASC NULLS FIRST
-        """, nativeQuery = true)
+    SELECT 
+        p.id,
+        p.name,
+        p.stock,
+        p.price,
+        (p.stock * p.price) as inventory_value,
+        -- Obtener la última fecha de movimiento (venta O reposición)
+        GREATEST(
+            (SELECT MAX(o.date) 
+             FROM orders o 
+             JOIN order_details od ON o.id = od.order_id 
+             WHERE od.product_id = p.id 
+             AND o.status = 'COMPLETED'),
+            (SELECT MAX(r.date) 
+             FROM replenishments r 
+             WHERE r.product_id = p.id)
+        ) as last_movement_date,
+        -- Total vendido desde startDate
+        COALESCE(
+            (SELECT SUM(od.quantity) 
+             FROM order_details od 
+             JOIN orders o ON od.order_id = o.id 
+             WHERE od.product_id = p.id 
+             AND o.date >= :startDate
+             AND o.status = 'COMPLETED'), 
+            0
+        ) as total_sold
+    FROM products p
+    WHERE p.active = true
+    -- Solo productos que no han tenido ventas desde startDate
+    AND NOT EXISTS (
+        SELECT 1 
+        FROM order_details od 
+        JOIN orders o ON od.order_id = o.id 
+        WHERE od.product_id = p.id 
+        AND o.date >= :startDate
+        AND o.status = 'COMPLETED'
+    )
+    ORDER BY last_movement_date ASC NULLS FIRST
+    """, nativeQuery = true)
     List<Object[]> getProductsWithoutMovement(
             @Param("startDate") LocalDateTime startDate
     );
@@ -219,9 +246,8 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
         SELECT 
             o.status,
             COUNT(o.id) as orderCount,
-            SUM(od.price * od.quantity) as totalAmount
+            SUM(o.subtotal + COALESCE(o.shippingCost, 0)) as totalAmount
         FROM OrderEntity o
-        JOIN o.details od
         WHERE o.date BETWEEN :startDate AND :endDate
         GROUP BY o.status
         ORDER BY orderCount DESC
@@ -247,4 +273,40 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
+
+    /**
+     * Reporte de métodos de envío más utilizados
+     */
+    @Query("""
+    SELECT 
+        s.name as shippingMethod,
+        COUNT(o.id) as orderCount,
+        SUM(o.subtotal + COALESCE(o.shippingCost, 0)) as totalSales,
+        AVG(COALESCE(o.shippingCost, 0)) as averageShippingCost
+    FROM OrderEntity o
+    JOIN o.shipping s
+    WHERE o.date BETWEEN :startDate AND :endDate
+    GROUP BY s.name, s.displayName
+    ORDER BY orderCount DESC
+""")
+    List<Object[]> getShippingMethodReport(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    /**
+     * Tendencias Mensuales de ventas
+     */
+    @Query(value = """
+    SELECT 
+        TO_CHAR(o.date, 'YYYY-MM') as month,
+        COUNT(o.id) as orderCount,
+        SUM(o.subtotal + COALESCE(o.shipping_cost, 0)) as totalSales,
+        AVG(o.subtotal + COALESCE(o.shipping_cost, 0)) as averageTicket
+    FROM orders o
+    WHERE o.date BETWEEN :startDate AND :endDate
+    GROUP BY TO_CHAR(o.date, 'YYYY-MM')
+    ORDER BY month
+""", nativeQuery = true)
+    List<Object[]> getTTMonthSales();
 }

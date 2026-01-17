@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -261,14 +262,45 @@ public class ReportController {
     @ApiResponse(responseCode = "200", description = "Successful operation")
     @ApiResponse(responseCode = "403", description = "Unauthorized")
     @ApiResponse(responseCode = "500", description = "Internal Server Error")
-    public ResponseEntity<List<ProductsWithoutMovementDTO>> getProductsWithoutMovement(
+    public ResponseEntity<?> getProductsWithoutMovement(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime startDate,
+            @RequestParam(required = false) Integer minStock,
+            @RequestParam(required = false) Integer maxStock,
+            @RequestParam(defaultValue = "false") Boolean includeZeroStock
+    ) {
+        List<ProductsWithoutMovementDTO> products = reportService.getProductsWithoutMovement(startDate);
+
+        List<ProductsWithoutMovementDTO> filteredProducts = products.stream()
+                .filter(p -> minStock == null || p.getStock() >= minStock)
+                .filter(p -> maxStock == null || p.getStock() <= maxStock)
+                .filter(p -> includeZeroStock || p.getStock() > 0)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(filteredProducts);
+    }
+
+    @GetMapping("/reports/shipping-methods")
+    @Operation(
+            summary = "Get shipping method report",
+            description = "Get statistics about shipping methods usage"
+    )
+    @ApiResponse(responseCode = "200", description = "Successful operation")
+    @ApiResponse(responseCode = "403", description = "Unauthorized")
+    @ApiResponse(responseCode = "500", description = "Internal Server Error")
+    public ResponseEntity<List<ShippingMethodReportDTO>> getShippingMethodReport(
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate
     ) {
         if (startDate == null) {
-            startDate = LocalDateTime.now().minusMonths(6);
+            startDate = LocalDateTime.now().minusMonths(3);
+        }
+        if (endDate == null) {
+            endDate = LocalDateTime.now();
         }
 
-        return ResponseEntity.ok(reportService.getProductsWithoutMovement(startDate));
+        return ResponseEntity.ok(reportService.getShippingMethodReport(startDate, endDate));
     }
 }

@@ -76,14 +76,18 @@ const UserOrders = () => {
         }
     };
 
-    const getShippingStatus = (status: string) => {
-        switch (status) {
+    const getShippingStatus = (shippingName: string) => {
+        switch (shippingName) {
             case 'LOCAL_PICKUP':
                 return 'Local Pickup';
-            case 'HOME_DELIVERY':
-                return 'Home Delivery';
+            case 'OCA':
+                return 'OCA';
+            case 'CORREO_ARGENTINO':
+                return 'Correo Argentino';
+            case 'ANDREANI':
+                return 'Andreani';
             default:
-                return 'N/A';
+                return shippingName || 'Not specified';
         }
     };
 
@@ -197,11 +201,43 @@ const UserOrders = () => {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-3">
+                                {/* <div className="flex items-center gap-3">
                                     <Truck className="w-5 h-5 text-gray-400" />
                                     <div>
                                         <p className="text-sm text-gray-500">Shipping</p>
                                         <p className="font-medium text-gray-900">{getShippingStatus(order.shippingName)}</p>
+                                    </div>
+                                </div> */}
+
+                                {/* Shipping con tooltip a la derecha */}
+                                <div className="flex items-center gap-3">
+                                    <div className="relative group">
+                                        <div className="flex items-center gap-3 ">
+                                            <Truck className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                                            <div className="min-w-[140px]">
+                                                <div className="text-sm font-medium text-gray-600">Shipping</div>
+                                                <div className="text-gray-900 font-medium">
+                                                    {getShippingStatus(order.shippingName)}
+                                                </div>
+                                                <div className="text-xs text-gray-500">
+                                                    {order.shippingCost === 0 ? 'Free' : `$${order.shippingCost.toFixed(2)}`}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Tooltip a la derecha */}
+                                        {order.shippingAddress && (
+                                            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                                                <div className="font-semibold mb-1">Shipping Address:</div>
+                                                <div className="mb-1">{order.shippingAddress}</div>
+                                                <div>City: {order.shippingCity}</div>
+                                                {order.shippingPostalCode && (
+                                                    <div>CP: {order.shippingPostalCode}</div>
+                                                )}
+                                                {/* Flecha del tooltip */}
+                                                <div className="absolute top-1/2 -left-2 -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

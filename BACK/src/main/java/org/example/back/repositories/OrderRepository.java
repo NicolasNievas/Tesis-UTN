@@ -43,7 +43,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     @Query("""
         SELECT pm.name AS paymentMethod, 
                COUNT(o.id) AS orderCount, 
-               SUM(od.price * od.quantity) AS totalSales 
+               SUM(od.price * od.quantity + COALESCE(o.shippingCost, 0)) AS totalSales 
         FROM OrderEntity o 
         JOIN o.paymentMethod pm 
         JOIN o.details od 
@@ -76,10 +76,10 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
     // Obtener total gastado por usuario
     @Query("""
-        SELECT COALESCE(SUM(od.price * od.quantity), 0) 
-        FROM OrderDetailEntity od 
-        JOIN od.order o 
+        SELECT COALESCE(SUM(o.subtotal + COALESCE(o.shippingCost, 0)), 0)
+        FROM OrderEntity o
         WHERE o.customer.id = :customerId
+        AND o.status != 'CANCELLED'
     """)
     BigDecimal getTotalSpentByCustomer(@Param("customerId") Long customerId);
 

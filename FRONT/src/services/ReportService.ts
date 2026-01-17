@@ -1,5 +1,5 @@
 import axios from "axios";
-import { CustomerStatistics, InventoryReport, PaymentMethodReport, SalesByPeriodReport, TopCustomer, TopProductReport } from "@/interfaces/data.interfaces";
+import { ConversionRate, CustomerStatistics, InventoryReport, OrdersByStatus, OrderStatistics, PaymentMethodReport, ProductsWithoutMovement, SalesByBrand, SalesByCategory, SalesByPeriodReport, ShippingMethodReport, TopCustomer, TopProductReport } from "@/interfaces/data.interfaces";
 
 const $URL = process.env.NEXT_PUBLIC_API_URL_ADMIN;
 
@@ -101,6 +101,116 @@ class ReportService {
       if (startDate) params.append('startDate', new Date(startDate + 'T00:00:00').toISOString());
       if (endDate) params.append('endDate', new Date(endDate + 'T23:59:59').toISOString());
       const response = await axios.get(`${$URL}/reports/inventory?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+   static async getOrderStatistics(
+    startDate?: string,
+    endDate?: string
+  ): Promise<OrderStatistics> {
+    try {
+      const params = new URLSearchParams();
+      if (startDate) params.append('startDate', new Date(startDate + 'T00:00:00').toISOString());
+      if (endDate) params.append('endDate', new Date(endDate + 'T23:59:59').toISOString());
+      const response = await axios.get(`${$URL}/reports/order-statistics?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getOrdersByStatus(
+    startDate?: string,
+    endDate?: string
+  ): Promise<OrdersByStatus[]> {
+    try {
+      const params = new URLSearchParams();
+      if (startDate) params.append('startDate', new Date(startDate + 'T00:00:00').toISOString());
+      if (endDate) params.append('endDate', new Date(endDate + 'T23:59:59').toISOString());
+      const response = await axios.get(`${$URL}/reports/orders-by-status?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getConversionRate(
+    startDate?: string,
+    endDate?: string
+  ): Promise<ConversionRate> {
+    try {
+      const params = new URLSearchParams();
+      if (startDate) params.append('startDate', new Date(startDate + 'T00:00:00').toISOString());
+      if (endDate) params.append('endDate', new Date(endDate + 'T23:59:59').toISOString());
+      const response = await axios.get(`${$URL}/reports/conversion-rate?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getSalesByBrand(
+    startDate?: string,
+    endDate?: string
+  ): Promise<SalesByBrand[]> {
+    try {
+      const params = new URLSearchParams();
+      if (startDate) params.append('startDate', new Date(startDate + 'T00:00:00').toISOString());
+      if (endDate) params.append('endDate', new Date(endDate + 'T23:59:59').toISOString());
+      const response = await axios.get(`${$URL}/reports/sales-by-brand?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getSalesByCategory(
+    startDate?: string,
+    endDate?: string
+  ): Promise<SalesByCategory[]> {
+    try {
+      const params = new URLSearchParams();
+      if (startDate) params.append('startDate', new Date(startDate + 'T00:00:00').toISOString());
+      if (endDate) params.append('endDate', new Date(endDate + 'T23:59:59').toISOString());
+      const response = await axios.get(`${$URL}/reports/sales-by-category?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getProductsWithoutMovement(
+    startDate?: string,
+    minStock?: number,
+    maxStock?: number,
+    includeZeroStock?: boolean
+  ): Promise<ProductsWithoutMovement[]> {
+    try {
+      const params = new URLSearchParams();
+      if (startDate) params.append('startDate', new Date(startDate + 'T00:00:00').toISOString());
+      if (minStock !== undefined) params.append('minStock', minStock.toString());
+      if (maxStock !== undefined) params.append('maxStock', maxStock.toString());
+      if (includeZeroStock !== undefined) params.append('includeZeroStock', includeZeroStock.toString());
+      
+      const response = await axios.get(`${$URL}/reports/products-without-movement?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getShippingMethodReport(
+    startDate?: string,
+    endDate?: string
+  ): Promise<ShippingMethodReport[]> {
+    try {
+      const params = new URLSearchParams();
+      if (startDate) params.append('startDate', new Date(startDate + 'T00:00:00').toISOString());
+      if (endDate) params.append('endDate', new Date(endDate + 'T23:59:59').toISOString());
+      const response = await axios.get(`${$URL}/reports/shipping-methods?${params.toString()}`);
       return response.data;
     } catch (error) {
       throw error;

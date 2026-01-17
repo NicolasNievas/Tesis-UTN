@@ -9,14 +9,11 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CartDTO {
-    private Long id;
-    private Long userId;
-    private List<CartItemDTO> items;
+public class CheckoutDTO {
+    private CartDTO cart;
+    private List<ShippingDTO> availableShippingMethods;
     private BigDecimal subtotal;
     private BigDecimal shippingCost;
     private BigDecimal total;
-    private Long selectedShippingId;
-    private ShippingDTO selectedShipping;
     private ShippingAddressDTO shippingAddress;
 }

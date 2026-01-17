@@ -8,8 +8,12 @@ import org.example.back.services.ReportService;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -93,24 +97,25 @@ public class ReportServiceImp implements ReportService {
                 .collect(Collectors.toList());
     }
 
+    // En ReportServiceImp.java
     @Override
     public List<InventoryReportDTO> getInventoryReport(LocalDateTime startDate, LocalDateTime endDate) {
         List<Object[]> results = reportRepository.getInventoryReport(startDate, endDate);
 
-        if (results.isEmpty()){
-            throw new IllegalArgumentException("No inventory data found for the specified period.");
-        }
-
         return results.stream()
-                .map(row -> new InventoryReportDTO(
-                        ((Number) row[0]).longValue(),
-                        (String) row[1],
-                        ((Number) row[2]).intValue(),
-                        new BigDecimal(row[3].toString()),
-                        new BigDecimal(row[4].toString()),
-                        ((Number) row[5]).longValue(),
-                        (String) row[6]
-                ))
+                .map(row -> {
+                    InventoryReportDTO dto = new InventoryReportDTO();
+                    dto.setProductId(((Number) row[0]).longValue());
+                    dto.setProductName((String) row[1]);
+                    dto.setCurrentStock(((Number) row[2]).intValue());
+                    dto.setPrice((BigDecimal) row[3]);
+                    dto.setInventoryValue((BigDecimal) row[4]);
+                    dto.setTotalSold(((Number) row[5]).longValue());
+                    dto.setTotalRevenue((BigDecimal) row[6]);
+                    dto.setStockStatus((String) row[7]);
+                    dto.setTurnoverRate((BigDecimal) row[8]);
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -232,32 +237,139 @@ public class ReportServiceImp implements ReportService {
 
     @Override
     public List<ProductsWithoutMovementDTO> getProductsWithoutMovement(LocalDateTime startDate) {
-        List<Object[]> results = reportRepository.getProductsWithoutMovement(startDate);
-
-        if (results.isEmpty()) {
-            throw new IllegalArgumentException("No products without movement found for the specified period.");
+        // Si no se proporciona fecha, usar los últimos 6 meses por defecto
+        if (startDate == null) {
+            startDate = LocalDateTime.now().minusMonths(6);
         }
 
+        // Validar que la fecha no sea futura
+        if (startDate.isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("La fecha de inicio no puede ser futura");
+        }
+
+        List<Object[]> results = reportRepository.getProductsWithoutMovement(startDate);
+
         return results.stream()
-                .map(row -> {
-                    LocalDateTime lastMovementDate = null;
-                    if (row[5] != null) {
-                        if (row[5] instanceof java.sql.Timestamp) {
-                            lastMovementDate = ((java.sql.Timestamp) row[5]).toLocalDateTime();
-                        } else if (row[5] instanceof LocalDateTime) {
-                            lastMovementDate = (LocalDateTime) row[5];
+                .map(this::mapToDTO)
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparing(
+                        ProductsWithoutMovementDTO::getLastMovementDate,
+                        Comparator.nullsFirst(Comparator.naturalOrder())
+                ))
+                .collect(Collectors.toList());
+    }
+
+    private ProductsWithoutMovementDTO mapToDTO(Object[] row) {
+        try {
+            Long productId = ((Number) row[0]).longValue();
+            String productName = (String) row[1];
+            Integer stock = ((Number) row[2]).intValue();
+            BigDecimal price = new BigDecimal(row[3].toString());
+            BigDecimal inventoryValue = new BigDecimal(row[4].toString());
+
+            // Manejo seguro de la fecha
+            LocalDateTime lastMovementDate = null;
+            if (row[5] != null) {
+                if (row[5] instanceof Timestamp) {
+                    Timestamp timestamp = (Timestamp) row[5];
+                    lastMovementDate = timestamp.toLocalDateTime();
+                } else if (row[5] instanceof java.util.Date) {
+                    java.util.Date date = (java.util.Date) row[5];
+                    lastMovementDate = date.toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDateTime();
+                } else if (row[5] instanceof LocalDateTime) {
+                    lastMovementDate = (LocalDateTime) row[5];
+                }
+            }
+
+            Integer totalSold = row.length > 6 && row[6] != null
+                    ? ((Number) row[6]).intValue()
+                    : 0;
+
+            return new ProductsWithoutMovementDTO(
+                    productId,
+                    productName,
+                    stock,
+                    price,
+                    inventoryValue,
+                    lastMovementDate,
+                    totalSold
+            );
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // Método para calcular días sin movimiento
+    public List<Map<String, Object>> getProductsWithoutMovementWithAnalysis(LocalDateTime startDate) {
+        List<ProductsWithoutMovementDTO> products = getProductsWithoutMovement(startDate);
+
+        return products.stream()
+                .map(product -> {
+                    Map<String, Object> analysis = new HashMap<>();
+                    analysis.put("product", product);
+
+                    // Calcular días sin movimiento
+                    if (product.getLastMovementDate() != null) {
+                        long days = ChronoUnit.DAYS.between(
+                                product.getLastMovementDate().toLocalDate(),
+                                LocalDate.now()
+                        );
+                        analysis.put("daysWithoutMovement", days);
+
+                        // Categorizar
+                        if (product.getStock() == 0) {
+                            analysis.put("category", "SIN_STOCK");
+                        } else if (days > 180) {
+                            analysis.put("category", "INVENTARIO_OBSOLETO");
+                        } else if (days > 90) {
+                            analysis.put("category", "MOVIMIENTO_LENTO");
+                        } else {
+                            analysis.put("category", "NORMAL");
                         }
+                    } else {
+                        analysis.put("daysWithoutMovement", null);
+                        analysis.put("category", "SIN_MOVIMIENTO_REGISTRADO");
                     }
 
-                    return new ProductsWithoutMovementDTO(
-                            ((Number) row[0]).longValue(),
-                            (String) row[1],
-                            ((Number) row[2]).intValue(),
-                            new BigDecimal(row[3].toString()),
-                            new BigDecimal(row[4].toString()),
-                            lastMovementDate
-                    );
+                    return analysis;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ShippingMethodReportDTO> getShippingMethodReport(LocalDateTime startDate, LocalDateTime endDate) {
+        try {
+
+            if (startDate.isAfter(endDate)) {
+                throw new IllegalArgumentException("Start date cannot be after end date");
+            }
+
+            List<Object[]> results = reportRepository.getShippingMethodReport(startDate, endDate);
+
+            if (results.isEmpty()) {
+                throw new IllegalArgumentException("No shipping data found for the specified period.");
+            }
+
+            return results.stream()
+                    .map(row -> {
+                        try {
+                            return new ShippingMethodReportDTO(
+                                    (String) row[0], // shippingMethod
+                                    row[1] != null ? ((Number) row[1]).longValue() : 0L,
+                                    row[2] != null ? new BigDecimal(row[2].toString()) : BigDecimal.ZERO,
+                                    row[3] != null ? new BigDecimal(row[3].toString()) : BigDecimal.ZERO
+                            );
+                        } catch (Exception e) {
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating shipping method report: " + e.getMessage(), e);
+        }
     }
 }

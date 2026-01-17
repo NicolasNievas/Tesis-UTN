@@ -42,11 +42,17 @@ public class OrderServiceImp implements OrderService {
     private final ShippingRepository shippingRepository;
     private final UserRepository userRepository;
     private final ReplenishmentRepository replenishmentRepository;
+    private final CartRepository cartRepository;
+    private final ShippingService shippingService;
 
     @Override
     public OrderResponse createOrder(OrderRequest orderRequest, String userEmail) {
         UserEntity userEntity = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + userEmail));
+
+        // Obtener el carrito del usuario
+        CartEntity cart = cartRepository.findByUserId(userEntity.getId())
+                .orElseThrow(() -> new RuntimeException("Carrito no encontrado"));
 
         OrderEntity order = new OrderEntity();
         order.setCustomer(userEntity);
@@ -59,11 +65,31 @@ public class OrderServiceImp implements OrderService {
                 .orElseThrow(() -> new RuntimeException("Método de pago no encontrado"));
         order.setPaymentMethod(paymentMethod);
 
-        ShippingEntity shipping = shippingRepository.findById(orderRequest.getShippingId())
-                .orElseThrow(() -> new RuntimeException("Método de envío no encontrado"));
-        order.setShipping(shipping);
+        // Asignar método de envío desde el carrito
+        if (cart.getSelectedShipping() != null) {
+            order.setShipping(cart.getSelectedShipping());
+
+            // Calcular y guardar el costo de envío
+            BigDecimal shippingCost = shippingService.calculateShippingCost(
+                    cart.getSelectedShipping().getId(),
+                    cart.getShippingPostalCode()
+            );
+            order.setShippingCost(shippingCost);
+
+            // Guardar dirección de envío
+            order.setShippingAddress(cart.getShippingAddress());
+            order.setShippingCity(cart.getShippingCity());
+            order.setShippingPostalCode(cart.getShippingPostalCode());
+        } else {
+            // Si no hay método de envío seleccionado, usar uno por defecto (retiro local)
+            ShippingEntity defaultShipping = shippingRepository.findByName("LOCAL_PICKUP")
+                    .orElseThrow(() -> new RuntimeException("Método de envío por defecto no encontrado"));
+            order.setShipping(defaultShipping);
+            order.setShippingCost(BigDecimal.ZERO);
+        }
 
         Set<OrderDetailEntity> details = new HashSet<>();
+        BigDecimal subtotal = BigDecimal.ZERO;
         for (OrderDetailRequest detailRequest : orderRequest.getDetails()) {
             OrderDetailEntity detail = new OrderDetailEntity();
             ProductEntity product = productRepository.findById(detailRequest.getProductId())
@@ -89,8 +115,12 @@ public class OrderServiceImp implements OrderService {
             detail.setQuantity(detailRequest.getQuantity());
             detail.setPrice(detailRequest.getPrice());
             details.add(detail);
+
+            subtotal = subtotal.add(detailRequest.getPrice()
+                    .multiply(BigDecimal.valueOf(detailRequest.getQuantity())));
         }
 
+        order.setSubtotal(subtotal);
         order.setDetails(details);
         OrderEntity savedOrder = orderRepository.save(order);
 
@@ -212,9 +242,20 @@ public class OrderServiceImp implements OrderService {
                         .build())
                 .collect(Collectors.toList());
 
-        BigDecimal total = details.stream()
+        // Calcular subtotal de productos
+        BigDecimal subtotal = order.getSubtotal() != null
+                ? order.getSubtotal()
+                : details.stream()
                 .map(OrderDetailResponse::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Obtener costo de envío
+        BigDecimal shippingCost = order.getShippingCost() != null
+                ? order.getShippingCost()
+                : BigDecimal.ZERO;
+
+        // Calcular total (subtotal + envío)
+        BigDecimal total = subtotal.add(shippingCost);
 
         return OrderResponse.builder()
                 .id(order.getId())
@@ -223,10 +264,15 @@ public class OrderServiceImp implements OrderService {
                 .paymentMethodName(order.getPaymentMethod().getName())
                 .shippingName(order.getShipping().getName())
                 .customer(customerInfo)
+                .subtotal(subtotal)
+                .shippingCost(shippingCost)
                 .total(total)
                 .details(details)
                 .paymentId(order.getPaymentId())
                 .mercadoPagoOrderId(order.getMercadoPagoOrderId())
+                .shippingAddress(order.getShippingAddress())
+                .shippingCity(order.getShippingCity())
+                .shippingPostalCode(order.getShippingPostalCode())
                 .build();
     }
 }
