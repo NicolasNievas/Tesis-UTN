@@ -34,25 +34,6 @@ class CheckoutService {
       throw error;
     }
   }
-
-  static async initiatePayment(): Promise<{ preferenceId: string }> {
-    try {
-      const token = JWTService.getToken();
-      const response = await axios.post(
-        `${$URL}/initiate-payment`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Error initiating payment:', error);
-      throw error;
-    }
-  }
 }
 
 export default CheckoutService;

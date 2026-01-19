@@ -10,7 +10,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.util.Properties;
 
 @Configuration
-@ConfigurationProperties(prefix = "email")
 public class EmailConfig {
 
     @Value("${email.username}")

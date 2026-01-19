@@ -20,6 +20,19 @@ interface PaymentDetails {
   date_created: string;
   external_reference: string;
   description: string;
+  metadata?: {
+    user_email: string;
+    user_first_name: string;
+    user_last_name: string;
+    shipping_method_name: string;
+    shipping_display_name: string;
+    shipping_estimated_days: number;
+    shipping_description: string;
+    shipping_address: string;
+    shipping_city: string;
+    shipping_postal_code: string;
+    shipping_cost: string;
+  };
   additional_info: {
     items: Array<{
       id: string;
@@ -28,14 +41,15 @@ interface PaymentDetails {
       unit_price: number;
       picture_url: string;
       description?: string;
+      category_id?: string;
     }>;
-    payer: Array<{
-        first_name: string;
-        last_name: string;
-    }>
+    payer: {
+      first_name: string;
+      last_name: string;
+    };
   };
   payer: {
-    email: string;
+    email: string | null;
     first_name: string | null;
     last_name: string | null;
     identification?: {
@@ -119,8 +133,15 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = () => {
     doc.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
     doc.text(statusText, 105, 30, { align: 'center' });
     
-    const email = paymentDetails?.external_reference?.split('|||')[1] || '';
-    const { first_name = '', last_name = '' } = paymentDetails?.additional_info?.payer[0] || {};
+    const email = paymentDetails?.metadata?.user_email || 
+                paymentDetails?.external_reference?.split('|||')[1] || 
+                '';
+    const first_name = paymentDetails?.metadata?.user_first_name || 
+                      paymentDetails?.additional_info?.payer?.first_name || 
+                      '';
+    const last_name = paymentDetails?.metadata?.user_last_name || 
+                    paymentDetails?.additional_info?.payer?.last_name || 
+                    '';
 
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
@@ -191,7 +212,12 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = () => {
         }
 
         const data = await response.json();
-        setPaymentDetails(data);
+        // DEBUG: Ver la estructura completa
+        console.log('Respuesta completa de MP:', data);
+        
+        // Procesar datos específicos para nuestra UI
+        const processedData = processPaymentData(data);
+        setPaymentDetails(processedData);
       } catch (err) {
         console.error(err);
         setError('Error al obtener los detalles del pago');
@@ -202,6 +228,132 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = () => {
 
     fetchPaymentDetails();
   }, [payment_id]);
+
+
+const processPaymentData = (data: any): PaymentDetails => {
+  
+  // Extraer información de envío de los metadatos (preferido)
+  const metadata = data.metadata || {};
+  
+  // Determinar el método de envío
+  let shippingMethod = 'standard';
+  let shippingDisplayName = 'Envío estándar';
+  let shippingEstimatedDays = 3;
+  
+  // Usar metadatos si están disponibles
+  if (metadata.shipping_method_name) {
+    shippingMethod = metadata.shipping_method_name.toLowerCase();
+    shippingDisplayName = metadata.shipping_display_name || metadata.shipping_method_name;
+    shippingEstimatedDays = metadata.shipping_estimated_days || 3;
+  } else {
+    // Fallback al título del ítem de envío (para compatibilidad)
+    const shippingItem = data.additional_info?.items?.find((item: any) => 
+      item.category_id === 'shipping' || item.id === 'shipping'
+    );
+    
+    if (shippingItem?.title) {
+      const title = shippingItem.title;
+      if (title.includes('Andreani')) {
+        shippingMethod = 'andreani';
+        shippingDisplayName = 'Andreani';
+        shippingEstimatedDays = 4;
+      } else if (title.includes('OCA')) {
+        shippingMethod = 'oca';
+        shippingDisplayName = 'OCA';
+        shippingEstimatedDays = 3;
+      } else if (title.includes('Correo')) {
+        shippingMethod = 'correo_argentino';
+        shippingDisplayName = 'Correo Argentino';
+        shippingEstimatedDays = 5;
+      }
+    }
+  }
+  
+  // Separar ítems de productos vs envío
+  const allItems = data.additional_info?.items || [];
+  const productItems = allItems.filter((item: any) => 
+    item.category_id !== 'shipping' && item.id !== 'shipping'
+  );
+  
+  const shippingItem = allItems.find((item: any) => 
+    item.category_id === 'shipping' || item.id === 'shipping'
+  );
+  
+  // Crear datos de envío consolidados
+  const shippingCost = metadata.shipping_cost ? 
+    parseFloat(metadata.shipping_cost) : 
+    (shippingItem ? parseFloat(shippingItem.unit_price) || 0 : 0);
+  
+  const shippingData = shippingCost > 0 ? {
+    method: shippingMethod,
+    display_name: shippingDisplayName,
+    cost: shippingCost,
+    estimated_days: shippingEstimatedDays,
+    address: metadata.shipping_address || '',
+    city: metadata.shipping_city || '',
+    postal_code: metadata.shipping_postal_code || '',
+    description: metadata.shipping_description || ''
+  } : undefined;
+  
+  // Formatear los ítems para la UI
+  const formattedItems = productItems.map((item: any) => ({
+    id: item.id,
+    title: item.title,
+    quantity: parseInt(item.quantity) || 1,
+    unit_price: parseFloat(item.unit_price) || 0,
+    picture_url: item.picture_url || '',
+    description: item.description || '',
+    category_id: item.category_id
+  }));
+  
+  // Determinar email (usar metadatos primero, luego fallbacks)
+  let email = metadata.user_email || '';
+  if (!email) {
+    const externalRef = data.external_reference || '';
+    if (externalRef.includes('|||')) {
+      const parts = externalRef.split('|||');
+      if (parts.length >= 2 && parts[1].includes('@')) {
+        email = parts[1];
+      }
+    }
+  }
+  if (!email) {
+    email = data.payer?.email || '';
+  }
+  
+  // Extraer datos del payer (usar metadatos primero)
+  const payerFirstName = metadata.user_first_name || 
+                        data.additional_info?.payer?.first_name || 
+                        data.payer?.first_name || '';
+  const payerLastName = metadata.user_last_name || 
+                       data.additional_info?.payer?.last_name || 
+                       data.payer?.last_name || '';
+  
+  // Crear el objeto procesado
+  return {
+    status: data.status,
+    transaction_amount: data.transaction_amount || 0,
+    payment_method_id: data.payment_method_id || '',
+    payment_type_id: data.payment_type_id || '',
+    date_created: data.date_created || '',
+    external_reference: data.external_reference || '',
+    description: data.description || '',
+    metadata: metadata,
+    additional_info: {
+      items: formattedItems,
+      payer: {
+        first_name: payerFirstName,
+        last_name: payerLastName
+      }
+    },
+    payer: {
+      email: email,
+      first_name: payerFirstName,
+      last_name: payerLastName,
+      identification: data.payer?.identification || undefined
+    }
+  };
+};
 
   if (loading) {
     return (
@@ -215,8 +367,15 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = () => {
   }
 
   const statusInfo = getStatusInfo();
-  const email = paymentDetails?.external_reference?.split('|||')[1] || '';
-  const { first_name = '', last_name = '' } = paymentDetails?.additional_info?.payer[0] || {};
+  const email = paymentDetails?.metadata?.user_email || 
+               paymentDetails?.external_reference?.split('|||')[1] || 
+               '';
+  const first_name = paymentDetails?.metadata?.user_first_name || 
+                    paymentDetails?.additional_info?.payer?.first_name || 
+                    '';
+  const last_name = paymentDetails?.metadata?.user_last_name || 
+                   paymentDetails?.additional_info?.payer?.last_name || 
+                   '';
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
