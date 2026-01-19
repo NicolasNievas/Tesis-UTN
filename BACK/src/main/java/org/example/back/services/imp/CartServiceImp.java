@@ -180,7 +180,7 @@ public class CartServiceImp implements CartService {
                 .baseCost(shippingCost)
                 .build();
 
-        return mercadoPagoService.createPreference(items, userDTO, shippingCost, shippingDTO.getDisplayName());
+        return mercadoPagoService.createPreference(items, userDTO, shippingCost, shippingDTO.getName());
     }
 
     @Override
