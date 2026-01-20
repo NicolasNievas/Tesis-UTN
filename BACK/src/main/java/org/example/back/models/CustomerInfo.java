@@ -13,4 +13,6 @@ public class CustomerInfo {
     private String phoneNumber;
     private String address;
     private String city;
+    private String nroDoc;
+    private String typeDoc;
 }

@@ -65,4 +65,10 @@ public class OrderEntity {
 
     @Column(name = "subtotal", precision = 10, scale = 2)
     private BigDecimal subtotal;
+
+    @Column(name = "customer_nro_doc")
+    private String customerNroDoc;
+
+    @Column(name = "customer_type_doc")
+    private String customerTypeDoc;
 }

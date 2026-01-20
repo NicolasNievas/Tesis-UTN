@@ -32,6 +32,8 @@ interface PaymentDetails {
     shipping_city: string;
     shipping_postal_code: string;
     shipping_cost: string;
+    user_nro_doc: string;
+    user_type_doc: string;
   };
   additional_info: {
     items: Array<{

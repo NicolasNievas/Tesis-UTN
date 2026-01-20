@@ -27,6 +27,8 @@ interface IPaymentDetailsContentProps {
         shipping_city: string;
         shipping_postal_code: string;
         shipping_cost: string;
+        user_nro_doc: string;
+        user_type_doc: string;
       };
       additional_info: {
         items: {
@@ -375,7 +377,7 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
                       <div>
                         <p className="text-sm text-gray-500">Identification</p>
                         <p className="font-medium text-gray-900">
-                          {paymentDetails.payer.identification.type}: {paymentDetails.payer.identification.number}
+                          {paymentDetails.metadata?.user_type_doc}: {paymentDetails.metadata?.user_nro_doc}
                         </p>
                       </div>
                     </div>

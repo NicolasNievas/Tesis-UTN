@@ -60,6 +60,8 @@ public class OrderServiceImp implements OrderService {
         order.setStatus(orderRequest.getStatus());
         order.setPaymentId(orderRequest.getPaymentId());
         order.setMercadoPagoOrderId(orderRequest.getMercadoPagoOrderId());
+        order.setCustomerNroDoc(orderRequest.getCustomerNroDoc());
+        order.setCustomerTypeDoc(orderRequest.getCustomerTypeDoc());
 
         PaymentMethodEntity paymentMethod = paymentMethodRepository.findById(orderRequest.getPaymentMethodId())
                 .orElseThrow(() -> new RuntimeException("Método de pago no encontrado"));
@@ -226,6 +228,8 @@ public class OrderServiceImp implements OrderService {
                     .phoneNumber(order.getCustomer().getPhoneNumber())
                     .address(order.getCustomer().getAddress())
                     .city(order.getCustomer().getCity())
+                    .nroDoc(order.getCustomerNroDoc())
+                    .typeDoc(order.getCustomerTypeDoc())
                     .build();
         }
 
@@ -273,6 +277,8 @@ public class OrderServiceImp implements OrderService {
                 .shippingAddress(order.getShippingAddress())
                 .shippingCity(order.getShippingCity())
                 .shippingPostalCode(order.getShippingPostalCode())
+                .customerNroDoc(order.getCustomerNroDoc())
+                .customerTypeDoc(order.getCustomerTypeDoc())
                 .build();
     }
 }

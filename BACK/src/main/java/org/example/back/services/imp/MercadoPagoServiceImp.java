@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadopago.MercadoPagoConfig;
+import com.mercadopago.client.common.IdentificationRequest;
+import com.mercadopago.client.common.PhoneRequest;
 import com.mercadopago.client.preference.*;
 import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
@@ -136,6 +138,16 @@ public class MercadoPagoServiceImp implements MercadoPagoService {
                 .name(user.getFirstName())
                 .surname(user.getLastName())
                 .email(user.getEmail())
+                .phone(user.getPhoneNumber() != null ?
+                        PhoneRequest.builder()
+                                .areaCode("")
+                                .number(user.getPhoneNumber())
+                                .build()
+                        : null)
+                .identification(IdentificationRequest.builder()
+                        .type(currentUser.getTypeDoc() != null ? currentUser.getTypeDoc().name() : "DNI")
+                        .number(currentUser.getNroDoc())
+                        .build())
                 .build();
 
         // Crear URLs de redirección
@@ -155,6 +167,8 @@ public class MercadoPagoServiceImp implements MercadoPagoService {
         additionalInfo.put("user_email", user.getEmail());
         additionalInfo.put("user_first_name", user.getFirstName());
         additionalInfo.put("user_last_name", user.getLastName());
+        additionalInfo.put("user_type_doc", currentUser.getTypeDoc() != null ? currentUser.getTypeDoc().name() : "DNI");
+        additionalInfo.put("user_nro_doc", currentUser.getNroDoc());
         additionalInfo.put("shipping_method_name", shippingMethod.getName());
         additionalInfo.put("shipping_display_name", shippingMethod.getDisplayName());
         additionalInfo.put("shipping_estimated_days", shippingMethod.getEstimatedDays());
@@ -234,6 +248,9 @@ public class MercadoPagoServiceImp implements MercadoPagoService {
                 String shippingPostalCode = metadata.path("shipping_postal_code").asText();
                 BigDecimal shippingCost = new BigDecimal(metadata.path("shipping_cost").asText("0"));
 
+                String userNroDoc = metadata.path("user_nro_doc").asText();
+                String userTypeDoc = metadata.path("user_type_doc").asText("DNI");
+
                 // Obtener el email del metadata o external_reference
                 String userEmail = metadata.path("user_email").asText();
                 if (userEmail == null || userEmail.trim().isEmpty()) {
@@ -297,6 +314,8 @@ public class MercadoPagoServiceImp implements MercadoPagoService {
                     orderRequest.setShippingAddress(shippingAddress);
                     orderRequest.setShippingCity(shippingCity);
                     orderRequest.setShippingPostalCode(shippingPostalCode);
+                    orderRequest.setCustomerTypeDoc(userTypeDoc);
+                    orderRequest.setCustomerNroDoc(userNroDoc);
 
                     // Calcular subtotal
                     BigDecimal subtotal = cart.getItems().stream()

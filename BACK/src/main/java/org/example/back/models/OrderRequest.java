@@ -25,4 +25,6 @@ public class OrderRequest {
     private String shippingPostalCode;
     private BigDecimal subtotal;
     private BigDecimal total;
+    private String customerNroDoc;
+    private String customerTypeDoc;
 }

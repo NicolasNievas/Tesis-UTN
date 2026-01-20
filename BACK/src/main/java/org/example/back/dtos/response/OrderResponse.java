@@ -28,4 +28,6 @@ public class OrderResponse {
     private String shippingAddress;
     private String shippingCity;
     private String shippingPostalCode;
+    private String customerNroDoc;
+    private String customerTypeDoc;
 }
