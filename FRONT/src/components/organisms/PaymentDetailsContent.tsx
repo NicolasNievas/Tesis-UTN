@@ -15,6 +15,7 @@ import {
   Mail,
   IdCard
 } from 'lucide-react';
+import Link from "next/link";
 
 interface IPaymentDetailsContentProps {
     paymentDetails: {
@@ -314,6 +315,89 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
               </div>
             )}
             </div>
+            
+            {/* Help Information */}
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-6 border border-yellow-200 shadow-lg">
+              <h4 className="font-semibold text-yellow-800 mb-4 flex items-center">
+                <span className="p-2 bg-yellow-100 text-yellow-600 rounded-lg mr-3">
+                  💡
+                </span>
+                What&apos;s next?
+              </h4>
+              
+              <ul className="text-sm text-yellow-700 space-y-2">
+                {status === 'approved' && (
+                  <>
+                    <li className="flex items-start">
+                      <span className="text-yellow-600 mr-2">•</span>
+                      <span>You will receive a confirmation email shortly</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-yellow-600 mr-2">•</span>
+                      <span>Your order is being processed</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-yellow-600 mr-2">•</span>
+                      <p className="text-sm text-yellow-700">
+                          Estimated delivery time: {shippingInfo?.estimated_days} business days
+                      </p>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-yellow-600 mr-2">•</span>
+                      <span>Track your order in your account</span>
+                    </li>
+                  </>
+                )}
+                {status === 'pending' && (
+                  <>
+                    <li className="flex items-start">
+                      <span className="text-yellow-600 mr-2">•</span>
+                      <span>Your payment is being processed by the bank</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-yellow-600 mr-2">•</span>
+                      <span>This may take up to 24 hours</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-yellow-600 mr-2">•</span>
+                      <span>You will receive an email when confirmed</span>
+                    </li>
+                  </>
+                )}
+                {status === 'failure' && (
+                  <>
+                    <li className="flex items-start">
+                      <span className="text-yellow-600 mr-2">•</span>
+                      <span>Please check your payment method details</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-yellow-600 mr-2">•</span>
+                      <span>Ensure you have sufficient funds</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-yellow-600 mr-2">•</span>
+                      <span>Try again or use a different payment method</span>
+                    </li>
+                  </>
+                )}
+              </ul>
+              
+              <div className="mt-8 pt-6 border-t border-yellow-200 flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-yellow-700 mb-1">Need assistance?</p>
+                  <Link href="/contact-us">
+                  <span className="text-base font-semibold text-yellow-800 hover:text-yellow-900 underline flex items-center cursor-pointer">
+                    Contact Support →
+                  </span>
+                </Link>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-yellow-600">Available 24/7</p>
+                  <p className="text-sm font-medium text-yellow-800">coffecraze1@gmail.com</p>
+                </div>
+              </div>
+            </div>
+
           </div>
 
           {/* Right Column - Summary & Info */}
@@ -424,83 +508,6 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
                 </button>
               </div>
             </div>
-
-            {/* Help Information */}
-            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-6 border border-yellow-200 shadow-lg">
-              <h4 className="font-semibold text-yellow-800 mb-4 flex items-center">
-                <span className="p-2 bg-yellow-100 text-yellow-600 rounded-lg mr-3">
-                  💡
-                </span>
-                What&apos;s next?
-              </h4>
-
-              {/* DEBUG: Ver qué status estamos renderizando */}
-              <div className="text-xs text-gray-500 mb-2">
-                DEBUG: Status actual: {status}
-              </div>
-              
-              <ul className="text-sm text-yellow-700 space-y-2">
-                {status === 'approved' && (
-                  <>
-                    <li className="flex items-start">
-                      <span className="text-yellow-600 mr-2">•</span>
-                      <span>You will receive a confirmation email shortly</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-yellow-600 mr-2">•</span>
-                      <span>Your order is being processed</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-yellow-600 mr-2">•</span>
-                      <span>Estimated delivery time: 3-5 business days</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-yellow-600 mr-2">•</span>
-                      <span>Track your order in your account</span>
-                    </li>
-                  </>
-                )}
-                {status === 'pending' && (
-                  <>
-                    <li className="flex items-start">
-                      <span className="text-yellow-600 mr-2">•</span>
-                      <span>Your payment is being processed by the bank</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-yellow-600 mr-2">•</span>
-                      <span>This may take up to 24 hours</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-yellow-600 mr-2">•</span>
-                      <span>You will receive an email when confirmed</span>
-                    </li>
-                  </>
-                )}
-                {status === 'failure' && (
-                  <>
-                    <li className="flex items-start">
-                      <span className="text-yellow-600 mr-2">•</span>
-                      <span>Please check your payment method details</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-yellow-600 mr-2">•</span>
-                      <span>Ensure you have sufficient funds</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-yellow-600 mr-2">•</span>
-                      <span>Try again or use a different payment method</span>
-                    </li>
-                  </>
-                )}
-              </ul>
-              
-              <div className="mt-6 pt-4 border-t border-yellow-200">
-                <p className="text-sm text-yellow-600 mb-2">Need help?</p>
-                <button className="text-sm font-medium text-yellow-700 hover:text-yellow-800 underline">
-                  Contact Support
-                </button>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -508,8 +515,8 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
         <div className="mt-12 text-center">
           <p className="text-sm text-gray-500">
             Order questions? Email us at{' '}
-            <a href="mailto:support@coffeecraze.com" className="text-blue-600 hover:text-blue-800 font-medium">
-              support@coffeecraze.com
+            <a href="mailto:coffecraze1@gmail.com" className="text-blue-600 hover:text-blue-800 font-medium">
+              coffecraze1@gmail.com
             </a>
           </p>
           <p className="text-xs text-gray-400 mt-2">

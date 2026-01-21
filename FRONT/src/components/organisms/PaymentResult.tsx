@@ -102,7 +102,7 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Intl.DateTimeFormat('es-ES', {
+    return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
