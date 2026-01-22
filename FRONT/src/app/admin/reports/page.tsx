@@ -824,7 +824,7 @@ const getStatusColor = (status: string) => {
                       <tbody className="divide-y divide-gray-200">
                         {salesByPeriodData.map((item, index) => (
                           <tr key={index} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.period}</td>
+                            <td className="px-6 py-4 text-sm center font-medium text-gray-900">{formatDate(item.period)}</td>
                             <td className="px-6 py-4 text-sm text-gray-600">{item.orderCount}</td>
                             <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{formatCurrency(item.totalSales)}</td>
                           </tr>
