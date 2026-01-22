@@ -60,9 +60,9 @@ const CartPage: React.FC = () => {
           <div className="lg:col-span-2 p-2 ps-4 pe-4 m-2 shadow-[0_3px_10px_rgb(0,0,0,0.2)] rounded-md">
             <div className="cartHeader grid grid-cols-5 items-center">
               <div className="text-lg">Item</div>
-              <div className="text-lg">Quantity</div>
               <div className="text-lg">Price</div>
-              <div className="text-lg">Subtotal</div>
+              <div className="text-lg">Quantity</div>
+              <div className="text-lg">Total</div>
               <div className="text-lg">Actions</div>
             </div>
             <Line />
@@ -73,6 +73,9 @@ const CartPage: React.FC = () => {
                   <div className="productDetails p-2">
                     <h3 className="text-sm font-semibold">{item.productName}</h3>
                   </div>
+                </div>
+                <div className="w-1/5">
+                  <p className="text-lg">${item.price}</p>
                 </div>
                 <div>
                   <div className="w-20">
@@ -88,9 +91,6 @@ const CartPage: React.FC = () => {
                       ))}
                     </select>
                   </div>
-                </div>
-                <div className="w-1/5">
-                  <p className="text-lg">${item.price}</p>
                 </div>
                 <div className="w-1/5">
                   <p className="text-xl font-semibold text-right">${item.subtotal}</p>

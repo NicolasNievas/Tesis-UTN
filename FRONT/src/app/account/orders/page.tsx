@@ -7,12 +7,17 @@ import {
   MapPin, User, Mail, Phone, ExternalLink,
   ChevronDown, ChevronUp, Box, FileText,
   RefreshCw, Filter,
-  Star
+  Star,
+  RotateCcw,
+  ShoppingBag
 } from 'lucide-react';
 import OrderService from '@/services/OrderService';
+import CartService from '@/services/CartService';
 import { OrderResponse } from '@/interfaces/data.interfaces';
 import { toast } from 'react-toastify';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuthContext } from '@/context/data.context';
 
 interface OrderStatistics {
     totalOrders: number;
@@ -29,6 +34,9 @@ const UserOrders = () => {
     const [loading, setLoading] = useState(true);
     const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
     const [filter, setFilter] = useState<'all' | 'pending' | 'completed' | 'in_process' | 'cancelled'>('all');
+    const [reorderingOrderId, setReorderingOrderId] = useState<number | null>(null);
+    const router = useRouter();
+    const { getCart } = useAuthContext();
 
     useEffect(() => {
         loadOrders();
@@ -182,6 +190,43 @@ const UserOrders = () => {
         if (filter === 'all') return true;
         return order.status === filter.toUpperCase();
     });
+
+    // Reordenar orden
+    const handleReorder = async (orderId: number) => {
+        try {
+            setReorderingOrderId(orderId);
+            await CartService.reorderFromOrder(orderId);
+            await getCart();
+            toast.success('Order items added to cart successfully');
+            setTimeout(() => {
+                router.push('/cart');
+            }, 1500);
+        } catch (error: any){
+            
+        if (error.message?.includes('Stock insuficiente') || error.message?.includes('insufficient stock')) {
+                const productName = error.message.match(/para (.+?)\./)?.[1] || 'some products';
+                const available = error.message.match(/Disponible: (\d+)/)?.[1];
+                const requested = error.message.match(/Solicitado: (\d+)/)?.[1];
+                
+                toast.error(
+                    <div>
+                        <p className="font-medium">Insufficient stock for {productName}</p>
+                        <p className="text-sm">Available: {available}, Requested: {requested}</p>
+                        <p className="text-sm mt-1">Only available quantity has been added to cart.</p>
+                    </div>,
+                    { autoClose: 5000 }
+                );
+                
+                setTimeout(() => {
+                    router.push('/cart');
+                }, 2000);
+            } else {
+                toast.error('Error adding products to cart. Please try again.');
+            }
+        } finally {
+            setReorderingOrderId(null);
+        }
+    };
 
     if (loading) {
         return (
@@ -527,6 +572,47 @@ const UserOrders = () => {
                                                                 <span className="text-gray-700">{order.customer.phoneNumber}</span>
                                                             </div>
                                                         )}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Reorder Button */}
+                                            {order.status === 'COMPLETED' && (
+                                                <div className="bg-white rounded-xl p-5 border border-green-100 shadow-sm">
+                                                    <div className="text-center">
+                                                        <div className="mb-4">
+                                                            <RotateCcw className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                                                            <h4 className="font-semibold text-gray-900 text-lg">Order Again?</h4>
+                                                            <p className="text-sm text-gray-600 mt-1">
+                                                                Add all {order.details.length} item{order.details.length !== 1 ? 's' : ''} from this order to your cart
+                                                            </p>
+                                                        </div>
+                                                        
+                                                        <button
+                                                            onClick={() => handleReorder(order.id)}
+                                                            disabled={reorderingOrderId === order.id}
+                                                            className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
+                                                                reorderingOrderId === order.id
+                                                                    ? 'bg-green-400 cursor-not-allowed'
+                                                                    : 'bg-green-600 hover:bg-green-700'
+                                                            } text-white`}
+                                                        >
+                                                            {reorderingOrderId === order.id ? (
+                                                                <>
+                                                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                                    Adding to Cart...
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <ShoppingBag className="w-5 h-5" />
+                                                                    Reorder All Items
+                                                                </>
+                                                            )}
+                                                        </button>
+                                                        
+                                                        <p className="text-xs text-gray-500 mt-3">
+                                                            Total: {formatCurrency(order.total)} • {order.details.reduce((total, detail) => total + detail.quantity, 0)} units
+                                                        </p>
                                                     </div>
                                                 </div>
                                             )}
