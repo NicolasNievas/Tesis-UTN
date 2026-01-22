@@ -614,86 +614,6 @@ const getStatusColor = (status: string) => {
           {/* Sales Reports Tab */}
           {activeTab === 'sales' && (
             <>
-              {/* Payment Methods Report */}
-              {paymentMethodData.length > 0 && (
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <DollarSign className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-semibold text-gray-900">Payment Methods</h2>
-                      <p className="text-sm text-gray-600">Distribution of sales by payment method</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Gráfico de Torta */}
-                    <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={paymentMethodData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            label={renderCustomizedLabel}
-                            outerRadius={120}
-                            fill="#8884d8"
-                            dataKey="totalSales"
-                            nameKey="paymentMethod"
-                          >
-                            {paymentMethodData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip content={<CustomTooltip />} />
-                          <Legend />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-
-                    {/* Tabla de Datos */}
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead className="bg-gray-50 border-b border-gray-200">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Method</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Sales</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Percentage</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                          {paymentMethodData.map((item, index) => {
-                            const totalSales = paymentMethodData.reduce((sum, i) => sum + i.totalSales, 0);
-                            const percentage = (item.totalSales / totalSales) * 100;
-                            return (
-                              <tr key={index} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.paymentMethod}</td>
-                                <td className="px-6 py-4 text-sm text-gray-600">{item.orderCount}</td>
-                                <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{formatCurrency(item.totalSales)}</td>
-                                <td className="px-6 py-4">
-                                  <div className="flex items-center gap-2">
-                                    <div className="flex-1 bg-gray-200 rounded-full h-2 max-w-[100px]">
-                                      <div 
-                                        className="bg-blue-600 h-2 rounded-full" 
-                                        style={{ width: `${percentage}%` }}
-                                      ></div>
-                                    </div>
-                                    <span className="text-sm text-gray-600">{percentage.toFixed(1)}%</span>
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Top Products Report */}
               {topProductsData.length > 0 && (
                 <div className="bg-white rounded-lg shadow-sm p-6">
@@ -831,6 +751,86 @@ const getStatusColor = (status: string) => {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Payment Methods Report */}
+              {paymentMethodData.length > 0 && (
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <DollarSign className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold text-gray-900">Payment Methods</h2>
+                      <p className="text-sm text-gray-600">Distribution of sales by payment method</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Gráfico de Torta */}
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={paymentMethodData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={renderCustomizedLabel}
+                            outerRadius={120}
+                            fill="#8884d8"
+                            dataKey="totalSales"
+                            nameKey="paymentMethod"
+                          >
+                            {paymentMethodData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip content={<CustomTooltip />} />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    {/* Tabla de Datos */}
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50 border-b border-gray-200">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Method</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Sales</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Percentage</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {paymentMethodData.map((item, index) => {
+                            const totalSales = paymentMethodData.reduce((sum, i) => sum + i.totalSales, 0);
+                            const percentage = (item.totalSales / totalSales) * 100;
+                            return (
+                              <tr key={index} className="hover:bg-gray-50">
+                                <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.paymentMethod}</td>
+                                <td className="px-6 py-4 text-sm text-gray-600">{item.orderCount}</td>
+                                <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{formatCurrency(item.totalSales)}</td>
+                                <td className="px-6 py-4">
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex-1 bg-gray-200 rounded-full h-2 max-w-[100px]">
+                                      <div 
+                                        className="bg-blue-600 h-2 rounded-full" 
+                                        style={{ width: `${percentage}%` }}
+                                      ></div>
+                                    </div>
+                                    <span className="text-sm text-gray-600">{percentage.toFixed(1)}%</span>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1048,6 +1048,48 @@ const getStatusColor = (status: string) => {
               {inventoryData.length > 0 && (
                 
                 <div className="bg-white rounded-lg shadow-sm p-6">
+
+                  {/* Summary Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Package className="w-5 h-5 text-blue-600" />
+                        <span className="text-sm font-medium text-blue-900">Total Products</span>
+                      </div>
+                      <p className="text-2xl font-bold text-blue-600 mt-2">{inventoryData.length}</p>
+                    </div>
+
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5 text-green-600" />
+                        <span className="text-sm font-medium text-green-900">Total Revenue</span>
+                      </div>
+                      <p className="text-2xl font-bold text-green-600 mt-2">
+                        {formatCurrency(inventoryData.reduce((sum, item) => sum + item.totalRevenue, 0))}
+                      </p>
+                    </div>
+
+                    <div className="bg-yellow-50 p-4 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <ShoppingCart className="w-5 h-5 text-yellow-600" />
+                        <span className="text-sm font-medium text-yellow-900">Total Sold</span>
+                      </div>
+                      <p className="text-2xl font-bold text-yellow-600 mt-2">
+                        {inventoryData.reduce((sum, item) => sum + item.totalSold, 0)}
+                      </p>
+                    </div>
+
+                    <div className="bg-red-50 p-4 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <TrendingDown className="w-5 h-5 text-red-600" />
+                        <span className="text-sm font-medium text-red-900">Out of Stock</span>
+                      </div>
+                      <p className="text-2xl font-bold text-red-600 mt-2">
+                        {inventoryData.filter(item => item.currentStock === 0).length}
+                      </p>
+                    </div>
+                  </div>
+
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-2 bg-orange-100 rounded-lg">
                       <Package className="w-6 h-6 text-orange-600" />
@@ -1143,46 +1185,7 @@ const getStatusColor = (status: string) => {
                     </table>
                   </div>
 
-                  {/* Summary Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Package className="w-5 h-5 text-blue-600" />
-                        <span className="text-sm font-medium text-blue-900">Total Products</span>
-                      </div>
-                      <p className="text-2xl font-bold text-blue-600 mt-2">{inventoryData.length}</p>
-                    </div>
-
-                    <div className="bg-green-50 p-4 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="w-5 h-5 text-green-600" />
-                        <span className="text-sm font-medium text-green-900">Total Revenue</span>
-                      </div>
-                      <p className="text-2xl font-bold text-green-600 mt-2">
-                        {formatCurrency(inventoryData.reduce((sum, item) => sum + item.totalRevenue, 0))}
-                      </p>
-                    </div>
-
-                    <div className="bg-yellow-50 p-4 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <ShoppingCart className="w-5 h-5 text-yellow-600" />
-                        <span className="text-sm font-medium text-yellow-900">Total Sold</span>
-                      </div>
-                      <p className="text-2xl font-bold text-yellow-600 mt-2">
-                        {inventoryData.reduce((sum, item) => sum + item.totalSold, 0)}
-                      </p>
-                    </div>
-
-                    <div className="bg-red-50 p-4 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <TrendingDown className="w-5 h-5 text-red-600" />
-                        <span className="text-sm font-medium text-red-900">Out of Stock</span>
-                      </div>
-                      <p className="text-2xl font-bold text-red-600 mt-2">
-                        {inventoryData.filter(item => item.currentStock === 0).length}
-                      </p>
-                    </div>
-                  </div>
+                  
                 </div>
               )}
 

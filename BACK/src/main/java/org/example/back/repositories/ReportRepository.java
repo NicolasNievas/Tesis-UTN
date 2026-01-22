@@ -279,14 +279,14 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
      */
     @Query("""
     SELECT 
-        s.name as shippingMethod,
+        s.displayName AS shippingMethod,
         COUNT(o.id) as orderCount,
         SUM(o.subtotal + COALESCE(o.shippingCost, 0)) as totalSales,
         AVG(COALESCE(o.shippingCost, 0)) as averageShippingCost
     FROM OrderEntity o
     JOIN o.shipping s
     WHERE o.date BETWEEN :startDate AND :endDate
-    GROUP BY s.name, s.displayName
+    GROUP BY s.displayName, s.name
     ORDER BY orderCount DESC
 """)
     List<Object[]> getShippingMethodReport(

@@ -18,4 +18,7 @@ public class PaymentMethodEntity {
 
     @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false)
+    private String displayName;
 }

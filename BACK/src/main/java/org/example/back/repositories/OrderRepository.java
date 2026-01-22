@@ -41,14 +41,15 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
     // Reporte de ventas por método de pago
     @Query("""
-        SELECT pm.name AS paymentMethod, 
+        SELECT pm.displayName AS paymentMethod, 
                COUNT(o.id) AS orderCount, 
                SUM(od.price * od.quantity + COALESCE(o.shippingCost, 0)) AS totalSales 
         FROM OrderEntity o 
         JOIN o.paymentMethod pm 
         JOIN o.details od 
         WHERE o.date BETWEEN :startDate AND :endDate 
-        GROUP BY pm.name
+        GROUP BY pm.displayName
+        ORDER BY totalSales DESC
     """)
     List<Object[]> getPaymentMethodSalesReport(
             @Param("startDate") LocalDateTime startDate,
