@@ -15,14 +15,14 @@ const AccountMenu: React.FC = () => {
             <ul className="space-y-6 flex-grow">
                 <li>
                     <Link href="/account/profile">
-                        <span className={`block p-3 rounded-md transition-colors duration-200 cursor-pointer ${pathname === '/account/profile' ? 'bg-blue text-white' : 'hover:bg-gray-200'}`}>
+                        <span className={`block p-3 rounded-md transition-colors duration-200 cursor-pointer ${pathname === '/account/profile' ? 'bg-brand-blue text-white' : 'hover:bg-gray-200'}`}>
                             Profile
                         </span>
                     </Link>
                 </li>
                 <li>
                     <Link href="/account/orders">
-                        <span className={`block p-3 rounded-md transition-colors duration-200 cursor-pointer ${pathname === '/account/orders' ? 'bg-blue text-white' : 'hover:bg-gray-200'}`}>
+                        <span className={`block p-3 rounded-md transition-colors duration-200 cursor-pointer ${pathname === '/account/orders' ? 'bg-brand-blue text-white' : 'hover:bg-gray-200'}`}>
                             Orders
                         </span>
                     </Link>
