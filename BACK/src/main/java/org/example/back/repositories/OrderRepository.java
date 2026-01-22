@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
@@ -86,4 +87,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
     // Contar total de órdenes por usuario
     Long countByCustomerId(Long customerId);
+
+    @Query("SELECT o FROM OrderEntity o WHERE o.id = :orderId AND o.customer.id = :userId")
+    Optional<OrderEntity> findByIdAndUserId(@Param("orderId") Long orderId, @Param("userId") Long userId);
 }

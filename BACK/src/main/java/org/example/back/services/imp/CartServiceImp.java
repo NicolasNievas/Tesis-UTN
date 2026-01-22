@@ -7,10 +7,7 @@ import org.example.back.dtos.*;
 import org.example.back.dtos.request.UpdateShippingRequest;
 import org.example.back.entities.*;
 import org.example.back.models.User;
-import org.example.back.repositories.CartRepository;
-import org.example.back.repositories.ProductRepository;
-import org.example.back.repositories.ShippingRepository;
-import org.example.back.repositories.UserRepository;
+import org.example.back.repositories.*;
 import org.example.back.services.CartService;
 import org.example.back.services.MercadoPagoService;
 import org.example.back.services.UserService;
@@ -36,6 +33,7 @@ public class CartServiceImp implements CartService {
     private final MercadoPagoService mercadoPagoService;
     private final ShippingService shippingService;
     private final ShippingRepository shippingRepository;
+    private final OrderRepository orderRepository;
     @Override
     @Transactional
     public CartDTO getCartByUser() {
@@ -263,6 +261,51 @@ public class CartServiceImp implements CartService {
                 .total(total)
                 .shippingAddress(addressDTO)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public CartDTO reorderFromOrder(Long orderId) {
+        User currentUser = userService.getCurrentUser();
+
+        // Busca la orden
+        OrderEntity order = orderRepository.findByIdAndUserId(orderId, currentUser.getId())
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+
+        // Limpiar el carrito actual
+        CartEntity cart = cartRepository.findByUserId(currentUser.getId())
+                .orElseGet(() -> {
+                    CartEntity newCart = new CartEntity();
+                    UserEntity userEntity = userRepository.findById(currentUser.getId())
+                            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                    newCart.setUser(userEntity);
+                    newCart.setCreatedAt(LocalDateTime.now());
+                    return cartRepository.save(newCart);
+                });
+
+        // Limpiar items actuales del carrito
+        cart.getItems().clear();
+
+        // Agregar items de la orden anterior
+        for (OrderDetailEntity detail : order.getDetails()) {
+            // Verificar stock
+            Integer currentStock = getCurrentStock(detail.getProduct().getId());
+            if (currentStock < detail.getQuantity()) {
+                throw new RuntimeException("Stock insuficiente para " + detail.getProduct().getName() +
+                        ". Disponible: " + currentStock + ", Solicitado: " + detail.getQuantity());
+            }
+
+            CartItemEntity newItem = new CartItemEntity();
+            newItem.setCart(cart);
+            newItem.setProduct(detail.getProduct());
+            newItem.setQuantity(detail.getQuantity());
+            cart.getItems().add(newItem);
+        }
+
+        cart.setUpdatedAt(LocalDateTime.now());
+        cart = cartRepository.save(cart);
+
+        return convertToDTO(cart);
     }
 
     private CartEntity createNewCart(User user) {

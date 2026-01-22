@@ -17,4 +17,5 @@ public interface CartService {
     String initiatePayment() throws MPException, MPApiException;
     CartDTO updateShippingInfo(UpdateShippingRequest request);
     CheckoutDTO getCheckoutInfo();
+    CartDTO reorderFromOrder(Long orderId);
 }

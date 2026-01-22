@@ -7,6 +7,7 @@ import org.example.back.dtos.CartDTO;
 import org.example.back.dtos.CheckoutDTO;
 import org.example.back.dtos.request.UpdateShippingRequest;
 import org.example.back.services.CartService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -81,5 +82,22 @@ public class CartController {
     @ApiResponse(responseCode = "401", description = "No autorizado")
     public ResponseEntity<CheckoutDTO> getCheckoutInfo() {
         return ResponseEntity.ok(cartService.getCheckoutInfo());
+    }
+
+    @PostMapping("/reorder/{orderId}")
+    @Operation(summary = "Reordenar desde una orden previa",
+            description = "Permite reordenar los productos de una orden previa agregándolos al carrito actual")
+    @ApiResponse(responseCode = "200", description = "Productos reordenados exitosamente")
+    @ApiResponse(responseCode = "401", description = "No autorizado")
+    public ResponseEntity<CartDTO> reorderFromOrder(@PathVariable Long orderId) {
+        try{
+            return ResponseEntity.ok(cartService.reorderFromOrder(orderId));
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("Stock insuficiente")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(null);
+            }
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

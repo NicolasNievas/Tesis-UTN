@@ -89,6 +89,29 @@ class CartService {
     }
   }
 
+  static async reorderFromOrder(orderId: number) {
+      try {
+          const token = JWTService.getToken();
+          const response = await axios.post(
+              `${$URL}/reorder/${orderId}`,
+              {},
+              {
+                  headers: {
+                      Authorization: `Bearer ${token}`
+                  }
+              }
+          );
+          
+          if (response.data.token) {
+              JWTService.setToken(response.data.token);
+          }
+          
+          return response.data;
+      } catch (error) {
+          throw this.handleError(error as AxiosError);
+      }
+  }
+
   private static handleError(error: AxiosError) {
     if (error.response) {
       const data = error.response?.data as { message?: string };
