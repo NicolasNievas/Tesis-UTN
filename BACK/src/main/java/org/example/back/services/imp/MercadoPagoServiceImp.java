@@ -326,18 +326,27 @@ public class MercadoPagoServiceImp implements MercadoPagoService {
                     // Mapear estado
                     switch (status) {
                         case "approved":
-                            orderRequest.setStatus(OrderStatus.COMPLETED);
+                            orderRequest.setStatus(OrderStatus.PAID);
                             break;
                         case "pending":
                             orderRequest.setStatus(OrderStatus.PENDING);
                             break;
                         case "in_process":
-                            orderRequest.setStatus(OrderStatus.IN_PROCESS);
+                            orderRequest.setStatus(OrderStatus.PENDING);
+                            break;
+                        case "authorized":
+                            orderRequest.setStatus(OrderStatus.PENDING);
                             break;
                         case "cancelled":
                             orderRequest.setStatus(OrderStatus.CANCELLED);
                             break;
                         case "rejected":
+                            orderRequest.setStatus(OrderStatus.CANCELLED);
+                            break;
+                        case "refunded":
+                            orderRequest.setStatus(OrderStatus.CANCELLED);
+                            break;
+                        case "charged_back":
                             orderRequest.setStatus(OrderStatus.CANCELLED);
                             break;
                         default:

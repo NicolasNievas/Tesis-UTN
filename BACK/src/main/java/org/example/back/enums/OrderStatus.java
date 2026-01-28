@@ -2,7 +2,10 @@ package org.example.back.enums;
 
 public enum OrderStatus {
     PENDING,
-    IN_PROCESS,
+    PAID,
+    PROCESSING,
+    SHIPPED,
+    DELIVERED,
     COMPLETED,
     CANCELLED
 }

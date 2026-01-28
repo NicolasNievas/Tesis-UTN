@@ -139,7 +139,7 @@ export interface OrderResponse {
   paymentId: string;
   mercadoPagoOrderId: string;
   date: number[] | string; 
-  status: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCELLED';
+  status: 'PENDING' | 'PAID' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'COMPLETED'  | 'CANCELLED';
   paymentMethodName: string;
   shippingName: string;
   subtotal: number;
@@ -150,6 +150,7 @@ export interface OrderResponse {
   shippingAddress: string;
   shippingCity: string;
   shippingPostalCode: string;
+  shipmentInfo?: shipmentInfo;
 }
 
 export interface OrderDetailResponse {
@@ -437,4 +438,65 @@ export interface UpdateShippingRequest {
   address?: string;
   city?: string;
   postalCode?: string;
+}
+
+// Shipment interfaces
+
+export interface ShipmentResponse {
+    id: number;
+    orderId: number;
+    trackingCode: string;
+    status: ShipmentStatus;
+    carrier: string;
+    createdAt: string;
+    shippedAt?: string;
+    estimatedDeliveryDate?: string;
+    deliveredAt?: string;
+    recipientName: string;
+    recipientAddress: string;
+    recipientCity: string;
+    recipientPostalCode: string;
+    recipientPhone: string;
+    notes?: string;
+    trackingHistory: TrackingEntry[];
+}
+
+export interface TrackingEntry {
+    id: number;
+    status: ShipmentStatus;
+    timestamp: string;
+    location: string;
+    description: string;
+}
+
+export enum ShipmentStatus {
+    PENDING = 'PENDING',
+    PROCESSING = 'PROCESSING',
+    READY_FOR_PICKUP = 'READY_FOR_PICKUP',
+    IN_TRANSIT = 'IN_TRANSIT',
+    OUT_FOR_DELIVERY = 'OUT_FOR_DELIVERY',
+    DELIVERED = 'DELIVERED',
+    FAILED_DELIVERY = 'FAILED_DELIVERY',
+    RETURNED = 'RETURNED',
+    CANCELLED = 'CANCELLED'
+}
+
+export interface CreateShipmentRequest {
+    orderId: number;
+    notes?: string;
+}
+
+export interface UpdateShipmentStatusRequest {
+    status: ShipmentStatus;
+    location?: string;
+    description?: string;
+}
+
+export interface shipmentInfo{
+  shipmentId: number;
+  trackingCode?: string;
+  shipmentStatus: ShipmentStatus;
+  estimatedDeliveryDate?: string;
+  deliveredAt: string;
+  hasShipment: boolean;
 }

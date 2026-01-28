@@ -3,6 +3,7 @@ package org.example.back.dtos.response;
 import lombok.*;
 import org.example.back.enums.OrderStatus;
 import org.example.back.models.CustomerInfo;
+import org.example.back.models.ShipmentInfo;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ public class OrderResponse {
     private OrderStatus status;
     private String paymentMethodName;
     private String shippingName;
+    private String shippingDisplayName;
     private BigDecimal subtotal;
     private BigDecimal shippingCost;
     private BigDecimal total;
@@ -30,4 +32,5 @@ public class OrderResponse {
     private String shippingPostalCode;
     private String customerNroDoc;
     private String customerTypeDoc;
+    private ShipmentInfo shipmentInfo;
 }

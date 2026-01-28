@@ -8,10 +8,7 @@ import org.example.back.dtos.response.OrderResponse;
 import org.example.back.entities.*;
 import org.example.back.enums.MovementType;
 import org.example.back.enums.OrderStatus;
-import org.example.back.models.CustomerInfo;
-import org.example.back.models.OrderDetailRequest;
-import org.example.back.models.OrderRequest;
-import org.example.back.models.User;
+import org.example.back.models.*;
 import org.example.back.repositories.*;
 import org.example.back.services.CartService;
 import org.example.back.services.OrderService;
@@ -26,6 +23,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -44,6 +42,7 @@ public class OrderServiceImp implements OrderService {
     private final ReplenishmentRepository replenishmentRepository;
     private final CartRepository cartRepository;
     private final ShippingService shippingService;
+    private final ShipmentRepository shipmentRepository;
 
     @Override
     public OrderResponse createOrder(OrderRequest orderRequest, String userEmail) {
@@ -193,8 +192,8 @@ public class OrderServiceImp implements OrderService {
         Long totalOrders = orderRepository.countByCustomerId(userId);
         BigDecimal totalSpent = orderRepository.getTotalSpentByCustomer(userId);
         Long pendingOrders = orderRepository.countByCustomerIdAndStatus(userId, OrderStatus.PENDING);
-        Long completedOrders = orderRepository.countByCustomerIdAndStatus(userId, OrderStatus.COMPLETED);
-        Long inProcessOrders = orderRepository.countByCustomerIdAndStatus(userId, OrderStatus.IN_PROCESS);
+        Long completedOrders = orderRepository.countByCustomerIdAndStatus(userId, OrderStatus.DELIVERED);
+        Long inProcessOrders = orderRepository.countByCustomerIdAndStatus(userId, OrderStatus.PROCESSING);
         Long cancelledOrders = orderRepository.countByCustomerIdAndStatus(userId, OrderStatus.CANCELLED);
 
         return UserOrderStatisticsDTO.builder()
@@ -208,13 +207,24 @@ public class OrderServiceImp implements OrderService {
     }
 
     private void validateStatusTransition(OrderStatus currentStatus, OrderStatus newStatus) {
-        if (currentStatus == OrderStatus.COMPLETED &&
-                (newStatus == OrderStatus.IN_PROCESS || newStatus == OrderStatus.PENDING)) {
-            throw new RuntimeException("No se puede cambiar el estado de una orden completada a " + newStatus);
+        if ((currentStatus == OrderStatus.DELIVERED || currentStatus == OrderStatus.CANCELLED ||
+                currentStatus == OrderStatus.COMPLETED)
+                && newStatus != currentStatus) {
+            throw new RuntimeException("No se puede cambiar el estado de una orden " + currentStatus);
         }
 
-        if (currentStatus == OrderStatus.CANCELLED && newStatus != OrderStatus.PENDING){
-            throw new RuntimeException("No se puede cambiar el estado de una orden cancelada a " + newStatus);
+        boolean isValidTransition = switch (currentStatus) {
+            case PENDING -> newStatus == OrderStatus.PAID || newStatus == OrderStatus.CANCELLED;
+            case PAID -> newStatus == OrderStatus.PROCESSING || newStatus == OrderStatus.CANCELLED;
+            case PROCESSING -> newStatus == OrderStatus.SHIPPED || newStatus == OrderStatus.CANCELLED;
+            case SHIPPED -> newStatus == OrderStatus.DELIVERED || newStatus == OrderStatus.CANCELLED;
+            case DELIVERED -> newStatus == OrderStatus.DELIVERED;
+            case CANCELLED -> newStatus == OrderStatus.CANCELLED;
+            case COMPLETED -> newStatus == OrderStatus.COMPLETED;
+        };
+
+        if (!isValidTransition) {
+            throw new RuntimeException("Transición de estado inválida: de " + currentStatus + " a " + newStatus);
         }
     }
 
@@ -261,12 +271,32 @@ public class OrderServiceImp implements OrderService {
         // Calcular total (subtotal + envío)
         BigDecimal total = subtotal.add(shippingCost);
 
+        // Obtener información de envío si existe
+        ShipmentInfo shipmentInfo = null;
+        Optional<ShipmentEntity> shipmentOpt = shipmentRepository.findByOrderId(order.getId());
+        if (shipmentOpt.isPresent()) {
+            ShipmentEntity shipment = shipmentOpt.get();
+            shipmentInfo = ShipmentInfo.builder()
+                    .shipmentId(shipment.getId())
+                    .trackingCode(shipment.getTrackingCode())
+                    .shipmentStatus(shipment.getStatus())
+                    .estimatedDeliveryDate(shipment.getEstimatedDeliveryDate())
+                    .deliveredAt(shipment.getDeliveredAt())
+                    .hasShipment(true)
+                    .build();
+        } else {
+            shipmentInfo = ShipmentInfo.builder()
+                    .hasShipment(false)
+                    .build();
+        }
+
         return OrderResponse.builder()
                 .id(order.getId())
                 .date(order.getDate())
                 .status(order.getStatus())
                 .paymentMethodName(order.getPaymentMethod().getName())
                 .shippingName(order.getShipping().getName())
+                .shippingDisplayName(order.getShipping().getDisplayName())
                 .customer(customerInfo)
                 .subtotal(subtotal)
                 .shippingCost(shippingCost)
@@ -279,6 +309,7 @@ public class OrderServiceImp implements OrderService {
                 .shippingPostalCode(order.getShippingPostalCode())
                 .customerNroDoc(order.getCustomerNroDoc())
                 .customerTypeDoc(order.getCustomerTypeDoc())
+                .shipmentInfo(shipmentInfo)
                 .build();
     }
 }
