@@ -34,7 +34,7 @@ interface PaymentDetails {
     shipping_cost?: string;
     user_nro_doc?: string;
     user_type_doc?: string;
-    [key: string]: any;
+    [key: string]: string | number | undefined;
   };
   additional_info: {
     items: Array<{
@@ -64,7 +64,7 @@ interface PaymentDetails {
 
 interface MercadoPagoResponse {
   metadata?: {
-    [key: string]: any;
+    [key: string]: string | number | undefined;
   };
   additional_info?: {
     items?: Array<{
@@ -273,40 +273,6 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = () => {
 const processPaymentData = (data: MercadoPagoResponse): PaymentDetails => {
   // Extraer información de envío de los metadatos (preferido)
   const metadata = data.metadata || {};
-  
-  // Determinar el método de envío
-  let shippingMethod = 'standard';
-  let shippingDisplayName = 'Envío estándar';
-  let shippingEstimatedDays = 3;
-  
-  // Usar metadatos si están disponibles
-  if (metadata.shipping_method_name) {
-    shippingMethod = String(metadata.shipping_method_name).toLowerCase();
-    shippingDisplayName = String(metadata.shipping_display_name || metadata.shipping_method_name);
-    shippingEstimatedDays = Number(metadata.shipping_estimated_days) || 3;
-  } else {
-    // Fallback al título del ítem de envío (para compatibilidad)
-    const shippingItem = data.additional_info?.items?.find((item) => 
-      item.category_id === 'shipping' || item.id === 'shipping'
-    );
-    
-    if (shippingItem?.title) {
-      const title = shippingItem.title;
-      if (title.includes('Andreani')) {
-        shippingMethod = 'andreani';
-        shippingDisplayName = 'Andreani';
-        shippingEstimatedDays = 4;
-      } else if (title.includes('OCA')) {
-        shippingMethod = 'oca';
-        shippingDisplayName = 'OCA';
-        shippingEstimatedDays = 3;
-      } else if (title.includes('Correo')) {
-        shippingMethod = 'correo_argentino';
-        shippingDisplayName = 'Correo Argentino';
-        shippingEstimatedDays = 5;
-      }
-    }
-  }
   
   // Separar ítems de productos vs envío
   const allItems = data.additional_info?.items || [];

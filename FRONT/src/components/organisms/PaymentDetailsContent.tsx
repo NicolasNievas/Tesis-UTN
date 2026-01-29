@@ -36,7 +36,7 @@ interface IPaymentDetailsContentProps {
         user_email?: string;
         user_first_name?: string;
         user_last_name?: string;
-        [key: string]: any;
+        [key: string]: string | number | undefined;
       };
       additional_info: {
         items: {
