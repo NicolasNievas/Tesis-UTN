@@ -28,6 +28,18 @@ import {   PaymentMethodReport,
 
 type ReportCategory = 'sales' | 'customers' | 'inventory' | 'analytics' | 'performance';
 
+interface JsPDFWithAutoTable extends jsPDF {
+  lastAutoTable: {
+    finalY: number;
+  };
+}
+
+interface TooltipPayload {
+  color: string;
+  name: string;
+  value: number;
+}
+
 const ReportsPage = () => {
   const [activeTab, setActiveTab] = useState<ReportCategory>('sales');
   const [startDate, setStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -277,7 +289,7 @@ const ReportsPage = () => {
             ]),
             margin: { top: 10 }
           });
-          yPos = (doc as any).lastAutoTable.finalY + 15;
+          yPos = (doc as JsPDFWithAutoTable).lastAutoTable.finalY + 15;
         }
 
         if (topProductsData.length > 0 && yPos < 270) {
@@ -362,22 +374,22 @@ const ReportsPage = () => {
   };
 
   // Custom Tooltip para gráficos
-  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ color: string; name: string; value: number }>; label?: string }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
-          <p className="font-semibold text-gray-900 mb-2">{label}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {entry.name}: {entry.name.includes('Sales') || entry.name.includes('Spent') || entry.name.includes('Revenue') 
-                ? formatCurrency(entry.value)
-                : entry.value.toLocaleString()}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayload[]; label?: string }) => {
+      if (active && payload && payload.length) {
+        return (
+          <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
+            <p className="font-semibold text-gray-900 mb-2">{label}</p>
+            {payload.map((entry: TooltipPayload, index: number) => (
+              <p key={index} className="text-sm" style={{ color: entry.color }}>
+                {entry.name}: {entry.name.includes('Sales') || entry.name.includes('Spent') || entry.name.includes('Revenue') 
+                  ? formatCurrency(entry.value)
+                  : entry.value.toLocaleString()}
+              </p>
+            ))}
+          </div>
+        );
+      }
+      return null;
   };
 
   // Render label para gráfico de torta
