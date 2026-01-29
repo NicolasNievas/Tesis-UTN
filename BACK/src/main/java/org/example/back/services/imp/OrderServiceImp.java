@@ -206,6 +206,13 @@ public class OrderServiceImp implements OrderService {
                 .build();
     }
 
+    @Override
+    public OrderResponse getOrderById(Long orderId) {
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada con ID: " + orderId));
+        return convertToOrderResponse(order);
+    }
+
     private void validateStatusTransition(OrderStatus currentStatus, OrderStatus newStatus) {
         if ((currentStatus == OrderStatus.DELIVERED || currentStatus == OrderStatus.CANCELLED ||
                 currentStatus == OrderStatus.COMPLETED)

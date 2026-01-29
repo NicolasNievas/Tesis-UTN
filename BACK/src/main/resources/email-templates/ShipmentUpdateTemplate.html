@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipment Update - Coffee Craze</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f9fafb;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f9fafb;">
+        <tr>
+            <td align="center" style="padding: 40px 0;">
+                <table role="presentation" style="width: 100%; max-width: 600px; border-collapse: collapse; background-color: #fffdf9; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #2b373d 0%, #171a25 100%); padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
+                            <h1 style="margin: 0; color: #fffdf9; font-size: 28px; font-weight: 700;">Coffee Craze</h1>
+                            <p style="margin: 10px 0 0 0; color: #9ca3af; font-size: 14px;">Premium Coffee Experience</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Status Banner -->
+                    <tr>
+                        <td style="padding: 30px; text-align: center; background: {{BANNER_COLOR}};">
+                            <div style="display: inline-block; width: 60px; height: 60px; background-color: #fffdf9; border-radius: 50%; margin-bottom: 15px; line-height: 60px; font-size: 30px;">{{STATUS_ICON}}</div>
+                            <h2 style="margin: 0; color: #fffdf9; font-size: 24px; font-weight: 600;">{{STATUS_TITLE}}</h2>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <p style="margin: 0 0 10px 0; color: #76797e; font-size: 16px; line-height: 1.6;">
+                                Dear <strong style="color: #2b373d;">{{USER_NAME}}</strong>,
+                            </p>
+                            
+                            <p style="margin: 0 0 30px 0; color: #76797e; font-size: 16px; line-height: 1.6;">
+                                {{STATUS_MESSAGE}}
+                            </p>
+                            
+                            <!-- Shipment Details -->
+                            <div style="background-color: #f9fafb; padding: 25px; border-radius: 8px; margin-bottom: 25px;">
+                                <h3 style="margin: 0 0 20px 0; color: #2b373d; font-size: 18px; font-weight: 600;">Shipment Information</h3>
+                                
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #76797e; font-size: 14px;">Order ID:</td>
+                                        <td style="padding: 8px 0; color: #2b373d; font-size: 14px; font-weight: 600; text-align: right;">{{ORDER_ID}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #76797e; font-size: 14px; width: 50%;">Tracking Number:</td>
+                                        <td style="padding: 8px 0; text-align: right;">
+                                            <code style="background-color: #e5e7eb; color: #2b373d; padding: 6px 12px; border-radius: 4px; font-size: 14px; font-weight: 600;">{{TRACKING_CODE}}</code>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #76797e; font-size: 14px;">Carrier:</td>
+                                        <td style="padding: 8px 0; color: #2b373d; font-size: 14px; font-weight: 600; text-align: right;">{{CARRIER_NAME}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #76797e; font-size: 14px;">Current Status:</td>
+                                        <td style="padding: 8px 0; text-align: right;">
+                                            <span style="background-color: {{STATUS_BADGE_COLOR}}; color: #fffdf9; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">{{SHIPMENT_STATUS}}</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #76797e; font-size: 14px;">Last Update:</td>
+                                        <td style="padding: 8px 0; color: #2b373d; font-size: 14px; font-weight: 600; text-align: right;">{{LAST_UPDATE_DATE}}</td>
+                                    </tr>
+                                    {{ESTIMATED_DELIVERY_ROW}}
+                                </table>
+                            </div>
+                            
+                            <!-- Latest Tracking Update -->
+                            <div style="background-color: #f9fafb; padding: 25px; border-radius: 8px; margin-bottom: 25px;">
+                                <h3 style="margin: 0 0 15px 0; color: #2b373d; font-size: 18px; font-weight: 600;">Latest Update</h3>
+                                
+                                <div style="border-left: 4px solid #3b82f6; padding-left: 20px;">
+                                    <p style="margin: 0 0 5px 0; color: #2b373d; font-size: 14px; font-weight: 600;">{{LAST_UPDATE_LOCATION}}</p>
+                                    <p style="margin: 0; color: #76797e; font-size: 14px; line-height: 1.6;">{{LAST_UPDATE_DESCRIPTION}}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Delivery Address -->
+                            <div style="background-color: #f9fafb; padding: 25px; border-radius: 8px; margin-bottom: 25px;">
+                                <h3 style="margin: 0 0 15px 0; color: #2b373d; font-size: 18px; font-weight: 600;">Delivery Address</h3>
+                                
+                                <p style="margin: 0; color: #76797e; font-size: 14px; line-height: 1.6;">
+                                    <strong style="color: #2b373d;">{{RECIPIENT_NAME}}</strong><br>
+                                    {{SHIPPING_ADDRESS}}<br>
+                                    {{SHIPPING_CITY}}, {{POSTAL_CODE}}
+                                </p>
+                            </div>
+                            
+                            <!-- Action Box (optional, based on status) -->
+                            {{ACTION_BOX}}
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px; background-color: #f9fafb; border-radius: 0 0 12px 12px; text-align: center;">
+                            <p style="margin: 0 0 10px 0; color: #76797e; font-size: 14px;">
+                                For any questions about your delivery, please contact us at <a href="mailto:coffecraze1@gmail.com" style="color: #3b82f6; text-decoration: none;">coffecraze1@gmail.com</a>
+                            </p>
+                            <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                                &copy; 2025 Coffee Craze. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

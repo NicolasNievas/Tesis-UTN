@@ -13,6 +13,7 @@ import com.mercadopago.resources.preference.Preference;
 import lombok.extern.slf4j.Slf4j;
 import org.example.back.dtos.CartItemDTO;
 import org.example.back.dtos.UserDTO;
+import org.example.back.dtos.response.OrderResponse;
 import org.example.back.entities.CartEntity;
 import org.example.back.entities.ShippingEntity;
 import org.example.back.enums.OrderStatus;
@@ -24,6 +25,7 @@ import org.example.back.repositories.CartRepository;
 import org.example.back.repositories.PaymentMethodRepository;
 import org.example.back.repositories.ShippingRepository;
 import org.example.back.repositories.UserRepository;
+import org.example.back.services.MailService;
 import org.example.back.services.MercadoPagoService;
 import org.example.back.services.OrderService;
 import org.springframework.beans.factory.annotation.Value;
@@ -68,8 +70,9 @@ public class MercadoPagoServiceImp implements MercadoPagoService {
     private final CartRepository cartRepository;
     private final PaymentMethodRepository paymentMethodRepository;
     private final ShippingRepository shippingRepository;
+    private final MailService mailService;
 
-    public MercadoPagoServiceImp(@Lazy org.example.back.configs.MercadoPagoConfig mercadoPagoConfig, @Lazy OrderService orderService, RestTemplate restTemplate, UserRepository userRepository, CartRepository cartRepository, PaymentMethodRepository paymentMethodRepository, ShippingRepository shippingRepository) {
+    public MercadoPagoServiceImp(@Lazy org.example.back.configs.MercadoPagoConfig mercadoPagoConfig, @Lazy OrderService orderService, RestTemplate restTemplate, UserRepository userRepository, CartRepository cartRepository, PaymentMethodRepository paymentMethodRepository, ShippingRepository shippingRepository, MailService mailService) {
         this.orderService = orderService;
         this.restTemplate = restTemplate;
         this.userRepository = userRepository;
@@ -77,6 +80,7 @@ public class MercadoPagoServiceImp implements MercadoPagoService {
         this.paymentMethodRepository = paymentMethodRepository;
         MercadoPagoConfig.setAccessToken(mercadoPagoConfig.getAccessToken());
         this.shippingRepository = shippingRepository;
+        this.mailService = mailService;
     }
 
     @Override
@@ -363,9 +367,19 @@ public class MercadoPagoServiceImp implements MercadoPagoService {
                             .collect(Collectors.toList());
 
                     orderRequest.setDetails(details);
-                    orderService.createOrder(orderRequest, userEmail);
+                    OrderResponse createdOrder = orderService.createOrder(orderRequest, userEmail);
 
                     log.info("Order created successfully for payment ID: {}", dataId);
+
+                    if (status.equals("approved") || status.equals("pending") || status.equals("in_process")){
+                        try{
+                            String userName = userEntity.getFirstName() + " " + userEntity.getLastName();
+                            mailService.sendOrderConfirmationEmail(userEmail, userName, createdOrder);
+                            log.info("Order confirmation email sent for order {} to {}", createdOrder.getId(), userEmail);
+                        } catch (Exception e) {
+                            log.error("Failed to send order confirmation email for order {}: {}", createdOrder.getId(), e.getMessage(), e);
+                        }
+                    }
                 }
                 return ResponseEntity.ok().build();
             }

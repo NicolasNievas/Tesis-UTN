@@ -18,4 +18,5 @@ public interface OrderService {
    PageResponse<OrderResponse> getAllOrders(OrderStatus status, LocalDateTime startDate,  LocalDateTime endDate, int page, int size);
    OrderResponse updateOrderStatus(Long orderId, OrderStatus status);
    UserOrderStatisticsDTO getUserOrderStatistics();
+   OrderResponse getOrderById(Long orderId);
 }

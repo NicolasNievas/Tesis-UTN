@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.back.dtos.request.CreateShipmentRequest;
 import org.example.back.dtos.request.UpdateShipmentStatusRequest;
+import org.example.back.dtos.response.OrderResponse;
 import org.example.back.dtos.response.ShipmentResponse;
 import org.example.back.dtos.response.ShipmentTrackingResponse;
 import org.example.back.entities.OrderEntity;
@@ -14,6 +15,8 @@ import org.example.back.enums.ShipmentStatus;
 import org.example.back.repositories.ShipmentRepository;
 import org.example.back.repositories.OrderRepository;
 import org.example.back.repositories.ShipmentTrackingRepository;
+import org.example.back.services.MailService;
+import org.example.back.services.OrderService;
 import org.example.back.services.ShipmentService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +35,8 @@ public class ShipmentServiceImp implements ShipmentService {
     private final ShipmentRepository shipmentRepository;
     private final ShipmentTrackingRepository trackingRepository;
     private final OrderRepository orderRepository;
+    private final MailService mailService;
+    private final OrderService orderService;
     private static final SecureRandom random = new SecureRandom();
 
     @Override
@@ -98,7 +103,25 @@ public class ShipmentServiceImp implements ShipmentService {
 
         log.info("Shipment created: trackingCode={}, orderId={}", trackingCode, order.getId());
 
-        return convertToResponse(shipment);
+        ShipmentResponse shipmentResponse = convertToResponse(shipment);
+
+        if (!order.getShipping().getName().equals("LOCAL_PICKUP")) {
+            try{
+                OrderResponse orderResponse = orderService.getOrderById(order.getId());
+
+                String userName = order.getCustomer().getFirstName() + " " + order.getCustomer().getLastName();
+
+                String userEmail = order.getCustomer().getEmail();
+
+                mailService.sendTrackingEmail(userEmail, userName, orderResponse);
+
+                log.info("Tracking email sent for order {} to {}", order.getId(), userEmail);
+            } catch (Exception e){
+                log.error("Failed to send tracking email for orderId={}", order.getId(), e);
+            }
+        }
+
+        return shipmentResponse;
     }
     private String generateTrackingCode(String carrier) {
         String prefix;
@@ -164,15 +187,18 @@ public class ShipmentServiceImp implements ShipmentService {
         ShipmentEntity shipment = shipmentRepository.findById(shipmentId)
                 .orElseThrow(() -> new RuntimeException("Shipment not found"));
 
-        // Validar transición de estado
-        validateStatusTransition(shipment.getStatus(), request.getStatus());
+        ShipmentStatus oldStatus = shipment.getStatus();
+        ShipmentStatus newStatus = request.getStatus();
 
-        shipment.setStatus(request.getStatus());
+        // Validar transición de estado
+        validateStatusTransition(oldStatus, newStatus);
+
+        shipment.setStatus(newStatus);
 
         OrderEntity order = shipment.getOrder();
 
         // Actualizar fechas y estado de la orden según el estado del envío
-        switch (request.getStatus()) {
+        switch (newStatus) {
             case IN_TRANSIT:
                 if (shipment.getShippedAt() == null) {
                     shipment.setShippedAt(LocalDateTime.now());
@@ -204,15 +230,39 @@ public class ShipmentServiceImp implements ShipmentService {
         // Crear entrada de seguimiento
         createTrackingEntry(
                 shipment,
-                request.getStatus(),
+                newStatus,
                 request.getLocation(),
                 request.getDescription()
         );
 
-        log.info("Shipment status updated: trackingCode={}, status={}",
-                shipment.getTrackingCode(), request.getStatus());
+        log.info("Shipment status updated: trackingCode={}, {} -> {}",
+                shipment.getTrackingCode(), oldStatus, newStatus);
+
+        if (shouldSendEmailForStatus(newStatus)) {
+            try {
+                OrderResponse orderResponse = orderService.getOrderById(shipment.getOrder().getId());
+
+                String userName = shipment.getRecipientName();
+                String userEmail = shipment.getOrder().getCustomer().getEmail();
+
+                mailService.sendShipmentUpdateEmail(userEmail, userName, orderResponse, newStatus);
+
+                log.info("Shipment update email sent for shipmentId={}, status={}, email={}",
+                        shipmentId, newStatus, userEmail);
+
+            } catch (Exception e) {
+                log.error("Failed to send shipment update email for shipmentId={}", shipmentId, e);
+            }
+        }
 
         return convertToResponse(shipment);
+    }
+
+    private boolean shouldSendEmailForStatus(ShipmentStatus status) {
+        return status == ShipmentStatus.IN_TRANSIT ||
+                status == ShipmentStatus.OUT_FOR_DELIVERY ||
+                status == ShipmentStatus.DELIVERED ||
+                status == ShipmentStatus.READY_FOR_PICKUP;
     }
 
     private void validateStatusTransition(ShipmentStatus current, ShipmentStatus newStatus) {
