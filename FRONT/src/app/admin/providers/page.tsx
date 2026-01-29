@@ -21,8 +21,9 @@ export default function ProvidersPage() {
     try {
       const items = await AdminProviderService.list();
       setData(items);
-    } catch (e: any) {
-      toast.error(e?.response?.data?.message ?? "Error loading providers");
+    } catch (e: unknown) {
+      const error = e as { response?: { data?: { message?: string } } };
+      toast.error(error?.response?.data?.message ?? "Error loading providers");
     }
     setLoading(false);
   };
@@ -72,8 +73,9 @@ export default function ProvidersPage() {
       await AdminProviderService.remove(prov.id);
       toast.success("Supplier deactivated successfully");
       load();
-    } catch (e: any) {
-      toast.error(e?.response?.data?.message ?? "Error desactivating Supplier");
+    } catch (e: unknown) {
+      const error = e as { response?: { data?: { message?: string } } };
+      toast.error(error?.response?.data?.message ?? "Error desactivating Supplier");
     }
   };
 
@@ -95,8 +97,9 @@ export default function ProvidersPage() {
     await AdminProviderService.reactivate(prov.id);
     toast.success("Supplier reactivated successfully");
     load();
-  } catch (e: any) {
-    toast.error(e?.response?.data?.message ?? "Error reactivating Supplier");
+  } catch (e: unknown) {
+    const error = e as { response?: { data?: { message?: string } } };
+    toast.error(error?.response?.data?.message ?? "Error reactivating Supplier");
   }
 };
 
@@ -112,10 +115,11 @@ export default function ProvidersPage() {
       setShowModal(false);
       setEditing(null);
       load();
-    } catch (e: any) {
+    } catch (e: unknown) {
+      const error = e as { response?: { data?: { message?: string; errors?: Array<{ defaultMessage?: string }> } } };
       const msg =
-        e?.response?.data?.message ??
-        e?.response?.data?.errors?.[0]?.defaultMessage ??
+        error?.response?.data?.message ??
+        error?.response?.data?.errors?.[0]?.defaultMessage ??
         "Error saving Supplier";
       toast.error(msg);
     }
@@ -154,7 +158,7 @@ export default function ProvidersPage() {
               <select
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent"
                 value={statusFilter}
-                onChange={e => setStatusFilter(e.target.value as any)}
+                onChange={e => setStatusFilter(e.target.value as "all" | "active" | "inactive")}
               >
                 <option value="all">All</option>
                 <option value="active">Active</option>

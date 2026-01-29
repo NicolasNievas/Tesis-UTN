@@ -67,12 +67,12 @@ const CheckoutPage: React.FC = () => {
   
   try {
     setIsUpdatingShipping(true);
-    const updatedCart = await CheckoutService.updateShippingInfo({
-      shippingMethodId: shippingId,
-      address,
-      city,
-      postalCode
-    });
+    // const updatedCart = await CheckoutService.updateShippingInfo({
+    //   shippingMethodId: shippingId,
+    //   address,
+    //   city,
+    //   postalCode
+    // });
     
     // Volver a cargar los datos completos de checkout
     await loadCheckoutData();

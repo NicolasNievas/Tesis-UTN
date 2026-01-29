@@ -91,7 +91,7 @@ const ReportsPage = () => {
 
   // Colores para gráficos
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16', '#f97316'];
-  const BAR_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+  //const BAR_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-AR', {
@@ -338,14 +338,14 @@ const ReportsPage = () => {
   };
 
   // Función para calcular el turnover rate
-  const calculateTurnoverRate = (item: any) => {
-    const sold = item.totalSold || 0;
-    const stock = item.currentStock || 0;
-    const total = sold + stock;
+  // const calculateTurnoverRate = (item: any) => {
+  //   const sold = item.totalSold || 0;
+  //   const stock = item.currentStock || 0;
+  //   const total = sold + stock;
     
-    if (total === 0) return 0;
-    return (sold / total) * 100;
-  };
+  //   if (total === 0) return 0;
+  //   return (sold / total) * 100;
+  // };
 
   // Función para determinar el color del indicador de rotación
   const getTurnoverColor = (rate: number) => {
@@ -362,7 +362,7 @@ const ReportsPage = () => {
   };
 
   // Custom Tooltip para gráficos
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ color: string; name: string; value: number }>; label?: string }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
@@ -381,7 +381,7 @@ const ReportsPage = () => {
   };
 
   // Render label para gráfico de torta
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: { cx: number; cy: number; midAngle: number; innerRadius: number; outerRadius: number; percent: number; name?: string }) => {
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -910,7 +910,7 @@ const getStatusColor = (status: string) => {
                 <div className="bg-white rounded-lg shadow-sm p-12 text-center">
                   <TrendingUp className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                   <p className="text-lg text-gray-500 mb-2">No sales data available</p>
-                  <p className="text-sm text-gray-400">Select a date range and click "Generate Reports"</p>
+                  <p className="text-sm text-gray-400">Select a date range and click &quot;Generate Reports&quot;</p>
                 </div>
               )}
             </>
@@ -1035,7 +1035,7 @@ const getStatusColor = (status: string) => {
                 <div className="bg-white rounded-lg shadow-sm p-12 text-center">
                   <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                   <p className="text-lg text-gray-500 mb-2">No customer data available</p>
-                  <p className="text-sm text-gray-400">Select a date range and click "Generate Reports"</p>
+                  <p className="text-sm text-gray-400">Select a date range and click &quot;Generate Reports&quot;</p>
                 </div>
               )}
             </>
@@ -1198,7 +1198,7 @@ const getStatusColor = (status: string) => {
                     </div>
                     <div>
                       <h2 className="text-xl font-semibold text-gray-900">Products Without Movement</h2>
-                      <p className="text-sm text-gray-600">Products that haven't been sold recently</p>
+                      <p className="text-sm text-gray-600">Products that haven&apos;t been sold recently</p>
                     </div>
                   </div>
 
@@ -1241,7 +1241,7 @@ const getStatusColor = (status: string) => {
                 <div className="bg-white rounded-lg shadow-sm p-12 text-center">
                   <Package className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                   <p className="text-lg text-gray-500 mb-2">No inventory data available</p>
-                  <p className="text-sm text-gray-400">Select a date range and click "Generate Reports"</p>
+                  <p className="text-sm text-gray-400">Select a date range and click &quot;Generate Reports&quot;</p>
                 </div>
               )}
             </>
@@ -1471,9 +1471,16 @@ const getStatusColor = (status: string) => {
                       <Tooltip />
                       <Bar 
                         dataKey="value" 
-                        fill={(entry: { color: any; }) => entry.color}
                         radius={[4, 4, 0, 0]}
-                      />
+                      >
+                        {[
+                          { name: 'Completed', value: conversionRateData.completed, color: '#10b981' },
+                          { name: 'Cancelled', value: conversionRateData.cancelled, color: '#ef4444' },
+                          { name: 'Pending', value: conversionRateData.pending, color: '#3b82f6' }
+                        ].map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -1484,7 +1491,7 @@ const getStatusColor = (status: string) => {
               <div className="bg-white rounded-lg shadow-sm p-12 text-center">
                 <BarChart2 className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                 <p className="text-lg text-gray-500 mb-2">No analytics data available</p>
-                <p className="text-sm text-gray-400">Select a date range and click "Generate Reports"</p>
+                <p className="text-sm text-gray-400">Select a date range and click &quot;Generate Reports&quot;</p>
               </div>
             )}
           </>
@@ -1650,7 +1657,7 @@ const getStatusColor = (status: string) => {
               <div className="bg-white rounded-lg shadow-sm p-12 text-center">
                 <Star className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                 <p className="text-lg text-gray-500 mb-2">No performance data available</p>
-                <p className="text-sm text-gray-400">Select a date range and click "Generate Reports"</p>
+                <p className="text-sm text-gray-400">Select a date range and click &quot;Generate Reports&quot;</p>
               </div>
             )}
           </>

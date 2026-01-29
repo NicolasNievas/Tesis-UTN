@@ -16,7 +16,6 @@ import {
   IdCard,
   Store,
   Navigation,
-  ExternalLink,
   MapPinIcon
 } from 'lucide-react';
 import Link from "next/link";
@@ -24,16 +23,20 @@ import Link from "next/link";
 interface IPaymentDetailsContentProps {
     paymentDetails: {
       metadata?: {
-        shipping_method_name: string;
-        shipping_display_name: string;
-        shipping_estimated_days: number;
-        shipping_description: string;
-        shipping_address: string;
-        shipping_city: string;
-        shipping_postal_code: string;
-        shipping_cost: string;
-        user_nro_doc: string;
-        user_type_doc: string;
+        shipping_method_name?: string;
+        shipping_display_name?: string;
+        shipping_estimated_days?: number;
+        shipping_description?: string;
+        shipping_address?: string;
+        shipping_city?: string;
+        shipping_postal_code?: string;
+        shipping_cost?: string;
+        user_nro_doc?: string;
+        user_type_doc?: string;
+        user_email?: string;
+        user_first_name?: string;
+        user_last_name?: string;
+        [key: string]: any;
       };
       additional_info: {
         items: {
@@ -91,7 +94,7 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
     display_name: paymentDetails.metadata.shipping_display_name || 
                   paymentDetails.metadata.shipping_method_name || 
                   'Envío estándar',
-    cost: parseFloat(paymentDetails.metadata.shipping_cost),
+    cost: parseFloat(paymentDetails.metadata.shipping_cost || '0'),
     estimated_days: paymentDetails.metadata.shipping_estimated_days,
     address: paymentDetails.metadata.shipping_address || '',
     city: paymentDetails.metadata.shipping_city || '',
@@ -294,12 +297,12 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
                             </p>
                             <p className="font-medium text-gray-900">
                               {shippingInfo.isPickup ? (
-                                shippingInfo.estimated_days === 0 
+                                !shippingInfo.estimated_days || shippingInfo.estimated_days === 0 
                                   ? 'Ready for pickup today'
                                   : `Ready in ${shippingInfo.estimated_days} business days`
                               ) : (
-                                shippingInfo.estimated_days > 0 
-                                  ? `${shippingInfo.estimated_days} ${shippingMethodInfo?.estimatedDeliveryText}`
+                                !shippingInfo.estimated_days || shippingInfo.estimated_days > 0 
+                                  ? `${shippingInfo.estimated_days || 3} ${shippingMethodInfo?.estimatedDeliveryText}`
                                   : 'Same day delivery'
                               )}
                             </p>
@@ -601,7 +604,7 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
                         <div>
                           <p className="text-sm text-gray-500">Identification</p>
                           <p className="font-medium text-gray-900">
-                            {paymentDetails.metadata?.user_type_doc}: {paymentDetails.metadata?.user_nro_doc}
+                            {paymentDetails.metadata?.user_type_doc || paymentDetails.payer.identification.type}: {paymentDetails.metadata?.user_nro_doc || paymentDetails.payer.identification.number}
                           </p>
                         </div>
                       </div>

@@ -21,19 +21,20 @@ interface PaymentDetails {
   external_reference: string;
   description: string;
   metadata?: {
-    user_email: string;
-    user_first_name: string;
-    user_last_name: string;
-    shipping_method_name: string;
-    shipping_display_name: string;
-    shipping_estimated_days: number;
-    shipping_description: string;
-    shipping_address: string;
-    shipping_city: string;
-    shipping_postal_code: string;
-    shipping_cost: string;
-    user_nro_doc: string;
-    user_type_doc: string;
+    user_email?: string;
+    user_first_name?: string;
+    user_last_name?: string;
+    shipping_method_name?: string;
+    shipping_display_name?: string;
+    shipping_estimated_days?: number;
+    shipping_description?: string;
+    shipping_address?: string;
+    shipping_city?: string;
+    shipping_postal_code?: string;
+    shipping_cost?: string;
+    user_nro_doc?: string;
+    user_type_doc?: string;
+    [key: string]: any;
   };
   additional_info: {
     items: Array<{
@@ -59,6 +60,43 @@ interface PaymentDetails {
       number: string;
     };
   };
+}
+
+interface MercadoPagoResponse {
+  metadata?: {
+    [key: string]: any;
+  };
+  additional_info?: {
+    items?: Array<{
+      id?: string;
+      title?: string;
+      quantity?: string;
+      unit_price?: string;
+      picture_url?: string;
+      description?: string;
+      category_id?: string;
+    }>;
+    payer?: {
+      first_name?: string;
+      last_name?: string;
+    };
+  };
+  external_reference?: string;
+  payer?: {
+    email?: string;
+    first_name?: string;
+    last_name?: string;
+    identification?: {
+      type: string;
+      number: string;
+    };  
+  };
+  status: string;
+  transaction_amount?: number;
+  payment_method_id?: string;
+  payment_type_id?: string;
+  date_created?: string;
+  description?: string; 
 }
 
 const PaymentResultPage: React.FC<PaymentResultPageProps> = () => {
@@ -232,8 +270,7 @@ const PaymentResultPage: React.FC<PaymentResultPageProps> = () => {
   }, [payment_id]);
 
 
-const processPaymentData = (data: any): PaymentDetails => {
-  
+const processPaymentData = (data: MercadoPagoResponse): PaymentDetails => {
   // Extraer información de envío de los metadatos (preferido)
   const metadata = data.metadata || {};
   
@@ -244,12 +281,12 @@ const processPaymentData = (data: any): PaymentDetails => {
   
   // Usar metadatos si están disponibles
   if (metadata.shipping_method_name) {
-    shippingMethod = metadata.shipping_method_name.toLowerCase();
-    shippingDisplayName = metadata.shipping_display_name || metadata.shipping_method_name;
-    shippingEstimatedDays = metadata.shipping_estimated_days || 3;
+    shippingMethod = String(metadata.shipping_method_name).toLowerCase();
+    shippingDisplayName = String(metadata.shipping_display_name || metadata.shipping_method_name);
+    shippingEstimatedDays = Number(metadata.shipping_estimated_days) || 3;
   } else {
     // Fallback al título del ítem de envío (para compatibilidad)
-    const shippingItem = data.additional_info?.items?.find((item: any) => 
+    const shippingItem = data.additional_info?.items?.find((item) => 
       item.category_id === 'shipping' || item.id === 'shipping'
     );
     
@@ -273,43 +310,23 @@ const processPaymentData = (data: any): PaymentDetails => {
   
   // Separar ítems de productos vs envío
   const allItems = data.additional_info?.items || [];
-  const productItems = allItems.filter((item: any) => 
+  const productItems = allItems.filter((item) => 
     item.category_id !== 'shipping' && item.id !== 'shipping'
   );
   
-  const shippingItem = allItems.find((item: any) => 
-    item.category_id === 'shipping' || item.id === 'shipping'
-  );
-  
-  // Crear datos de envío consolidados
-  const shippingCost = metadata.shipping_cost ? 
-    parseFloat(metadata.shipping_cost) : 
-    (shippingItem ? parseFloat(shippingItem.unit_price) || 0 : 0);
-  
-  const shippingData = shippingCost > 0 ? {
-    method: shippingMethod,
-    display_name: shippingDisplayName,
-    cost: shippingCost,
-    estimated_days: shippingEstimatedDays,
-    address: metadata.shipping_address || '',
-    city: metadata.shipping_city || '',
-    postal_code: metadata.shipping_postal_code || '',
-    description: metadata.shipping_description || ''
-  } : undefined;
-  
   // Formatear los ítems para la UI
-  const formattedItems = productItems.map((item: any) => ({
-    id: item.id,
-    title: item.title,
-    quantity: parseInt(item.quantity) || 1,
-    unit_price: parseFloat(item.unit_price) || 0,
+  const formattedItems = productItems.map((item) => ({
+    id: item.id || '',
+    title: item.title || '',
+    quantity: parseInt(String(item.quantity || '1')) || 1,
+    unit_price: parseFloat(String(item.unit_price || '0')) || 0,
     picture_url: item.picture_url || '',
     description: item.description || '',
-    category_id: item.category_id
+    category_id: item.category_id || ''
   }));
   
   // Determinar email (usar metadatos primero, luego fallbacks)
-  let email = metadata.user_email || '';
+  let email = String(metadata.user_email || '');
   if (!email) {
     const externalRef = data.external_reference || '';
     if (externalRef.includes('|||')) {
@@ -324,12 +341,12 @@ const processPaymentData = (data: any): PaymentDetails => {
   }
   
   // Extraer datos del payer (usar metadatos primero)
-  const payerFirstName = metadata.user_first_name || 
+  const payerFirstName = String(metadata.user_first_name || 
                         data.additional_info?.payer?.first_name || 
-                        data.payer?.first_name || '';
-  const payerLastName = metadata.user_last_name || 
+                        data.payer?.first_name || '');
+  const payerLastName = String(metadata.user_last_name || 
                        data.additional_info?.payer?.last_name || 
-                       data.payer?.last_name || '';
+                       data.payer?.last_name || '');
   
   // Crear el objeto procesado
   return {
@@ -349,9 +366,9 @@ const processPaymentData = (data: any): PaymentDetails => {
       }
     },
     payer: {
-      email: email,
-      first_name: payerFirstName,
-      last_name: payerLastName,
+      email: email || null,
+      first_name: payerFirstName || null,
+      last_name: payerLastName || null,
       identification: data.payer?.identification || undefined
     }
   };

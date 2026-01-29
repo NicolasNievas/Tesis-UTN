@@ -212,12 +212,12 @@ const UserOrders = () => {
             setTimeout(() => {
                 router.push('/cart');
             }, 1500);
-        } catch (error: any){
-            
-        if (error.message?.includes('Stock insuficiente') || error.message?.includes('insufficient stock')) {
-                const productName = error.message.match(/para (.+?)\./)?.[1] || 'some products';
-                const available = error.message.match(/Disponible: (\d+)/)?.[1];
-                const requested = error.message.match(/Solicitado: (\d+)/)?.[1];
+        } catch (error: unknown){
+            const err = error as { message?: string };
+        if (err.message?.includes('Stock insuficiente') || err.message?.includes('insufficient stock')) {
+                const productName = err.message.match(/para (.+?)\./)?.[1] || 'some products';
+                const available = err.message.match(/Disponible: (\d+)/)?.[1];
+                const requested = err.message.match(/Solicitado: (\d+)/)?.[1];
                 
                 toast.error(
                     <div>
@@ -263,7 +263,7 @@ const UserOrders = () => {
                                 <Filter className="w-4 h-4" />
                                 <select
                                     value={filter}
-                                    onChange={(e) => setFilter(e.target.value as any)}
+                                    onChange={(e) => setFilter(e.target.value as 'all' | 'pending' | 'completed' | 'in_process' | 'cancelled')}
                                     className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 pr-10 text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 >
                                     <option value="all">All Orders</option>

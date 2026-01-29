@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Package, Truck, MapPin, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, Package, Truck, MapPin, Clock, AlertCircle } from 'lucide-react';
 import ShipmentService  from '@/services/ShipmentService';
 import { toast } from 'react-toastify';
 import { ShipmentResponse, ShipmentStatus, UpdateShipmentStatusRequest } from '@/interfaces/data.interfaces';
@@ -29,8 +29,9 @@ const ShipmentModal: React.FC<ShipmentModalProps> = ({ orderId, isOpen, onClose,
         try {
             const data = await ShipmentService.getShipmentByOrderId(orderId);
             setShipment(data);
-        } catch (error: any) {
-            if (error.response?.status === 404) {
+        } catch (error: unknown) {
+            const err = error as { response?: { status: number } };
+            if (err.response?.status === 404) {
                 setShipment(null);
             } else {
                 toast.error('Error loading shipment');
@@ -46,8 +47,9 @@ const ShipmentModal: React.FC<ShipmentModalProps> = ({ orderId, isOpen, onClose,
             setShipment(data);
             toast.success(`Shipment created! Tracking: ${data.trackingCode}`);
             if (onShipmentCreated) onShipmentCreated(data);
-        } catch (error: any) {
-            toast.error(error?.response?.data?.message || 'Error creating shipment');
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string; status?: number } } };
+            toast.error(err?.response?.data?.message || 'Error creating shipment');
         } finally {
             setLoading(false);
         }
@@ -69,8 +71,9 @@ const ShipmentModal: React.FC<ShipmentModalProps> = ({ orderId, isOpen, onClose,
             setLocation('');
             setDescription('');
             toast.success('Status updated successfully');
-        } catch (error: any) {
-            toast.error(error?.response?.data?.message || 'Error updating status');
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } } };
+            toast.error(err?.response?.data?.message || 'Error updating status');
         } finally {
             setLoading(false);
         }
