@@ -162,11 +162,6 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
     const productsSubtotal = calculateProductsSubtotal();
     const shippingCost = shippingInfo?.cost || 0;
     const total = paymentDetails.transaction_amount;
-    console.log('Renderizando PaymentDetailsContent');
-    console.log('Status:', status);
-    console.log('Status Info:', statusInfo);
-    console.log('Payment Details tiene shipping?', shippingInfo);
-    console.log('Email:', email);
     
     return (    
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-12 px-4">
@@ -255,7 +250,7 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
                   ))}
                 </div>
 
-                {/* Shipping Section - Manteniendo estructura pero mejorando la tarjeta de dirección */}
+                {/* Shipping Section */}
                 {shippingInfo && (
                   <div className="mt-8 pt-8 border-t border-gray-100">
                     <h3 className="text-lg font-semibold text-gray-700 mb-6 flex items-center">
@@ -380,7 +375,7 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
                                   </button>
                                 </>
                               ) : (
-                                // Dirección de envío normal - MEJORADA
+                                // Dirección de envío normal
                                 <>
                                   {shippingInfo.address && (
                                     <div className="space-y-3">
@@ -409,22 +404,14 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
                                         </div>
                                       </div>
                                       
-                                      <div className="flex gap-2 mt-4">
-                                        <button
-                                          onClick={() => openInGoogleMaps(shippingInfo.address, shippingInfo.city)}
-                                          className="flex-1 flex items-center justify-center px-4 py-2.5 text-sm font-medium text-indigo-700 bg-white border border-indigo-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition-all duration-200"
-                                        >
-                                          <Navigation className="h-4 w-4 mr-2" />
-                                          View Map
-                                        </button>
-                                        <button
-                                          onClick={() => router.push('/tracking')}
-                                          className="flex-1 flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-sm"
-                                        >
-                                          <Package className="h-4 w-4 mr-2" />
-                                          Track Order
-                                        </button>
-                                      </div>
+                                      {/* Botón único para View Map */}
+                                      <button
+                                        onClick={() => openInGoogleMaps(shippingInfo.address, shippingInfo.city)}
+                                        className="w-full flex items-center justify-center px-4 py-2.5 text-sm font-medium text-indigo-700 bg-white border border-indigo-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition-all duration-200"
+                                      >
+                                        <Navigation className="h-4 w-4 mr-2" />
+                                        View on Map
+                                      </button>
                                       
                                       <div className="mt-4 pt-4 border-t border-gray-200">
                                         <div className="flex items-center justify-between">

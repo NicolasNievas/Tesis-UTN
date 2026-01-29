@@ -65,10 +65,10 @@ const Navbar = () => {
       <div id='navbar-container' className="mx-auto px-6 flex justify-between items-center">
         <Link href="/" onClick={handleLinkClick}>
           <Image 
-            src='/logo.png'
+            src='/logo2.png'
             width={105}
             height={15}
-            alt='logo'
+            alt='logo2'
           />
         </Link>
 

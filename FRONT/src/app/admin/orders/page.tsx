@@ -487,8 +487,7 @@ const AdminOrders = () => {
                     isOpen={isShipmentModalOpen}
                     onClose={handleCloseShipmentModal}
                     onShipmentCreated={() => {
-                        // Puedes añadir lógica adicional aquí si necesitas
-                        loadOrders(); // Recargar órdenes
+                        loadOrders();
                     }}
                 />
             )}
