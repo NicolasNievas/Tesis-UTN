@@ -81,14 +81,20 @@ const UserOrders = () => {
     const getStatusStyles = (status: string) => {
         const baseStyles = "px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5";
         switch (status) {
-            case 'COMPLETED':
+            case 'PAID':
+                return `${baseStyles} bg-blue-100 text-blue-800 border border-blue-200`;
+            case 'PROCESSING':
+                return `${baseStyles} bg-purple-100 text-purple-800 border border-purple-200`;
+            case 'SHIPPED':
+                return `${baseStyles} bg-yellow-100 text-yellow-800 border border-yellow-200`;
+            case 'DELIVERED':
                 return `${baseStyles} bg-green-100 text-green-800 border border-green-200`;
             case 'PENDING':
                 return `${baseStyles} bg-yellow-100 text-yellow-800 border border-yellow-200`;
-            case 'IN_PROCESS':
-                return `${baseStyles} bg-blue-100 text-blue-800 border border-blue-200`;
             case 'CANCELLED':
                 return `${baseStyles} bg-red-100 text-red-800 border border-red-200`;
+            case 'COMPLETED':
+                return `${baseStyles} bg-green-100 text-green-800 border border-green-200`;
             default:
                 return `${baseStyles} bg-gray-100 text-gray-800 border border-gray-200`;
         }
@@ -96,12 +102,17 @@ const UserOrders = () => {
 
     const getStatusIcon = (status: string) => {
         switch (status) {
+            case 'PAID':
+                return <DollarSign className="w-3.5 h-3.5" />;
+            case 'PROCESSING':
+                return <RefreshCw className="w-3.5 h-3.5" />;
+            case 'SHIPPED':
+                return <Truck className="w-3.5 h-3.5" />;
+            case 'DELIVERED':
             case 'COMPLETED':
                 return <CheckCircle className="w-3.5 h-3.5" />;
             case 'PENDING':
                 return <Clock className="w-3.5 h-3.5" />;
-            case 'IN_PROCESS':
-                return <RefreshCw className="w-3.5 h-3.5" />;
             case 'CANCELLED':
                 return <AlertCircle className="w-3.5 h-3.5" />;
             default:
@@ -257,8 +268,10 @@ const UserOrders = () => {
                                 >
                                     <option value="all">All Orders</option>
                                     <option value="pending">Pending</option>
-                                    <option value="in_process">In Process</option>
-                                    <option value="completed">Completed</option>
+                                    <option value="paid">Paid</option>
+                                    <option value="processing">Processing</option>
+                                    <option value="shipped">Shipped</option>
+                                    <option value="delivered">Delivered</option>
                                     <option value="cancelled">Cancelled</option>
                                 </select>
                             </div>
@@ -577,7 +590,7 @@ const UserOrders = () => {
                                             )}
 
                                             {/* Reorder Button */}
-                                            {order.status === 'COMPLETED' && (
+                                            {(order.status === 'DELIVERED' || order.status === 'COMPLETED') && (
                                                 <div className="bg-white rounded-xl p-5 border border-green-100 shadow-sm">
                                                     <div className="text-center">
                                                         <div className="mb-4">
