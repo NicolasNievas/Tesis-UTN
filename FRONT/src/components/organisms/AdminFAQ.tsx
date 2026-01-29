@@ -15,7 +15,7 @@ const allowMultiple = false;
 type FAQItem = {
   id: string;
   title: string;
-  icon?: any;
+  icon?: React.ComponentType<{ size?: number | string }>;
   points: Array<{ text: string; href?: string }>;
 };
 

@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }: IDataProvideProps) => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [cart, setCart] = useState<Cart | null>(null);
   const [cartLoading, setCartLoading] = useState(false);
-  const [cartError, setCartError] = useState<string | null>(null);
+  const [cartError, _setCartError] = useState<string | null>(null);
 
   useEffect(() => {
     const initializeAuth = async () => {

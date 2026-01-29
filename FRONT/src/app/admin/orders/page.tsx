@@ -186,24 +186,6 @@ const AdminOrders = () => {
         return canCreate;
     };
 
-    const canViewShipment = (order: OrderResponse) => {
-        // Puede ver/actualizar envío si existe
-        return order.shipmentInfo?.hasShipment;
-    };
-
-    const getShipmentButtonText = (order: OrderResponse) => {
-        if (!order.shipmentInfo?.hasShipment) {
-            return 'Create Shipment';
-        }
-        
-        // Texto según el estado del envío
-        const shipmentStatus = order.shipmentInfo.shipmentStatus;
-        if (shipmentStatus === 'DELIVERED' || shipmentStatus === 'CANCELLED') {
-            return 'View Shipment';
-        }
-        return 'Update Shipment';
-    };
-
     const handleOpenShipmentModal = (orderId: number) => {
         setSelectedOrderForShipment(orderId);
         setIsShipmentModalOpen(true);
@@ -212,7 +194,7 @@ const AdminOrders = () => {
     const handleCloseShipmentModal = () => {
         setIsShipmentModalOpen(false);
         setSelectedOrderForShipment(null);
-        loadOrders(); // Recargar órdenes para actualizar la info de envíos
+        loadOrders();
     };
 
     if (loading) {
