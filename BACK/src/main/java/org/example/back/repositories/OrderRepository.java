@@ -49,6 +49,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
         JOIN o.paymentMethod pm 
         JOIN o.details od 
         WHERE o.date BETWEEN :startDate AND :endDate 
+        AND o.status NOT IN ('CANCELLED', 'PENDING')
         GROUP BY pm.displayName
         ORDER BY totalSales DESC
     """)
@@ -66,6 +67,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
         JOIN od.product p 
         JOIN od.order o 
         WHERE o.date BETWEEN :startDate AND :endDate 
+        AND o.status NOT IN ('CANCELLED', 'PENDING')
         GROUP BY p.name 
         ORDER BY totalQuantity DESC
     """)
@@ -81,7 +83,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
         SELECT COALESCE(SUM(o.subtotal + COALESCE(o.shippingCost, 0)), 0)
         FROM OrderEntity o
         WHERE o.customer.id = :customerId
-        AND o.status != 'CANCELLED'
+        AND o.status NOT IN ('CANCELLED', 'PENDING')
     """)
     BigDecimal getTotalSpentByCustomer(@Param("customerId") Long customerId);
 

@@ -23,6 +23,7 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
         FROM orders o
         JOIN order_details od ON o.id = od.order_id
         WHERE o.date BETWEEN :startDate AND :endDate
+        AND o.status NOT IN ('CANCELLED', 'PENDING')
         GROUP BY period
         ORDER BY period DESC
         """, nativeQuery = true)
@@ -43,6 +44,7 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
             MIN(o.subtotal + COALESCE(o.shippingCost, 0)) as minTicket
         FROM OrderEntity o
         WHERE o.date BETWEEN :startDate AND :endDate
+        AND o.status NOT IN ('CANCELLED', 'PENDING')
     """)
     List<Object[]> getOrderStatistics(
             @Param("startDate") LocalDateTime startDate,
@@ -67,6 +69,7 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
         FROM OrderEntity o
         JOIN o.customer u
         WHERE o.date BETWEEN :startDate AND :endDate
+        AND o.status NOT IN ('CANCELLED', 'PENDING')
         GROUP BY u.id, u.firstName, u.lastName, u.email, u.city
         ORDER BY totalSpent DESC
     """)
@@ -86,7 +89,7 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
             SUM(o.subtotal + COALESCE(o.shippingCost, 0)) as totalSpent
         FROM OrderEntity o
         JOIN o.customer u
-        WHERE o.status = 'COMPLETED'
+        WHERE o.status = 'DELIVERED'
         GROUP BY u.id, u.firstName, u.lastName
         ORDER BY totalSpent DESC
         LIMIT :limit
@@ -128,7 +131,7 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
             FROM order_details od
             JOIN orders o ON od.order_id = o.id
             WHERE o.date BETWEEN :startDate AND :endDate
-            AND o.status = 'COMPLETED'
+            AND o.status = 'DELIVERED'
             GROUP BY od.product_id
         ) sales ON p.id = sales.product_id
         WHERE p.active = true
@@ -149,37 +152,34 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
         p.stock,
         p.price,
         (p.stock * p.price) as inventory_value,
-        -- Obtener la última fecha de movimiento (venta O reposición)
         GREATEST(
             (SELECT MAX(o.date) 
              FROM orders o 
              JOIN order_details od ON o.id = od.order_id 
              WHERE od.product_id = p.id 
-             AND o.status = 'COMPLETED'),
+             AND o.status IN ('DELIVERED')),
             (SELECT MAX(r.date) 
              FROM replenishments r 
              WHERE r.product_id = p.id)
         ) as last_movement_date,
-        -- Total vendido desde startDate
         COALESCE(
             (SELECT SUM(od.quantity) 
              FROM order_details od 
              JOIN orders o ON od.order_id = o.id 
              WHERE od.product_id = p.id 
              AND o.date >= :startDate
-             AND o.status = 'COMPLETED'), 
+             AND o.status IN ('DELIVERED')),
             0
         ) as total_sold
     FROM products p
     WHERE p.active = true
-    -- Solo productos que no han tenido ventas desde startDate
     AND NOT EXISTS (
         SELECT 1 
         FROM order_details od 
         JOIN orders o ON od.order_id = o.id 
         WHERE od.product_id = p.id 
         AND o.date >= :startDate
-        AND o.status = 'COMPLETED'
+        AND o.status IN ('DELIVERED')
     )
     ORDER BY last_movement_date ASC NULLS FIRST
     """, nativeQuery = true)
@@ -206,6 +206,7 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
         JOIN p.category c
         JOIN p.brand b
         WHERE o.date BETWEEN :startDate AND :endDate
+        AND o.status NOT IN ('CANCELLED', 'PENDING')
         GROUP BY c.id, c.name, b.name
         ORDER BY totalSales DESC
     """)
@@ -229,6 +230,7 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
         JOIN od.product p
         JOIN p.brand b
         WHERE o.date BETWEEN :startDate AND :endDate
+        AND o.status NOT IN ('CANCELLED', 'PENDING')
         GROUP BY b.id, b.name
         ORDER BY totalSales DESC
     """)
@@ -262,9 +264,12 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
      */
     @Query("""
         SELECT 
-            COUNT(CASE WHEN o.status = 'COMPLETED' THEN 1 END) as completed,
+            COUNT(CASE WHEN o.status IN ('DELIVERED', 'COMPLETED') THEN 1 END) as completed,
             COUNT(CASE WHEN o.status = 'CANCELLED' THEN 1 END) as cancelled,
             COUNT(CASE WHEN o.status = 'PENDING' THEN 1 END) as pending,
+            COUNT(CASE WHEN o.status = 'PAID' THEN 1 END) as paid,
+            COUNT(CASE WHEN o.status = 'PROCESSING' THEN 1 END) as processing,
+            COUNT(CASE WHEN o.status = 'SHIPPED' THEN 1 END) as shipped,
             COUNT(o.id) as total
         FROM OrderEntity o
         WHERE o.date BETWEEN :startDate AND :endDate
@@ -286,6 +291,7 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
     FROM OrderEntity o
     JOIN o.shipping s
     WHERE o.date BETWEEN :startDate AND :endDate
+    AND o.status NOT IN ('CANCELLED', 'PENDING')
     GROUP BY s.displayName, s.name
     ORDER BY orderCount DESC
 """)
@@ -305,6 +311,7 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
         AVG(o.subtotal + COALESCE(o.shipping_cost, 0)) as averageTicket
     FROM orders o
     WHERE o.date BETWEEN :startDate AND :endDate
+    AND o.status NOT IN ('CANCELLED', 'PENDING')
     GROUP BY TO_CHAR(o.date, 'YYYY-MM')
     ORDER BY month
 """, nativeQuery = true)
