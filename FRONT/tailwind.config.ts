@@ -15,7 +15,7 @@ const config: Config = {
         "black": "#2b373d",
         "black-btn": "#171a25",
         "black-hover": "#111827",
-        "blue": "#3b82f6",
+        "brand-blue": "#3b82f6",
         "white": "#fffdf9"
       }
     },

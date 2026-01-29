@@ -5,6 +5,7 @@ import OrderService from '@/services/OrderService';
 import { OrderResponse } from '@/interfaces/data.interfaces';
 import { toast } from 'react-toastify';
 import OrderDetailsModal from '@/components/organisms/OrderDetailsModal';
+import ShipmentModal from '@/components/organisms/ShipmentModal';
 import { Package, Truck, Calendar, Mail, Clock, DollarSign, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, FilterIcon } from 'lucide-react';
 import Line from '@/components/atoms/Line';
 
@@ -15,6 +16,8 @@ const AdminOrders = () => {
     const [selectedOrder, setSelectedOrder] = useState<OrderResponse | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isFilterCollapsed, setIsFilterCollapsed] = useState(true);
+    const [isShipmentModalOpen, setIsShipmentModalOpen] = useState(false);
+    const [selectedOrderForShipment, setSelectedOrderForShipment] = useState<number | null>(null);
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(0);
@@ -27,7 +30,7 @@ const AdminOrders = () => {
     const [endDate, setEndDate] = useState('');
     const [selectedStatus, setSelectedStatus] = useState('');
 
-    const STATUS_OPTIONS = ['ALL', 'PENDING', 'IN_PROCESS', 'COMPLETED', 'CANCELLED'];
+    const STATUS_OPTIONS = ['ALL', 'PENDING', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
 
     useEffect(() => {
         loadOrders();
@@ -141,28 +144,76 @@ const AdminOrders = () => {
     const getStatusStyles = (status: string) => {
         const baseStyles = "px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 w-fit";
         switch (status) {
-            case 'COMPLETED':
+            case 'PAID':
+                return `${baseStyles} bg-blue-100 text-blue-800 border border-blue-200`;
+            case 'PROCESSING':
+                return `${baseStyles} bg-purple-100 text-purple-800 border border-purple-200`;
+            case 'SHIPPED':
+                return `${baseStyles} bg-yellow-100 text-yellow-800 border border-yellow-200`;
+            case 'DELIVERED':
                 return `${baseStyles} bg-green-100 text-green-800 border border-green-200`;
             case 'PENDING':
                 return `${baseStyles} bg-yellow-100 text-yellow-800 border border-yellow-200`;
             case 'CANCELLED':
                 return `${baseStyles} bg-red-100 text-red-800 border border-red-200`;
+            case 'COMPLETED': // Si aún usas COMPLETED para algo
+                return `${baseStyles} bg-green-100 text-green-800 border border-green-200`;
             default:
-                return `${baseStyles} bg-blue-100 text-blue-800 border border-blue-200`;
+                return `${baseStyles} bg-gray-100 text-gray-800 border border-gray-200`;
         }
     };
 
-    const getShippingStatus = (status: string) => {
-        switch (status) {
+    const getShippingStatus = (shippingName: string) => {
+        switch (shippingName) {
             case 'LOCAL_PICKUP':
                 return 'Local Pickup';
-            case 'HOME_DELIVERY':
-                return 'Home Delivery';
+            case 'OCA':
+                return 'OCA';
+            case 'CORREO_ARGENTINO':
+                return 'Correo Argentino';
+            case 'ANDREANI':
+                return 'Andreani';
             default:
-                return 'N/A';
+                return shippingName || 'Not specified';
         }
     };
     
+    const canCreateShipment = (order: OrderResponse) => {
+        const canCreate = (order.status === 'PAID' || order.status === 'PROCESSING') && 
+                     !order.shipmentInfo?.hasShipment &&
+                     order.shippingName !== 'LOCAL_PICKUP';
+
+        return canCreate;
+    };
+
+    const canViewShipment = (order: OrderResponse) => {
+        // Puede ver/actualizar envío si existe
+        return order.shipmentInfo?.hasShipment;
+    };
+
+    const getShipmentButtonText = (order: OrderResponse) => {
+        if (!order.shipmentInfo?.hasShipment) {
+            return 'Create Shipment';
+        }
+        
+        // Texto según el estado del envío
+        const shipmentStatus = order.shipmentInfo.shipmentStatus;
+        if (shipmentStatus === 'DELIVERED' || shipmentStatus === 'CANCELLED') {
+            return 'View Shipment';
+        }
+        return 'Update Shipment';
+    };
+
+    const handleOpenShipmentModal = (orderId: number) => {
+        setSelectedOrderForShipment(orderId);
+        setIsShipmentModalOpen(true);
+    };
+
+    const handleCloseShipmentModal = () => {
+        setIsShipmentModalOpen(false);
+        setSelectedOrderForShipment(null);
+        loadOrders(); // Recargar órdenes para actualizar la info de envíos
+    };
 
     if (loading) {
         return (
@@ -257,7 +308,7 @@ const AdminOrders = () => {
                     <div key={order.id} 
                          className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200 overflow-hidden">
                         <div className="p-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 items-center">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-6 items-center">
                                 {/* Date Column */}
                                 <div className="flex items-center gap-4">
                                     <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0" />
@@ -290,13 +341,70 @@ const AdminOrders = () => {
                                 </div>
 
                                 {/* Shipping */}
-                                <div className="flex items-center gap-4">
+                                {/* <div className="flex items-center gap-4">
                                     <Truck className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                                    <div className="min-w-[120px]">
+                                    <div className="min-w-[140px]">
                                         <div className="text-sm font-medium text-gray-600">Shipping</div>
-                                        <div className="text-gray-900">
+                                        <div className="text-gray-900 font-medium">
                                             {getShippingStatus(order.shippingName)}
                                         </div>
+                                        <div className="text-xs text-gray-500">
+                                            {order.shippingCost === 0 ? 'Free' : `$${order.shippingCost.toFixed(2)}`}
+                                        </div>
+                                    </div>
+                                </div> */}
+
+                                {/* Shipping con tooltip a la derecha */}
+                                <div className="flex items-center gap-4">
+                                    <div className="relative group">
+                                        <div className="flex items-center gap-3 cursor-help">
+                                            <Truck className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                                            <div className="min-w-[140px]">
+                                                <div className="text-sm font-medium text-gray-600">Shipping</div>
+                                                <div className="text-gray-900 font-medium">
+                                                    {getShippingStatus(order.shippingName)}
+                                                </div>
+                                                <div className="text-xs text-gray-500">
+                                                    {order.shippingCost === 0 ? 'Free' : `$${order.shippingCost.toFixed(2)}`}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Tooltip a la derecha */}
+                                        {order.shippingAddress && (
+                                            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                                                <div className="font-semibold mb-1">Shipping Address:</div>
+                                                <div className="mb-1">{order.shippingAddress}</div>
+                                                <div>City: {order.shippingCity}</div>
+                                                {order.shippingPostalCode && (
+                                                    <div>CP: {order.shippingPostalCode}</div>
+                                                )}
+                                                {/* Flecha del tooltip */}
+                                                <div className="absolute top-1/2 -left-2 -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Tracking Info */}
+                                <div className="flex items-center gap-3">
+                                    <div className="min-w-[140px]">
+                                        <div className="text-sm font-medium text-gray-600">Tracking</div>
+                                        {order.shipmentInfo?.trackingCode ? (
+                                            <div className="flex items-center gap-2">
+                                                <Package className="w-4 h-4 text-green-600" />
+                                                <div>
+                                                    <div className="font-mono text-xs font-semibold text-green-600">
+                                                        {order.shipmentInfo.trackingCode}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500">
+                                                        {order.shipmentInfo.shipmentStatus || 'Active'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="text-xs text-gray-400">No shipment</div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -312,15 +420,39 @@ const AdminOrders = () => {
                                 </div>
 
                                 {/* Actions */}
-                                <div className="flex justify-end">
+                                <div className="flex justify-end gap-2">
                                     <button
                                         onClick={() => handleOpenModal(order)}
                                         className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:text-blue-800 
-                                                 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors duration-200"
+                                                bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors duration-200"
                                     >
                                         <Package className="w-4 h-4" />
                                         View Details
                                     </button>
+
+                                    {/* Botón para crear envío */}
+                                    {canCreateShipment(order) && (
+                                        <button
+                                            onClick={() => handleOpenShipmentModal(order.id)}
+                                            className="flex items-center gap-2 px-4 py-2 text-green-600 hover:text-green-800 
+                                                    bg-green-50 hover:bg-green-100 rounded-lg transition-colors duration-200"
+                                        >
+                                            <Truck className="w-4 h-4" />
+                                            Create Shipment
+                                        </button>
+                                    )}
+
+                                    {/* Botón para ver/trackear envío existente */}
+                                    {order.shipmentInfo?.hasShipment && (
+                                        <button
+                                            onClick={() => handleOpenShipmentModal(order.id)}
+                                            className="flex items-center gap-2 px-4 py-2 text-purple-600 hover:text-purple-800 
+                                                    bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors duration-200"
+                                        >
+                                            <Truck className="w-4 h-4" />
+                                            ViewTrack
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -366,6 +498,19 @@ const AdminOrders = () => {
                     onOrderUpdated={handleOrderUpdate}
                 />
             )}
+
+            {selectedOrderForShipment && (
+                <ShipmentModal
+                    orderId={selectedOrderForShipment}
+                    isOpen={isShipmentModalOpen}
+                    onClose={handleCloseShipmentModal}
+                    onShipmentCreated={() => {
+                        // Puedes añadir lógica adicional aquí si necesitas
+                        loadOrders(); // Recargar órdenes
+                    }}
+                />
+            )}
+
         </div>
     );
 };

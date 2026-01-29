@@ -43,10 +43,11 @@ public class SecurityConfig {
                                 .policy("camera=(), microphone=(), geolocation=(), storage-access=()")))
                 .authorizeHttpRequests(authRequest ->
                         authRequest
-                                .requestMatchers("/auth/**","/api/schema/**", "/swagger-ui.html", "/swagger-ui/**",  "/v3/api-docs/**", "/products/**", "/brands/**", "/mail/**").permitAll()
+                                .requestMatchers("/auth/**","/api/schema/**", "/swagger-ui.html", "/swagger-ui/**",  "/v3/api-docs/**", "/products/**", "/brands/**", "/mail/**", "/shipping/methods","/shipping/*/calculate-cost").permitAll()
                                 .requestMatchers("/admin/**").hasRole("ADMINISTRATOR")
                                 .requestMatchers("/replenishment/**" , "/provider/**"  , "/purchase-orders/**").hasRole("ADMINISTRATOR")
                                 .requestMatchers("/cart/**").authenticated()
+                                .requestMatchers("/shipping/**").authenticated()
                                 .requestMatchers("/webhook").permitAll()
                                 .requestMatchers("/webhook/swagger-config").permitAll()
                                 .requestMatchers("/orders/**").authenticated()

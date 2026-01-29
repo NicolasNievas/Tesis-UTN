@@ -25,3 +25,4 @@ const Button = ({ name, onClick, className, isDisabled=false, isLoading }: IButt
 }
 
 export default Button;
+

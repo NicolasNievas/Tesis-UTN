@@ -139,12 +139,18 @@ export interface OrderResponse {
   paymentId: string;
   mercadoPagoOrderId: string;
   date: number[] | string; 
-  status: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCELLED';
+  status: 'PENDING' | 'PAID' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'COMPLETED'  | 'CANCELLED';
   paymentMethodName: string;
   shippingName: string;
-  customer: CustomerInfo;
+  subtotal: number;
+  shippingCost: number;
   total: number;
+  customer: CustomerInfo;
   details: OrderDetailResponse[];
+  shippingAddress: string;
+  shippingCity: string;
+  shippingPostalCode: string;
+  shipmentInfo?: shipmentInfo;
 }
 
 export interface OrderDetailResponse {
@@ -192,6 +198,116 @@ export interface TopProductReport {
   productName: string;
   totalQuantity: number;
   totalSales: number;
+}
+
+export interface SalesByPeriodReport {
+  period: string;
+  totalSales: number;
+  orderCount: number;
+}
+
+export interface CustomerStatistics {
+  customerId: number;
+  customerName: string;
+  email: string;
+  totalOrders: number;
+  totalSpent: number;
+  averageOrderValue: number;
+  lastPurchaseDate: string;
+}
+
+export interface TopCustomer {
+  customerId: number;
+  customerName: string;
+  customerEmail: string;
+  totalSpent: number;
+  totalOrders: number;
+}
+
+export interface InventoryReport {
+  productId: number;
+  productName: string;
+  currentStock: number;
+  price: number;
+  inventoryValue: number;
+  totalSold: number;
+  totalRevenue: number;
+  stockStatus: string;
+  turnoverRate: number;
+}
+
+export interface OrderStatistics {
+  totalOrders: number;
+  averageTicket: number;
+  maxTicket: number;
+  minTicket: number;
+}
+
+export interface OrdersByStatus {
+  status: string;
+  orderCount: number;
+  totalAmount: number;
+}
+
+export interface ConversionRate {
+  completed: number;
+  cancelled: number;
+  pending: number;
+  total: number;
+  completionRate: number;
+  cancellationRate: number;
+}
+
+export interface SalesByBrand {
+  brandId: number;
+  brandName: string;
+  itemsSold: number;
+  totalQuantity: number;
+  totalSales: number;
+}
+
+export interface SalesByCategory {
+  categoryId: number;
+  categoryName: string;
+  brandName: string;
+  itemsSold: number;
+  totalQuantity: number;
+  totalSales: number;
+}
+
+export interface ProductsWithoutMovement {
+  productId: number;
+  productName: string;
+  stock: number;
+  price: number;
+  inventoryValue: number;
+  lastMovementDate: string | null;
+}
+
+export interface ShippingMethodReport {
+  shippingMethod: string;
+  orderCount: number;
+  totalSales: number;
+  averageShippingCost: number;
+}
+
+
+export interface MonthlySalesTrend {
+  month: string;
+  totalSales: number;
+  orderCount: number;
+  averageTicket: number;
+}
+
+export interface ProductPerformanceReport {
+  productId: number;
+  productName: string;
+  categoryName: string;
+  brandName: string;
+  totalSold: number;
+  totalRevenue: number;
+  averageRating?: number;
+  returnRate?: number;
 }
 
 //Purchase interfaces
@@ -268,3 +384,119 @@ export type ProviderRequest = {
   phone: string;
   street: string;
 };
+
+// Checkout interfaces
+
+export interface ShippingMethod {
+  id: number;
+  name: string;
+  displayName: string;
+  baseCost: number;
+  description: string;
+  estimatedDays: number;
+  requiresPostalCode: boolean;
+}
+
+export interface ShippingAddress {
+  address: string;
+  city: string;
+  postalCode: string;
+}
+
+export interface CartItem {
+  id: number;
+  productId: number;
+  productName: string;
+  imageUrls: string[];
+  price: number;
+  quantity: number;
+  subtotal: number;
+  availableStock: number;
+}
+
+export interface CheckoutData {
+  cart: {
+    id: number;
+    userId: number;
+    items: CartItem[];
+    subtotal: number;
+    shippingCost: number;
+    total: number;
+    selectedShippingId: number | null;
+    selectedShipping: ShippingMethod | null;
+    shippingAddress: ShippingAddress | null;
+  };
+  availableShippingMethods: ShippingMethod[];
+  subtotal: number;
+  shippingCost: number;
+  total: number;
+  shippingAddress: ShippingAddress | null;
+}
+
+export interface UpdateShippingRequest {
+  shippingMethodId?: number;
+  address?: string;
+  city?: string;
+  postalCode?: string;
+}
+
+// Shipment interfaces
+
+export interface ShipmentResponse {
+    id: number;
+    orderId: number;
+    trackingCode: string;
+    status: ShipmentStatus;
+    carrier: string;
+    createdAt: string;
+    shippedAt?: string;
+    estimatedDeliveryDate?: string;
+    deliveredAt?: string;
+    recipientName: string;
+    recipientAddress: string;
+    recipientCity: string;
+    recipientPostalCode: string;
+    recipientPhone: string;
+    notes?: string;
+    trackingHistory: TrackingEntry[];
+}
+
+export interface TrackingEntry {
+    id: number;
+    status: ShipmentStatus;
+    timestamp: string;
+    location: string;
+    description: string;
+}
+
+export enum ShipmentStatus {
+    PENDING = 'PENDING',
+    PROCESSING = 'PROCESSING',
+    READY_FOR_PICKUP = 'READY_FOR_PICKUP',
+    IN_TRANSIT = 'IN_TRANSIT',
+    OUT_FOR_DELIVERY = 'OUT_FOR_DELIVERY',
+    DELIVERED = 'DELIVERED',
+    FAILED_DELIVERY = 'FAILED_DELIVERY',
+    RETURNED = 'RETURNED',
+    CANCELLED = 'CANCELLED'
+}
+
+export interface CreateShipmentRequest {
+    orderId: number;
+    notes?: string;
+}
+
+export interface UpdateShipmentStatusRequest {
+    status: ShipmentStatus;
+    location?: string;
+    description?: string;
+}
+
+export interface shipmentInfo{
+  shipmentId: number;
+  trackingCode?: string;
+  shipmentStatus: ShipmentStatus;
+  estimatedDeliveryDate?: string;
+  deliveredAt: string;
+  hasShipment: boolean;
+}

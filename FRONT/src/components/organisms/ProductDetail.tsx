@@ -21,10 +21,27 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, brand, category 
   const checkProductInCart = (productId: number) => {
     return cart?.items?.some(item => item.productId === productId) ?? false;
   };
+
+  const hasStock = product.stock > 0;
+  const isInCart = checkProductInCart(product.id);
+
+  const getButtonText = () => {
+    if (cartLoading) return "Adding to cart...";
+    if (!hasStock) return "Out of stock";
+    if (isInCart) return "Product in cart";
+    return "Add to cart";
+  };
   
+  const isButtonDisabled = cartLoading || isInCart || !hasStock;
+
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
       router.push('/account');
+      return;
+    }
+
+    if (!hasStock) {
+      toast.warning('This product is out of stock');
       return;
     }
 
@@ -32,7 +49,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, brand, category 
       await addToCart(product.id);
     } catch (error) {
       console.log(error);
-      toast.error('Error adding to cart');
     }
   };
 
@@ -50,9 +66,18 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, brand, category 
             <p className="text-gray-700 mb-4">{product.description}</p>
             {/* Información adicional */}
             <div className="product-info space-y-4">
-              <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+              <div className={`flex justify-between items-center border-b pb-2 ${
+                product.stock === 0 ? 'border-red-200' : 
+                product.stock < 10 ? 'border-yellow-200' : 'border-green-200'
+              }`}>
                 <h3 className="text-lg font-bold">Stock:</h3>
-                <span className="text-gray-500 font-normal">{product.stock}</span>
+                <span className={`font-semibold ${
+                  product.stock === 0 ? 'text-red-600' : 
+                  product.stock < 10 ? 'text-yellow-600' : 'text-green-600'
+                }`}>
+                  {product.stock} {product.stock === 0 ? '(Out of stock)' : 
+                  product.stock < 10 ? '(Low stock)' : '(In stock)'}
+                </span>
               </div>
               <div className="flex justify-between items-center border-b border-gray-200 pb-2">
                 <h3 className="text-lg font-bold">Brand:</h3>
@@ -72,9 +97,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, brand, category 
             </div>
             <Button
               className="w-full h-2/3 mt-4 bg-black-btn hover:bg-black-hover hover:text-white text-xl font-medium text-gray-bg-light"
-              name={cartLoading ? "Adding to cart..." :  checkProductInCart(product.id) ? "Product in cart" : "Add to cart"}
+              name={getButtonText()}
               onClick={handleAddToCart}
-              isDisabled={cartLoading || checkProductInCart(product.id)}
+              isDisabled={isButtonDisabled}
             />
           </div>
         </div>

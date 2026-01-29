@@ -139,43 +139,50 @@ export const AuthProvider = ({ children }: IDataProvideProps) => {
   };
 
   const addToCart = async (productId: number) => {
-    if (!isAuthenticated) {
-      toast.error('You must be logged in to add products to the cart');
+  if (!isAuthenticated) {
+    toast.error('You must be logged in to add products to the cart');
+    return;
+  }
+
+  try {
+    setCartLoading(true);
+
+    // Verificar si el carrito existe
+    if (!cart) {
+      await getCart();
+    }
+
+    if (cart?.items?.some(item => item.productId === productId)) {
+      toast.info('This product is already in your cart');
       return;
     }
-  
-    try {
-      setCartLoading(true);
-  
-      // Verificar si el carrito existe
-      if (!cart) {
-        await getCart();
-      }
-  
-      if (cart?.items?.some(item => item.productId === productId)) {
-        toast.info('This product is already in your cart')
-        return;
-      }
-  
-      const updatedCart = await CartService.addToCart(productId);
-      setCart(updatedCart);
-      toast.success('Product added to cart');
-    } catch (error: any) {
-      console.error('Error adding to cart:', error);
-      if (error.status === 403) {
-        toast.warning('You are not authorized to add products to the cart.');
-      } else if (error.response?.data?.message?.includes('Producto ya agregado al carrito')) {
-        toast.info('This product is already in your cart. To add more quantity, use the update method.');
-      } else if(error.message === 'Stock insuficiente'){
-        toast.info('No stock available');
-      } else {
-        setCartError('Error adding to cart');
-        toast.error('Error adding to cart');
-      }
-    } finally {
-      setCartLoading(false);
+
+    const updatedCart = await CartService.addToCart(productId);
+    setCart(updatedCart);
+    toast.success('Product added to cart');
+  } catch (error: any) {
+    console.error('Error adding to cart:', error);
+    
+    // Manejo específico de errores
+    if (error.message === 'INSUFFICIENT_STOCK') {
+      toast.warning('Out of stock. This product is not available at the moment.');
+    } 
+    else if (error.message === 'PRODUCT_ALREADY_IN_CART') {
+      toast.info('This product is already in your cart');
     }
-  };
+    else if (error.message.includes('Stock insuficiente')) {
+      toast.warning('Insufficient stock. This product is not available at the moment.');
+    }
+    else if (error.status === 403 || error.response?.status === 403) {
+      toast.warning('You are not authorized to add products to the cart.');
+    }
+    else {
+      toast.error('Error adding to cart. Please try again.');
+    }
+  } finally {
+    setCartLoading(false);
+  }
+};
 
   const updateCartItem = async (productId: number, quantity: number) => {
     if (!isAuthenticated) {

@@ -4,7 +4,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.example.back.dtos.CartDTO;
+import org.example.back.dtos.CheckoutDTO;
+import org.example.back.dtos.request.UpdateShippingRequest;
 import org.example.back.services.CartService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,5 +59,45 @@ public class CartController {
     public ResponseEntity<Void> clearCart(@RequestParam("email") String email) {
         cartService.clearCart(email);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/shipping")
+    @Operation(summary = "Actualizar información de envío",
+            description = "Actualiza el método de envío y/o la dirección de entrega")
+    @ApiResponse(responseCode = "200", description = "Información de envío actualizada exitosamente")
+    @ApiResponse(responseCode = "401", description = "No autorizado")
+    @ApiResponse(responseCode = "400", description = "Datos inválidos")
+    public ResponseEntity<CartDTO> updateShippingInfo(@RequestBody UpdateShippingRequest request) {
+        try {
+            return ResponseEntity.ok(cartService.updateShippingInfo(request));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/checkout")
+    @Operation(summary = "Obtener información de checkout",
+            description = "Obtiene toda la información necesaria para el proceso de checkout incluyendo métodos de envío disponibles")
+    @ApiResponse(responseCode = "200", description = "Información de checkout obtenida exitosamente")
+    @ApiResponse(responseCode = "401", description = "No autorizado")
+    public ResponseEntity<CheckoutDTO> getCheckoutInfo() {
+        return ResponseEntity.ok(cartService.getCheckoutInfo());
+    }
+
+    @PostMapping("/reorder/{orderId}")
+    @Operation(summary = "Reordenar desde una orden previa",
+            description = "Permite reordenar los productos de una orden previa agregándolos al carrito actual")
+    @ApiResponse(responseCode = "200", description = "Productos reordenados exitosamente")
+    @ApiResponse(responseCode = "401", description = "No autorizado")
+    public ResponseEntity<CartDTO> reorderFromOrder(@PathVariable Long orderId) {
+        try{
+            return ResponseEntity.ok(cartService.reorderFromOrder(orderId));
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("Stock insuficiente")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(null);
+            }
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

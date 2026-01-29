@@ -3,17 +3,11 @@ package org.example.back.services.imp;
 import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
 import lombok.RequiredArgsConstructor;
-import org.example.back.dtos.CartDTO;
-import org.example.back.dtos.CartItemDTO;
-import org.example.back.dtos.UserDTO;
-import org.example.back.entities.CartEntity;
-import org.example.back.entities.CartItemEntity;
-import org.example.back.entities.ProductEntity;
-import org.example.back.entities.UserEntity;
+import org.example.back.dtos.*;
+import org.example.back.dtos.request.UpdateShippingRequest;
+import org.example.back.entities.*;
 import org.example.back.models.User;
-import org.example.back.repositories.CartRepository;
-import org.example.back.repositories.ProductRepository;
-import org.example.back.repositories.UserRepository;
+import org.example.back.repositories.*;
 import org.example.back.services.CartService;
 import org.example.back.services.MercadoPagoService;
 import org.example.back.services.UserService;
@@ -22,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +31,9 @@ public class CartServiceImp implements CartService {
     private final ProductRepository productRepository;
     private final UserService userService;
     private final MercadoPagoService mercadoPagoService;
+    private final ShippingService shippingService;
+    private final ShippingRepository shippingRepository;
+    private final OrderRepository orderRepository;
     @Override
     @Transactional
     public CartDTO getCartByUser() {
@@ -157,13 +155,172 @@ public class CartServiceImp implements CartService {
         CartEntity cart = cartRepository.findByUserId(currentUser.getId())
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
 
+        if (cart.getSelectedShipping() == null) {
+            throw new RuntimeException("Debe seleccionar un método de envío");
+        }
+
         List<CartItemDTO> items = cart.getItems().stream()
                 .map(this::convertToCartItemDTO)
                 .collect(Collectors.toList());
 
         UserDTO userDTO = convertToUserDTO(currentUser);
 
-        return mercadoPagoService.createPreference(items, userDTO);
+        // Calcular costo de envío
+        BigDecimal shippingCost = shippingService.calculateShippingCost(
+                cart.getSelectedShipping().getId(),
+                cart.getShippingPostalCode()
+        );
+
+        ShippingDTO shippingDTO = ShippingDTO.builder()
+                .id(cart.getSelectedShipping().getId())
+                .name(cart.getSelectedShipping().getName())
+                .displayName(cart.getSelectedShipping().getDisplayName())
+                .baseCost(shippingCost)
+                .build();
+
+        return mercadoPagoService.createPreference(items, userDTO, shippingCost, shippingDTO.getName());
+    }
+
+    @Override
+    @Transactional
+    public CartDTO updateShippingInfo(UpdateShippingRequest request) {
+        User currentUser = userService.getCurrentUser();
+        CartEntity cart = cartRepository.findByUserId(currentUser.getId())
+                .orElseThrow(() -> new RuntimeException("Carrito no encontrado"));
+
+        // Actualizar método de envío
+        if (request.getShippingMethodId() != null) {
+            ShippingEntity shipping = shippingRepository.findById(request.getShippingMethodId())
+                    .orElseThrow(() -> new RuntimeException("Método de envío no encontrado"));
+            cart.setSelectedShipping(shipping);
+        }
+
+        // Actualizar dirección de envío
+        if (request.getAddress() != null) {
+            cart.setShippingAddress(request.getAddress());
+        }
+        if (request.getCity() != null) {
+            cart.setShippingCity(request.getCity());
+        }
+        if (request.getPostalCode() != null) {
+            cart.setShippingPostalCode(request.getPostalCode());
+        }
+
+        cart.setUpdatedAt(LocalDateTime.now());
+        cart = cartRepository.save(cart);
+
+        return convertToDTO(cart);
+    }
+
+    @Override
+    @Transactional
+    public CheckoutDTO getCheckoutInfo() {
+        User currentUser = userService.getCurrentUser();
+        UserEntity userEntity = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        CartEntity cart = cartRepository.findByUserId(currentUser.getId())
+                .orElseThrow(() -> new RuntimeException("Carrito no encontrado"));
+
+        // Si el carrito no tiene dirección, usar la del usuario
+        if (cart.getShippingAddress() == null) {
+            cart.setShippingAddress(userEntity.getAddress());
+            cart.setShippingCity(userEntity.getCity());
+            // Aquí podrías agregar lógica para el código postal si lo tienes en UserEntity
+        }
+
+        CartDTO cartDTO = convertToDTO(cart);
+        List<ShippingDTO> shippingMethods = shippingService.getAllActiveShippingMethods();
+        if (shippingMethods == null) {
+            shippingMethods = new ArrayList<>(); // Lista vacía en lugar de null
+        }
+
+        BigDecimal subtotal = cartDTO.getSubtotal();
+        BigDecimal shippingCost = BigDecimal.ZERO;
+
+        if (cart.getSelectedShipping() != null) {
+            shippingCost = shippingService.calculateShippingCost(
+                    cart.getSelectedShipping().getId(),
+                    cart.getShippingPostalCode()
+            );
+        }
+
+        BigDecimal total = subtotal.add(shippingCost);
+
+        ShippingAddressDTO addressDTO = ShippingAddressDTO.builder()
+                .address(cart.getShippingAddress())
+                .city(cart.getShippingCity())
+                .postalCode(cart.getShippingPostalCode())
+                .build();
+
+        return CheckoutDTO.builder()
+                .cart(cartDTO)
+                .availableShippingMethods(shippingMethods)
+                .subtotal(subtotal)
+                .shippingCost(shippingCost)
+                .total(total)
+                .shippingAddress(addressDTO)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public CartDTO reorderFromOrder(Long orderId) {
+        User currentUser = userService.getCurrentUser();
+
+        // Busca la orden
+        OrderEntity order = orderRepository.findByIdAndUserId(orderId, currentUser.getId())
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+
+        // Limpiar el carrito actual
+        CartEntity cart = cartRepository.findByUserId(currentUser.getId())
+                .orElseGet(() -> {
+                    CartEntity newCart = new CartEntity();
+                    UserEntity userEntity = userRepository.findById(currentUser.getId())
+                            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                    newCart.setUser(userEntity);
+                    newCart.setCreatedAt(LocalDateTime.now());
+                    return cartRepository.save(newCart);
+                });
+
+        // Limpiar items actuales del carrito
+        cart.getItems().clear();
+
+        // Agregar items de la orden anterior
+        for (OrderDetailEntity detail : order.getDetails()) {
+            // Verificar stock
+            Integer currentStock = getCurrentStock(detail.getProduct().getId());
+            if (currentStock < detail.getQuantity()) {
+                throw new RuntimeException("Stock insuficiente para " + detail.getProduct().getName() +
+                        ". Disponible: " + currentStock + ", Solicitado: " + detail.getQuantity());
+            }
+
+            CartItemEntity newItem = new CartItemEntity();
+            newItem.setCart(cart);
+            newItem.setProduct(detail.getProduct());
+            newItem.setQuantity(detail.getQuantity());
+            cart.getItems().add(newItem);
+        }
+
+        cart.setUpdatedAt(LocalDateTime.now());
+        cart = cartRepository.save(cart);
+
+        return convertToDTO(cart);
+    }
+
+    private CartEntity createNewCart(User user) {
+        UserEntity userEntity = userRepository.findById(user.getId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        CartEntity newCart = new CartEntity();
+        newCart.setUser(userEntity);
+        newCart.setCreatedAt(LocalDateTime.now());
+
+        // Inicializar dirección con la del usuario
+        newCart.setShippingAddress(userEntity.getAddress());
+        newCart.setShippingCity(userEntity.getCity());
+
+        return cartRepository.save(newCart);
     }
 
     private UserDTO convertToUserDTO(User user) {
@@ -206,15 +363,52 @@ public class CartServiceImp implements CartService {
                 })
                 .collect(Collectors.toList());
 
-        BigDecimal total = itemDTOs.stream()
+        BigDecimal subtotal = itemDTOs.stream()
                 .map(CartItemDTO::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal shippingCost = BigDecimal.ZERO;
+        ShippingDTO shippingDTO = null;
+
+        if (cart.getSelectedShipping() != null) {
+            shippingCost = shippingService.calculateShippingCost(
+                    cart.getSelectedShipping().getId(),
+                    cart.getShippingPostalCode()
+            );
+
+            shippingDTO = ShippingDTO.builder()
+                    .id(cart.getSelectedShipping().getId())
+                    .name(cart.getSelectedShipping().getName())
+                    .displayName(cart.getSelectedShipping().getDisplayName())
+                    .baseCost(cart.getSelectedShipping().getBaseCost())
+                    .description(cart.getSelectedShipping().getDescription())
+                    .estimatedDays(cart.getSelectedShipping().getEstimatedDays())
+                    .build();
+        }
+
+        BigDecimal total = subtotal.add(shippingCost);
+
+        ShippingAddressDTO addressDTO = null;
+        if (cart.getShippingAddress() != null) {
+            addressDTO = ShippingAddressDTO.builder()
+                    .address(cart.getShippingAddress())
+                    .city(cart.getShippingCity())
+                    .postalCode(cart.getShippingPostalCode())
+                    .build();
+        }
 
         return CartDTO.builder()
                 .id(cart.getId())
                 .userId(cart.getUser().getId())
                 .items(itemDTOs)
+                .subtotal(subtotal)
+                .shippingCost(shippingCost)
                 .total(total)
+                .selectedShippingId(cart.getSelectedShipping() != null
+                        ? cart.getSelectedShipping().getId()
+                        : null)
+                .selectedShipping(shippingDTO)
+                .shippingAddress(addressDTO)
                 .build();
     }
 

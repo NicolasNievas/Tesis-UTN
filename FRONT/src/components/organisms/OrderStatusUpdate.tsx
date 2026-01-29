@@ -15,7 +15,7 @@ const OrderStatusUpdate = ({ order, onStatusUpdated }: OrderStatusUpdateProps) =
   const [selectedStatus, setSelectedStatus] = useState(order.status);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const statuses = ['PENDING', 'IN_PROCESS', 'COMPLETED', 'CANCELLED'] as const;
+  const statuses = ['PENDING', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'COMPLETED', 'CANCELLED'] as const;
 
   const handleStatusUpdate = async () => {
     if (selectedStatus === order.status) {

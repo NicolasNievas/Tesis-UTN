@@ -3,6 +3,7 @@ package org.example.back.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.example.back.dtos.UserOrderStatisticsDTO;
 import org.example.back.dtos.response.PageResponse;
 import org.example.back.dtos.response.OrderResponse;
 import org.example.back.enums.OrderStatus;
@@ -74,5 +75,15 @@ public class OrderController {
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/orders/statistics")
+    @Operation(summary = "Get order statistics",
+            description = "Retrieves order statistics including total orders, total spent, and orders by status.")
+    @ApiResponse(responseCode = "200", description = "Order statistics retrieved successfully")
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    public ResponseEntity<UserOrderStatisticsDTO> getOrderStatistics(){
+        UserOrderStatisticsDTO statistics = orderService.getUserOrderStatistics();
+        return ResponseEntity.ok(statistics);
     }
 }

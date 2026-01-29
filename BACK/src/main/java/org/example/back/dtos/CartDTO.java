@@ -13,5 +13,10 @@ public class CartDTO {
     private Long id;
     private Long userId;
     private List<CartItemDTO> items;
+    private BigDecimal subtotal;
+    private BigDecimal shippingCost;
     private BigDecimal total;
+    private Long selectedShippingId;
+    private ShippingDTO selectedShipping;
+    private ShippingAddressDTO shippingAddress;
 }

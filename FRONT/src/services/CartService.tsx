@@ -34,13 +34,24 @@ class CartService {
 
       return response.data;
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) { // Verificamos si es un error de Axios
-        if (error.response?.status === 400 && error.response?.data?.message?.includes('already in cart')) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status;
+        const message = error.response?.data?.message || error.message;
+        
+        // Manejo específico de errores
+        if (status === 400 && message?.includes('already in cart')) {
           throw new Error('PRODUCT_ALREADY_IN_CART');
         }
-        throw new Error(error.message || 'An unknown error occurred');
+        
+        if (status === 500 && (message?.includes('Stock insuficiente') || message?.includes('insufficient stock'))) {
+          throw new Error('INSUFFICIENT_STOCK');
+        }
+        
+        // Manejo genérico de errores HTTP
+        throw new Error(message || 'An unknown error occurred');
       }
-      throw this.handleError(error as AxiosError);
+      
+      throw new Error('Unknown error occurred');
     }
   }
 
@@ -76,6 +87,29 @@ class CartService {
     } catch (error) {
       throw this.handleError(error as AxiosError);
     }
+  }
+
+  static async reorderFromOrder(orderId: number) {
+      try {
+          const token = JWTService.getToken();
+          const response = await axios.post(
+              `${$URL}/reorder/${orderId}`,
+              {},
+              {
+                  headers: {
+                      Authorization: `Bearer ${token}`
+                  }
+              }
+          );
+          
+          if (response.data.token) {
+              JWTService.setToken(response.data.token);
+          }
+          
+          return response.data;
+      } catch (error) {
+          throw this.handleError(error as AxiosError);
+      }
   }
 
   private static handleError(error: AxiosError) {

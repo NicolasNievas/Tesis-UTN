@@ -6,7 +6,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.example.back.enums.OrderStatus;
+import org.hibernate.annotations.Check;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -15,6 +17,7 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Check(constraints = "status IN ('PENDING', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'COMPLETED', 'CANCELLED')")
 public class OrderEntity {
 
     @Id
@@ -49,4 +52,25 @@ public class OrderEntity {
 
     @Column(name = "payment_id")
     private String paymentId;  // Para guardar el ID del pago de MP
+
+    @Column(name = "shipping_cost", precision = 10, scale = 2)
+    private BigDecimal shippingCost;
+
+    @Column(name = "shipping_address")
+    private String shippingAddress;
+
+    @Column(name = "shipping_city")
+    private String shippingCity;
+
+    @Column(name = "shipping_postal_code")
+    private String shippingPostalCode;
+
+    @Column(name = "subtotal", precision = 10, scale = 2)
+    private BigDecimal subtotal;
+
+    @Column(name = "customer_nro_doc")
+    private String customerNroDoc;
+
+    @Column(name = "customer_type_doc")
+    private String customerTypeDoc;
 }

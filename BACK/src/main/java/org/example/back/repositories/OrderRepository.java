@@ -1,6 +1,7 @@
 package org.example.back.repositories;
 
 import org.example.back.entities.OrderEntity;
+import org.example.back.enums.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,8 +9,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
@@ -39,14 +42,16 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
     // Reporte de ventas por método de pago
     @Query("""
-        SELECT pm.name AS paymentMethod, 
+        SELECT pm.displayName AS paymentMethod, 
                COUNT(o.id) AS orderCount, 
-               SUM(od.price * od.quantity) AS totalSales 
+               SUM(od.price * od.quantity + COALESCE(o.shippingCost, 0)) AS totalSales 
         FROM OrderEntity o 
         JOIN o.paymentMethod pm 
         JOIN o.details od 
         WHERE o.date BETWEEN :startDate AND :endDate 
-        GROUP BY pm.name
+        AND o.status NOT IN ('CANCELLED', 'PENDING')
+        GROUP BY pm.displayName
+        ORDER BY totalSales DESC
     """)
     List<Object[]> getPaymentMethodSalesReport(
             @Param("startDate") LocalDateTime startDate,
@@ -62,6 +67,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
         JOIN od.product p 
         JOIN od.order o 
         WHERE o.date BETWEEN :startDate AND :endDate 
+        AND o.status NOT IN ('CANCELLED', 'PENDING')
         GROUP BY p.name 
         ORDER BY totalQuantity DESC
     """)
@@ -69,4 +75,21 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
+    // Contar órdenes por usuario y estado
+    Long countByCustomerIdAndStatus(Long customerId, OrderStatus status);
+
+    // Obtener total gastado por usuario
+    @Query("""
+        SELECT COALESCE(SUM(o.subtotal + COALESCE(o.shippingCost, 0)), 0)
+        FROM OrderEntity o
+        WHERE o.customer.id = :customerId
+        AND o.status NOT IN ('CANCELLED', 'PENDING')
+    """)
+    BigDecimal getTotalSpentByCustomer(@Param("customerId") Long customerId);
+
+    // Contar total de órdenes por usuario
+    Long countByCustomerId(Long customerId);
+
+    @Query("SELECT o FROM OrderEntity o WHERE o.id = :orderId AND o.customer.id = :userId")
+    Optional<OrderEntity> findByIdAndUserId(@Param("orderId") Long orderId, @Param("userId") Long userId);
 }

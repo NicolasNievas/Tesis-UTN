@@ -18,14 +18,18 @@ public class PaymentMethodInitializer implements CommandLineRunner {
         if (paymentMethodRepository.count() == 0) {
             PaymentMethodEntity creditCard = new PaymentMethodEntity();
             creditCard.setName("CREDIT_CARD");
+            creditCard.setDisplayName("Credit Card");
 
             PaymentMethodEntity debitCard = new PaymentMethodEntity();
             debitCard.setName("DEBIT_CARD");
+            debitCard.setDisplayName("Debit Card");
 
             PaymentMethodEntity accountMoney = new PaymentMethodEntity();
             accountMoney.setName("ACCOUNT_MONEY");
+            accountMoney.setDisplayName("Mercado Pago Account");
 
             paymentMethodRepository.saveAll(Arrays.asList(creditCard, debitCard, accountMoney));
+            System.out.println("✓ Payment methods initialized successfully");
         }
     }
 }
