@@ -310,6 +310,22 @@ export interface ProductPerformanceReport {
   returnRate?: number;
 }
 
+export interface MonthlyTrends {
+  month: string;
+  orderCount: number;
+  totalSales: number;
+  averageTicket: number;
+}
+
+export interface TopProductByPeriod {
+  productId: number;
+  productName: string;
+  totalQuantity: number;
+  totalSales: number;
+  period: string;
+  periodType: string;
+}
+
 //Purchase interfaces
 
 export interface ProviderOrderDetail {

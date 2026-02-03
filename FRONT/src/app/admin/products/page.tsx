@@ -187,6 +187,7 @@ const AdminProductsPage: React.FC = () => {
                         </option>
                     ))}
                 </select>
+                
                 <select
                     value={selectedCategory?.toString() || ""}
                     onChange={handleCategoryChange}
@@ -200,22 +201,15 @@ const AdminProductsPage: React.FC = () => {
                         </option>
                     ))}
                 </select>
+                
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="p-2 bg-green-500 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-colors duration-200 shadow-sm"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-plus">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M8 12h8"/>
-                        <path d="M12 8v8"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 5v14M5 12h14"/>
                     </svg>
-                </button>
-                <button onClick={() => setFilterNoStock(!filterNoStock)}
-                className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-filter">
-                        <polygon points="22 3 2 3 10 12.5 10 19 14 21 14 12.5 22 3"/>
-                    </svg>
+                    <span className="font-medium">New Product</span>
                 </button>
             </div>
 
@@ -232,14 +226,80 @@ const AdminProductsPage: React.FC = () => {
                             <th className="py-2">Name</th>
                             <th className="py-2">Price</th>
                             <th className="py-2">Stock</th>
-                            <th className="py-2">Active</th>
+                            <th className="py-2">Status</th>
                             <th className="py-2">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredProducts && filteredProducts.length > 0 ? (
                             filteredProducts.map((product) => (
-                                <ProductListItem key={product.id} product={product} onEdit={openEditModal} onDelete={handleDeleteProduct} onReactive={handleReactivateProduct} />
+                                <tr key={product.id} className="text-center">
+                                    <td className="py-2">
+                                        <img 
+                                            src={product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls[0] : '/placeholder-image.png'}
+                                            alt={product.name} 
+                                            className="w-16 h-16 object-cover mx-auto rounded-md"
+                                        />
+                                    </td>
+                                    <td className="py-2 font-medium">{product.name}</td>
+                                    <td className="py-2">${product.price?.toFixed(2) || '0.00'}</td>
+                                    <td className="py-2">
+                                        <span className={`font-medium ${product.stock <= 0 ? 'text-red-600' : product.stock <= 10 ? 'text-yellow-600' : 'text-green-600'}`}>
+                                            {product.stock}
+                                        </span>
+                                    </td>
+                                    <td className="py-2">
+                                        {product.active ? (
+                                            <span className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 border border-green-200">
+                                                Active
+                                            </span>
+                                        ) : (
+                                            <span className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+                                                Inactive
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td className="py-2">
+                                        <div className="flex justify-center space-x-2">
+                                            {/* Botón Editar */}
+                                            <button 
+                                                onClick={() => openEditModal(product)}
+                                                className="bg-yellow-500 p-2 rounded-md hover:bg-yellow-600 border border-yellow-600 transition-colors"
+                                                title="Edit"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-pencil-square" viewBox="0 0 16 16">
+                                                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                                    <path fillRule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                                                </svg>
+                                            </button>
+
+                                            {/* Condicional: Desactivar o Reactivar */}
+                                            {product.active ? (
+                                                <button 
+                                                    onClick={() => handleDeleteProduct(product.id!)}
+                                                    className="bg-red-500 p-2 rounded-md hover:bg-red-600 border border-red-600 transition-colors"
+                                                    title="Deactivate"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-trash" viewBox="0 0 16 16">
+                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                                                    </svg>
+                                                </button>
+                                            ) : (
+                                                <button 
+                                                    onClick={() => handleReactivateProduct(product.id!)}
+                                                    className="bg-green-500 p-2 rounded-md hover:bg-green-600 border border-green-600 transition-colors"
+                                                    title="Reactivate"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
+                                                        <path fillRule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 1 0-.908-.418A6 6 0 1 0 8 2v1z"/>
+                                                        <path d="M8 1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0v-4A.5.5 0 0 1 8 1z"/>
+                                                    </svg>
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
                             ))
                         ) : (
                             <tr>

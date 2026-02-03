@@ -1,7 +1,41 @@
 import axios from "axios";
-import { ConversionRate, CustomerStatistics, InventoryReport, OrdersByStatus, OrderStatistics, PaymentMethodReport, ProductsWithoutMovement, SalesByBrand, SalesByCategory, SalesByPeriodReport, ShippingMethodReport, TopCustomer, TopProductReport } from "@/interfaces/data.interfaces";
+import { ConversionRate, CustomerStatistics, InventoryReport, MonthlyTrends, OrdersByStatus, OrderStatistics, PaymentMethodReport, ProductsWithoutMovement, SalesByBrand, SalesByCategory, SalesByPeriodReport, ShippingMethodReport, TopCustomer, TopProductByPeriod, TopProductReport } from "@/interfaces/data.interfaces";
 
 const $URL = process.env.NEXT_PUBLIC_API_URL_ADMIN;
+// Función para formatear fechas correctamente - VERSIÓN GARANTIZADA
+const formatDateForApi = (dateString: string | undefined, isEndDate: boolean = false): string => {
+  if (!dateString) return '';
+  
+  // Limpiar la cadena de fecha
+  const cleanDateString = dateString.trim();
+  
+  // Crear objeto Date
+  const date = new Date(cleanDateString);
+  
+  // Si la fecha no es válida, intentar otro formato
+  if (isNaN(date.getTime())) {
+    // Intentar con formato YYYY-MM-DD
+    const [year, month, day] = cleanDateString.split('-');
+    const adjustedDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    
+    if (isEndDate) {
+      adjustedDate.setHours(23, 59, 59, 999);
+      return adjustedDate.toISOString();
+    } else {
+      adjustedDate.setHours(0, 0, 0, 0);
+      return adjustedDate.toISOString();
+    }
+  }
+  
+  // Si la fecha es válida, ajustar horas
+  if (isEndDate) {
+    date.setHours(23, 59, 59, 999);
+  } else {
+    date.setHours(0, 0, 0, 0);
+  }
+  
+  return date.toISOString();
+};
 
 class ReportService {
   static async getPaymentMethodReport(
@@ -216,6 +250,57 @@ class ReportService {
       throw error;
     }
   }
+
+  static async getMonthlyTrendsReport(
+  startDate?: string, 
+  endDate?: string
+): Promise<MonthlyTrends[]> {
+  try {
+    const params = new URLSearchParams();
+    if (startDate) {
+      const startDateTime = new Date(startDate);
+      startDateTime.setHours(0, 0, 0, 0);
+      params.append('startDate', startDateTime.toISOString());
+    }
+    if (endDate) {
+      const endDateTime = new Date(endDate);
+      endDateTime.setHours(23, 59, 59, 999);
+      params.append('endDate', endDateTime.toISOString());
+    }
+    
+    const response = await axios.get(`${$URL}/reports/monthly-trends?${params.toString()}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+static async getTopProductByPeriodReport(
+  period: string = 'day',
+  startDate?: string,
+  endDate?: string
+): Promise<TopProductByPeriod> {
+  try {
+    const params = new URLSearchParams();
+    params.append('period', period);
+    
+    if (startDate) {
+      const startDateTime = new Date(startDate);
+      startDateTime.setHours(0, 0, 0, 0);
+      params.append('startDate', startDateTime.toISOString());
+    }
+    if (endDate) {
+      const endDateTime = new Date(endDate);
+      endDateTime.setHours(23, 59, 59, 999);
+      params.append('endDate', endDateTime.toISOString());
+    }
+    
+    const response = await axios.get(`${$URL}/reports/top-product-period?${params.toString()}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
 }
 
 export default ReportService;

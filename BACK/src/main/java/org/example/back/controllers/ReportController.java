@@ -303,4 +303,68 @@ public class ReportController {
 
         return ResponseEntity.ok(reportService.getShippingMethodReport(startDate, endDate));
     }
+
+    @GetMapping("/reports/monthly-trends")
+    @Operation(
+            summary = "Get monthly sales trends",
+            description = "Get monthly sales trends with average ticket"
+    )
+    @ApiResponse(responseCode = "200", description = "Successful operation")
+    @ApiResponse(responseCode = "403", description = "Unauthorized")
+    @ApiResponse(responseCode = "500", description = "Internal Server Error")
+    public ResponseEntity<List<MonthlyTrendsDTO>> getMonthlyTrends(
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate
+    ) {
+        if (startDate == null) {
+            startDate = LocalDateTime.now().minusMonths(12);
+        }
+        if (endDate == null) {
+            endDate = LocalDateTime.now();
+        }
+
+        return ResponseEntity.ok(reportService.getMonthlyTrends(startDate, endDate));
+    }
+
+    @GetMapping("/reports/top-product-period")
+    @Operation(
+            summary = "Get top product by period",
+            description = "Get the top selling product for a specific period (day/week/month)"
+    )
+    @ApiResponse(responseCode = "200", description = "Successful operation")
+    @ApiResponse(responseCode = "403", description = "Unauthorized")
+    @ApiResponse(responseCode = "500", description = "Internal Server Error")
+    public ResponseEntity<TopProductByPeriodDTO> getTopProductByPeriod(
+            @RequestParam(defaultValue = "day") String period,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate
+    ) {
+        if (!List.of("day", "week", "month").contains(period.toLowerCase())) {
+            throw new IllegalArgumentException("Invalid period. Allowed values are: day, week, month.");
+        }
+
+        if (startDate == null) {
+            switch (period.toLowerCase()) {
+                case "day":
+                    startDate = LocalDateTime.now().minusDays(7);
+                    break;
+                case "week":
+                    startDate = LocalDateTime.now().minusWeeks(4);
+                    break;
+                case "month":
+                    startDate = LocalDateTime.now().minusMonths(12);
+                    break;
+            }
+        }
+
+        if (endDate == null) {
+            endDate = LocalDateTime.now();
+        }
+
+        return ResponseEntity.ok(reportService.getTopProductByPeriod(period, startDate, endDate));
+    }
 }

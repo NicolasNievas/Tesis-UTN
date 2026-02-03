@@ -9,7 +9,9 @@ import {
   RefreshCw, Filter,
   Star,
   RotateCcw,
-  ShoppingBag
+  ShoppingBag,
+  Search,
+  X
 } from 'lucide-react';
 import OrderService from '@/services/OrderService';
 import CartService from '@/services/CartService';
@@ -68,7 +70,7 @@ const UserOrders = () => {
         if (Array.isArray(dateArray)) {
             const [year, month, day] = dateArray;
             const date = new Date(year, month - 1, day);
-            return date.toLocaleDateString('es-AR', {
+            return date.toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric',
@@ -131,7 +133,7 @@ const UserOrders = () => {
                 };
             case 'OCA':
                 return { 
-                    name: 'OCA Shipping', 
+                    name: 'OCA', 
                     icon: <Truck className="w-4 h-4" />,
                     color: 'text-orange-600',
                     bgColor: 'bg-orange-50'
@@ -257,7 +259,7 @@ const UserOrders = () => {
                         <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
                         <p className="text-gray-600 mt-2">Track and manage all your purchases</p>
                     </div>
-                    <div className="flex items-center gap-4">
+                    {/* <div className="flex items-center gap-4">
                         <div className="relative">
                             <div className="flex items-center gap-2 text-gray-600">
                                 <Filter className="w-4 h-4" />
@@ -284,78 +286,160 @@ const UserOrders = () => {
                         >
                             <RefreshCw className="w-5 h-5 text-gray-600" />
                         </button>
-                    </div>
+                    </div> */}
                 </div>
                 <div className="h-px bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200"></div>
             </div>
 
             {/* Statistics Cards */}
             {statistics && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                     {/* Total Orders */}
-                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200 shadow-sm">
+                    <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
                         <div className="flex items-start justify-between">
                             <div>
-                                <p className="text-sm font-medium text-blue-700 mb-1">Total Orders</p>
-                                <p className="text-3xl font-bold text-gray-900">{statistics.totalOrders}</p>
-                                <p className="text-xs text-gray-500 mt-2">All time purchases</p>
+                                <p className="text-xs font-medium text-gray-600 mb-1">Total Orders</p>
+                                <p className="text-2xl font-bold text-gray-900">{statistics.totalOrders}</p>
+                                <p className="text-xs text-gray-500 mt-1">All time purchases</p>
                             </div>
-                            <div className="p-3 bg-white rounded-xl shadow-sm">
-                                <ShoppingCart className="w-6 h-6 text-blue-600" />
+                            <div className="p-2 bg-gray-50 rounded-lg">
+                                <ShoppingCart className="w-5 h-5 text-gray-600" />
                             </div>
                         </div>
                     </div>
 
                     {/* Pending Orders */}
-                    <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl p-6 border border-yellow-200 shadow-sm">
+                    <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
                         <div className="flex items-start justify-between">
                             <div>
-                                <p className="text-sm font-medium text-yellow-700 mb-1">Pending</p>
-                                <p className="text-3xl font-bold text-gray-900">{statistics.pendingOrders}</p>
-                                <p className="text-xs text-gray-500 mt-2">Awaiting confirmation</p>
+                                <p className="text-xs font-medium text-gray-600 mb-1">Pending</p>
+                                <p className="text-2xl font-bold text-gray-900">{statistics.pendingOrders}</p>
+                                <p className="text-xs text-gray-500 mt-1">Awaiting confirmation</p>
                             </div>
-                            <div className="p-3 bg-white rounded-xl shadow-sm">
-                                <Clock className="w-6 h-6 text-yellow-600" />
+                            <div className="p-2 bg-gray-50 rounded-lg">
+                                <Clock className="w-5 h-5 text-gray-600" />
                             </div>
                         </div>
                     </div>
 
                     {/* Completed Orders */}
-                    <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border border-green-200 shadow-sm">
+                    <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
                         <div className="flex items-start justify-between">
                             <div>
-                                <p className="text-sm font-medium text-green-700 mb-1">Completed</p>
-                                <p className="text-3xl font-bold text-gray-900">{statistics.completedOrders}</p>
-                                <div className="flex items-center gap-1 mt-2">
-                                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                                    <span className="text-xs text-gray-600">Success rate: {Math.round((statistics.completedOrders / statistics.totalOrders) * 100)}%</span>
+                                <p className="text-xs font-medium text-gray-600 mb-1">Completed</p>
+                                <p className="text-2xl font-bold text-gray-900">{statistics.completedOrders}</p>
+                                <div className="flex items-center gap-1 mt-1">
+                                    <Star className="w-3 h-3 text-gray-400" />
+                                    <span className="text-xs text-gray-500">Success: {Math.round((statistics.completedOrders / statistics.totalOrders) * 100)}%</span>
                                 </div>
                             </div>
-                            <div className="p-3 bg-white rounded-xl shadow-sm">
-                                <CheckCircle className="w-6 h-6 text-green-600" />
+                            <div className="p-2 bg-gray-50 rounded-lg">
+                                <CheckCircle className="w-5 h-5 text-gray-600" />
                             </div>
                         </div>
                     </div>
 
                     {/* Total Spent */}
-                    <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl p-6 border border-emerald-200 shadow-sm">
+                    <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
                         <div className="flex items-start justify-between">
                             <div>
-                                <p className="text-sm font-medium text-emerald-700 mb-1">Total Spent</p>
-                                <p className="text-3xl font-bold text-gray-900">
+                                <p className="text-xs font-medium text-gray-600 mb-1">Total Spent</p>
+                                <p className="text-2xl font-bold text-gray-900">
                                     {formatCurrency(statistics.totalSpent)}
                                 </p>
-                                <p className="text-xs text-gray-500 mt-2">
-                                    Average per order: {formatCurrency(statistics.totalOrders > 0 ? statistics.totalSpent / statistics.totalOrders : 0)}
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Avg: {formatCurrency(statistics.totalOrders > 0 ? statistics.totalSpent / statistics.totalOrders : 0)}
                                 </p>
                             </div>
-                            <div className="p-3 bg-white rounded-xl shadow-sm">
-                                <DollarSign className="w-6 h-6 text-emerald-600" />
+                            <div className="p-2 bg-gray-50 rounded-lg">
+                                <DollarSign className="w-5 h-5 text-gray-600" />
                             </div>
                         </div>
                     </div>
                 </div>
-            )} 
+            )}
+
+            {/* Filtros de búsqueda */}
+            <div className="bg-white rounded-xl p-3 border border-gray-200 shadow-sm mb-6">
+                <div className="flex flex-col md:flex-row md:items-center gap-3">
+                    {/* Buscador General */}
+                    <div className="flex-1">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search by Order ID, Address, City, Postal Code..."
+                                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Filtro por Estado */}
+                    <div className="w-full md:w-auto">
+                        <div className="relative">
+                            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
+                            <select
+                                value={filter}
+                                onChange={(e) => setFilter(e.target.value as 'all' | 'pending' | 'completed' | 'in_process' | 'cancelled')}
+                                className="w-full md:w-48 pl-10 pr-8 py-2 appearance-none border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white relative"
+                            >
+                                <option value="all">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="paid">Paid</option>
+                                <option value="processing">Processing</option>
+                                <option value="shipped">Shipped</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="cancelled">Cancelled</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                        </div>
+                    </div>
+
+                    {/* Filtro por Fecha */}
+                    <div className="flex gap-3 w-full md:w-auto">
+                        <div className="flex-1 md:w-auto">
+                            <div className="relative">
+                                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                                <input
+                                    type="date"
+                                    className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex-1 md:w-auto">
+                            <div className="relative">
+                                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                                <input
+                                    type="date"
+                                    className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Botones */}
+                    <div className="flex gap-2 w-full md:w-auto">
+                        <button
+                            onClick={() => {
+                                setFilter('all');
+                                // Aquí también limpiarías el buscador y fechas cuando los implementes
+                            }}
+                            className="px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center gap-1.5"
+                        >
+                            <X className="w-4 h-4" />
+                            Clear
+                        </button>
+                        <button
+                            onClick={loadOrders}
+                            className="px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-1.5"
+                        >
+                            <RefreshCw className="w-4 h-4" />
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             {/* Orders List */}
             <div className="space-y-6">

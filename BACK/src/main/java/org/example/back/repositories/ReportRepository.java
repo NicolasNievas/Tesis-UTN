@@ -315,5 +315,48 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
     GROUP BY TO_CHAR(o.date, 'YYYY-MM')
     ORDER BY month
 """, nativeQuery = true)
-    List<Object[]> getTTMonthSales();
+    List<Object[]> getTTMonthSales(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    /**
+     * Producto top por período (día/semana/mes)
+     */
+    @Query(value = """
+    WITH PeriodData AS (
+        SELECT 
+            p.id as productId,
+            p.name as productName,
+            DATE_TRUNC(:periodType, o.date) as period,
+            SUM(od.quantity) as totalQuantity,
+            SUM(od.price * od.quantity) as totalSales
+        FROM orders o
+        JOIN order_details od ON o.id = od.order_id
+        JOIN products p ON od.product_id = p.id
+        WHERE o.date BETWEEN :startDate AND :endDate
+        AND o.status NOT IN ('CANCELLED', 'PENDING')
+        GROUP BY p.id, p.name, DATE_TRUNC(:periodType, o.date), o.date
+    ),
+    LatestPeriod AS (
+        SELECT MAX(period) as latest_period
+        FROM PeriodData
+    )
+    SELECT 
+        pd.productId,
+        pd.productName,
+        pd.totalQuantity,
+        pd.totalSales,
+        pd.period
+    FROM PeriodData pd
+    CROSS JOIN LatestPeriod lp
+    WHERE pd.period = lp.latest_period
+    ORDER BY pd.totalSales DESC
+    LIMIT 1
+""", nativeQuery = true)
+    List<Object[]> getTopProductByPeriod(
+            @Param("periodType") String periodType,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
 }

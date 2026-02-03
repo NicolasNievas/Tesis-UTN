@@ -24,7 +24,9 @@ import {   PaymentMethodReport,
   SalesByBrand,
   ProductsWithoutMovement,
   ShippingMethodReport,
-  SalesByCategory} from '@/interfaces/data.interfaces';
+  SalesByCategory,
+  TopProductByPeriod,
+  MonthlyTrends} from '@/interfaces/data.interfaces';
 
 type ReportCategory = 'sales' | 'customers' | 'inventory' | 'analytics' | 'performance';
 
@@ -67,6 +69,8 @@ const ReportsPage = () => {
   const [minStock, setMinStock] = useState<number | ''>('');
   const [maxStock, setMaxStock] = useState<number | ''>('');
   const [includeZeroStock, setIncludeZeroStock] = useState<boolean>(false);
+  const [monthlyTrendsData, setMonthlyTrendsData] = useState<MonthlyTrends[]>([]);
+  const [topProductPeriodData, setTopProductPeriodData] = useState<TopProductByPeriod | null>(null);
 
   const tabs = [
     {
@@ -106,9 +110,9 @@ const ReportsPage = () => {
   //const BAR_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('es-AR', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'ARS',
+      currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
@@ -128,18 +132,22 @@ const ReportsPage = () => {
   try {
     switch (activeTab) {
       case 'sales':
-        const [paymentMethods, topProducts, salesByPeriod, orderStats, shippingMethods] = await Promise.all([
+        const [paymentMethods, topProducts, salesByPeriod, orderStats, shippingMethods, monthlyTrends, topProductPeriod] = await Promise.all([
           ReportService.getPaymentMethodReport(startDate, endDate),
           ReportService.getTopProductsReport(startDate, endDate),
           ReportService.getSalesByPeriodReport(period, startDate, endDate),
           ReportService.getOrderStatistics(startDate, endDate),
-          ReportService.getShippingMethodReport(startDate, endDate) // Nuevo
+          ReportService.getShippingMethodReport(startDate, endDate),
+          ReportService.getMonthlyTrendsReport(startDate, endDate),
+          ReportService.getTopProductByPeriodReport(period, startDate, endDate)
         ]);
         setPaymentMethodData(paymentMethods);
         setTopProductsData(topProducts);
         setSalesByPeriodData(salesByPeriod);
         setOrderStatsData(orderStats);
         setShippingMethodData(shippingMethods || []);
+        setMonthlyTrendsData(monthlyTrends || []);
+        setTopProductPeriodData(topProductPeriod || null);
         break;
 
       case 'customers':
@@ -448,6 +456,61 @@ const getStatusColor = (status: string) => {
     }
   };
 
+  // Agrega esta función en tu componente o utils
+  const formatPeriod = (periodString: string, periodType: string): string => {
+    if (!periodString) return 'N/A';
+    
+    try {
+      const date = new Date(periodString);
+      
+      switch (periodType) {
+        case 'day':
+          return date.toLocaleDateString('en-US', {
+            weekday: 'short',
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+          });
+          
+        case 'week':
+          const weekNumber = getWeekNumber(date);
+          return `Week ${weekNumber} - ${date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`;
+          
+        case 'month':
+          return date.toLocaleDateString('en-US', {
+            month: 'long',
+            year: 'numeric'
+          });
+          
+        default:
+          return date.toLocaleDateString('en-US');
+      }
+    } catch (error) {
+      console.error('Error formateando período:', error);
+      return periodString;
+    }
+  };
+
+  const getWeekNumber = (date: Date): number => {
+    const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+    const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000;
+    return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+  };
+
+  const formatMonth = (monthString: string): string => {
+    if (!monthString) return 'N/A';
+    
+    if (monthString.includes('-')) {
+      const [year, month] = monthString.split('-');
+      const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+      return date.toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric'
+      });
+    }
+    return monthString;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -626,9 +689,103 @@ const getStatusColor = (status: string) => {
           {/* Sales Reports Tab */}
           {activeTab === 'sales' && (
             <>
+              {/* KPI Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {/* Producto Top del Período */}
+                {topProductPeriodData && (
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-blue-100 rounded-lg">
+                          <Award className="w-3.5 h-3.5 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-gray-700">Top {period}</p>
+                          <p className="text-xs text-gray-500">{formatPeriod(topProductPeriodData.period, period)}</p>
+                        </div>
+                      </div>
+                      <h3 className="text-sm font-bold text-gray-900 truncate">
+                        {topProductPeriodData.productName}
+                      </h3>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Units</p>
+                        <p className="text-lg font-semibold text-gray-900">{topProductPeriodData.totalQuantity}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Sales</p>
+                        <p className="text-lg font-semibold text-blue-600">
+                          {formatCurrency(topProductPeriodData.totalSales)}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Period</p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {period.charAt(0).toUpperCase()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Monthly Trends KPI */}
+                {monthlyTrendsData.length > 0 && monthlyTrendsData[0] && (
+                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-200">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-purple-100 rounded-lg">
+                          <TrendingUp className="w-3.5 h-3.5 text-purple-600" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-gray-700">Month Performance</p>
+                          <p className="text-xs text-gray-500">
+                            {formatMonth(monthlyTrendsData[monthlyTrendsData.length - 1].month).split(' ')[0]}
+                          </p>
+                        </div>
+                      </div>
+                      {/* Growth indicator */}
+                      {monthlyTrendsData.length > 1 && (() => {
+                        const current = monthlyTrendsData[monthlyTrendsData.length - 1].totalSales;
+                        const previous = monthlyTrendsData[monthlyTrendsData.length - 2].totalSales;
+                        const growth = previous > 0 ? ((current - previous) / previous) * 100 : 0;
+                        
+                        return (
+                          <span className={`text-xs font-semibold px-2 py-1 rounded ${growth >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            {growth >= 0 ? '↑' : '↓'} {Math.abs(growth).toFixed(0)}%
+                          </span>
+                        );
+                      })()}
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Orders</p>
+                        <p className="text-lg font-semibold text-gray-900">
+                          {monthlyTrendsData[monthlyTrendsData.length - 1].orderCount}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Sales</p>
+                        <p className="text-lg font-semibold text-purple-600">
+                          {formatCurrency(monthlyTrendsData[monthlyTrendsData.length - 1].totalSales)}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Avg. Ticket</p>
+                        <p className="text-sm font-semibold text-green-600">
+                          {formatCurrency(monthlyTrendsData[monthlyTrendsData.length - 1].averageTicket)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Top Products Report */}
               {topProductsData.length > 0 && (
-                <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-2 bg-green-100 rounded-lg">
                       <TrendingUp className="w-6 h-6 text-green-600" />
@@ -698,7 +855,7 @@ const getStatusColor = (status: string) => {
 
               {/* Sales by Period Report */}
               {salesByPeriodData.length > 0 && (
-                <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-2 bg-purple-100 rounded-lg">
                       <BarChart2 className="w-6 h-6 text-purple-600" />
@@ -724,7 +881,6 @@ const getStatusColor = (status: string) => {
                         <Tooltip content={<CustomTooltip />} />
                         <Legend />
                         <Line 
-                          //type="monotone" 
                           dataKey="totalSales" 
                           name="Total Sales" 
                           stroke="#3b82f6" 
@@ -756,7 +912,7 @@ const getStatusColor = (status: string) => {
                       <tbody className="divide-y divide-gray-200">
                         {salesByPeriodData.map((item, index) => (
                           <tr key={index} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 text-sm center font-medium text-gray-900">{formatDate(item.period)}</td>
+                            <td className="px-6 py-4 text-sm text-center font-medium text-gray-900">{formatDate(item.period)}</td>
                             <td className="px-6 py-4 text-sm text-gray-600">{item.orderCount}</td>
                             <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{formatCurrency(item.totalSales)}</td>
                           </tr>
@@ -769,7 +925,7 @@ const getStatusColor = (status: string) => {
 
               {/* Payment Methods Report */}
               {paymentMethodData.length > 0 && (
-                <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-2 bg-blue-100 rounded-lg">
                       <DollarSign className="w-6 h-6 text-blue-600" />
@@ -849,7 +1005,7 @@ const getStatusColor = (status: string) => {
 
               {/* Shipping Methods Report */}
               {shippingMethodData.length > 0 && (
-                <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-2 bg-cyan-100 rounded-lg">
                       <Truck className="w-6 h-6 text-cyan-600" />
@@ -917,8 +1073,9 @@ const getStatusColor = (status: string) => {
                 </div>
               )}
 
-
-              {paymentMethodData.length === 0 && topProductsData.length === 0 && salesByPeriodData.length === 0 && (
+              {paymentMethodData.length === 0 && topProductsData.length === 0 && 
+              salesByPeriodData.length === 0 && shippingMethodData.length === 0 && 
+              !topProductPeriodData && monthlyTrendsData.length === 0 && (
                 <div className="bg-white rounded-lg shadow-sm p-12 text-center">
                   <TrendingUp className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                   <p className="text-lg text-gray-500 mb-2">No sales data available</p>
