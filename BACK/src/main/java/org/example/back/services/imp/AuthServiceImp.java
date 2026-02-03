@@ -68,6 +68,10 @@ public class AuthServiceImp implements AuthService {
             throw new IllegalArgumentException("Document already exists");
         }
 
+        if (request.getTermsAccepted() == null || !request.getTermsAccepted()){
+            throw new IllegalArgumentException("You must accept the terms and conditions to register");
+        }
+
         String verificationCode = mailService.generateVerificationCode();
         LocalDateTime expiry = LocalDateTime.now().plusMinutes(15);
 
@@ -85,6 +89,8 @@ public class AuthServiceImp implements AuthService {
                 .emailVerified(false)
                 .verificationCode(verificationCode)
                 .verificationCodeExpiry(expiry)
+                .termsAccepted(true)
+                .termsAcceptedAt(LocalDateTime.now())
                 .build();
 
         userRepository.save(user);

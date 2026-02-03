@@ -23,4 +23,5 @@ public class RegisterRequest {
     @JsonProperty("typeDoc")
     private TypeDoc typeDoc;
     private String nroDoc;
+    private Boolean termsAccepted;
 }

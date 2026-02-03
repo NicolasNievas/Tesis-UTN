@@ -52,6 +52,7 @@ export interface RegisterRequest {
   city: string;
   nroDoc: string;
   typeDoc: TypeDocument;
+  termsAccepted: boolean;
 }
   
 export interface AuthResponse {
