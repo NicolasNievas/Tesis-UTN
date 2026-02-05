@@ -19,7 +19,6 @@ const AdminOrders = () => {
     const [loading, setLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState<OrderResponse | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isFilterCollapsed, setIsFilterCollapsed] = useState(false);
     const [isShipmentModalOpen, setIsShipmentModalOpen] = useState(false);
     const [selectedOrderForShipment, setSelectedOrderForShipment] = useState<number | null>(null);
 
@@ -107,22 +106,6 @@ const AdminOrders = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedOrder(null);
-    };
-
-    const handleToggleFilter = () => {
-        setIsFilterCollapsed((prevState) => !prevState);
-    };
-
-    const validateDateRange = () => {
-        if (startDate && endDate) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            if (start > end) {
-                toast.error('Start date cannot be later than end date');
-                return false;
-            }
-        }
-        return true;
     };
 
     const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
