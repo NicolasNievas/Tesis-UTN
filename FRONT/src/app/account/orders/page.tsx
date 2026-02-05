@@ -232,7 +232,7 @@ const UserOrders = () => {
                 };
             case 'CORREO_ARGENTINO':
                 return { 
-                    name: 'Argentine Mail', 
+                    name: 'Correo Argentino', 
                     icon: <Truck className="w-4 h-4" />,
                     color: 'text-blue-600',
                     bgColor: 'bg-blue-50'

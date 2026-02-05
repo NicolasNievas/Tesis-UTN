@@ -15,7 +15,10 @@ import {
   IdCard,
   Store,
   Navigation,
-  MapPinIcon
+  MapPinIcon,
+  AlertCircle,
+  CheckCircle2,
+  XCircle
 } from 'lucide-react';
 import Link from "next/link";
 
@@ -92,7 +95,7 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
     method: paymentDetails.metadata.shipping_method_name?.toLowerCase() || 'standard',
     display_name: paymentDetails.metadata.shipping_display_name || 
                   paymentDetails.metadata.shipping_method_name || 
-                  'Envío estándar',
+                  'Standard Shipping',
     cost: parseFloat(paymentDetails.metadata.shipping_cost || '0'),
     estimated_days: paymentDetails.metadata.shipping_estimated_days,
     address: paymentDetails.metadata.shipping_address || '',
@@ -119,7 +122,7 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
         estimatedDeliveryText: 'business days'
       },
       'correo_argentino': { 
-        name: displayName || 'Argentine Mail', 
+        name: displayName || 'Correo Argentino', 
         icon: <Truck className="h-5 w-5" />,
         color: 'text-blue-600',
         estimatedDeliveryText: 'business days'
@@ -162,6 +165,100 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
     const shippingCost = shippingInfo?.cost || 0;
     const total = paymentDetails.transaction_amount;
     
+    const getStatusIcon = () => {
+    switch (status) {
+      case 'approved':
+        return <CheckCircle2 className="h-6 w-6" />;
+      case 'pending':
+        return <Clock className="h-6 w-6" />;
+      default:
+        return <XCircle className="h-6 w-6" />;
+    }
+  };
+
+  const getStatusBadgeColor = () => {
+    switch (status) {
+      case 'approved':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-red-100 text-red-800';
+    }
+  };
+
+  const getNextStepsContent = () => {
+    switch (status) {
+      case 'approved':
+        return (
+          <>
+            <li className="flex items-start">
+              <span className="text-green-600 mr-2">✓</span>
+              <span>You will receive a confirmation email shortly</span>
+            </li>
+            <li className="flex items-start">
+              <span className="text-green-600 mr-2">✓</span>
+              <span>Your order is being processed</span>
+            </li>
+            <li className="flex items-start">
+              <span className="text-green-600 mr-2">✓</span>
+              <span>
+                {shippingInfo?.isPickup ? (
+                  shippingInfo.estimated_days === 0 
+                    ? 'Your order is ready for pickup today at our store'
+                    : `Your order will be ready for pickup in ${shippingInfo.estimated_days} business days`
+                ) : (
+                  `Estimated delivery time: ${shippingInfo?.estimated_days || 3} business days`
+                )}
+              </span>
+            </li>
+            <li className="flex items-start">
+              <span className="text-green-600 mr-2">✓</span>
+              <span>Track your order in your account</span>
+            </li>
+          </>
+        );
+      case 'pending':
+        return (
+          <>
+            <li className="flex items-start">
+              <AlertCircle className="h-4 w-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
+              <span>Your payment is being processed by the bank</span>
+            </li>
+            <li className="flex items-start">
+              <Clock className="h-4 w-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
+              <span>This may take up to 24 hours</span>
+            </li>
+            <li className="flex items-start">
+              <Mail className="h-4 w-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
+              <span>You will receive an email when confirmed</span>
+            </li>
+            <li className="flex items-start">
+              <FileText className="h-4 w-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
+              <span>Keep this receipt for your records</span>
+            </li>
+          </>
+        );
+      default:
+        return (
+          <>
+            <li className="flex items-start">
+              <XCircle className="h-4 w-4 text-red-600 mr-2 mt-0.5 flex-shrink-0" />
+              <span>Please check your payment method details</span>
+            </li>
+            <li className="flex items-start">
+              <CreditCard className="h-4 w-4 text-red-600 mr-2 mt-0.5 flex-shrink-0" />
+              <span>Ensure you have sufficient funds</span>
+            </li>
+            <li className="flex items-start">
+              <ArrowLeft className="h-4 w-4 text-red-600 mr-2 mt-0.5 flex-shrink-0" />
+              <span>Try again or use a different payment method</span>
+            </li>
+          </>
+        );
+    }
+  };
+
     return (    
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-12 px-4">
         <div className="max-w-6xl mx-auto">

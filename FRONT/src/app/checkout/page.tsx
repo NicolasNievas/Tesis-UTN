@@ -76,6 +76,14 @@ const CheckoutPage: React.FC = () => {
     
     try {
       setIsUpdatingShipping(true);
+
+      await CheckoutService.updateShippingInfo({
+        shippingMethodId: shippingId,
+        address,
+        city,
+        postalCode
+      })
+
       await loadCheckoutData();
       toast.success('Shipping method updated');
     } catch (error) {
@@ -300,6 +308,7 @@ const CheckoutPage: React.FC = () => {
               </div>
               
               <div className="p-6"> {/* Mantiene el padding original para el contenido */}
+                
                 <div className="space-y-4">
                   {availableShippingMethods.map((method: ShippingMethod) => (
                     <div
