@@ -5,7 +5,6 @@ import { sendEmail } from '@/services/MailService';
 import { IContactFormData } from '@/interfaces/data.interfaces';
 import { toast } from 'react-toastify';
 import { Mail, User, MessageSquare, Coffee } from 'lucide-react';
-import Button from '@/components/atoms/Button';
 import { Modal, TermsAndConditions } from '@/components/organisms/TermsAndConditionModal';
 
 const ContactUs: React.FC = () => {
@@ -92,7 +91,7 @@ const ContactUs: React.FC = () => {
                 </div>
                 <div>
                   <h2 className="text-3xl font-bold text-white">Get in Touch</h2>
-                  <p className="text-white/80 mt-1">We'd love to hear from you</p>
+                  <p className="text-white/80 mt-1">We&apos;d love to hear from you</p>
                 </div>
               </div>
 
@@ -141,7 +140,7 @@ const ContactUs: React.FC = () => {
             <div className="bg-gray-bg rounded-2xl p-8 lg:p-10 shadow-2xl">
               <div className="mb-8">
                 <h2 className="text-3xl font-bold text-black">Send us a Message</h2>
-                <p className="text-gray-txt mt-2">Fill out the form below and we'll get back to you soon</p>
+                <p className="text-gray-txt mt-2">Fill out the form below and we&apos;ll get back to you soon</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">

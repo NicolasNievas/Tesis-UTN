@@ -46,6 +46,7 @@ public class OrderController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required  = false) String searchQuery,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size
     ) {
@@ -53,6 +54,7 @@ public class OrderController {
                 status,
                 startDate,
                 endDate,
+                searchQuery,
                 page,
                 size
         );

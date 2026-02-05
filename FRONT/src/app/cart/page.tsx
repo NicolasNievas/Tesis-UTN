@@ -92,7 +92,7 @@ const CartPage: React.FC = () => {
               <ShoppingCart className="w-12 h-12 text-gray-400" />
             </div>
             <h3 className="text-2xl font-semibold text-gray-800 mb-3">Your cart is empty</h3>
-            <p className="text-gray-600 mb-8">Looks like you haven't added any products to your cart yet.</p>
+            <p className="text-gray-600 mb-8">Looks like you haven&apos;t added any products to your cart yet.</p>
             <Button
               name="Start Shopping"
               onClick={handleContinueShopping}

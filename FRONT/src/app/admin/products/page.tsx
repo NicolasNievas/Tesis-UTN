@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import LoadingSpinner from "@/components/atoms/LoadingSpinner";
 import NewProductModal from "@/components/organisms/NewProductModal";
-import ProductListItem from "@/components/molecules/ProductListItem";
 import EditProductModal from "@/components/organisms/EditProductModal";
 import { IProductData, IBrandData, ICategoryData } from "@/interfaces/data.interfaces";
 import { desactivateProduct, postProduct, reactivateProduct, updateProduct } from "@/services/AdminProductService";
@@ -30,7 +29,7 @@ const AdminProductsPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [currentProduct, setCurrentProduct] = useState<IProductData | null>(null);
-    const [filterNoStock, setFilterNoStock] = useState(false);
+    const [filterNoStock] = useState(false);
 
     const handlePageChange = (newPage: number) => {
         setCurrentPage(newPage);

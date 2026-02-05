@@ -152,12 +152,18 @@ public class OrderServiceImp implements OrderService {
             OrderStatus status,
             LocalDateTime startDate,
             LocalDateTime endDate,
+            String searchQuery,
             int page,
             int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
         String statusStr = status != null ? status.name() : null;
-        Page<OrderEntity> orderPage = orderRepository.findOrdersByFilters(statusStr,startDate, endDate, pageable);
+
+        String normalizedSearchQuery = searchQuery != null && !searchQuery.trim().isEmpty()
+                ? searchQuery.trim()
+                : null;
+
+        Page<OrderEntity> orderPage = orderRepository.findOrdersByFilters(statusStr,startDate, endDate, normalizedSearchQuery, pageable);
 
         List<OrderResponse> orders = orderPage.getContent().stream()
                 .map(this::convertToOrderResponse)

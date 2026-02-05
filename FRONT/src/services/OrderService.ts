@@ -10,7 +10,8 @@ class OrderService {
         size: number = 5,
         status?: string,
         startDate?: string,
-        endDate?: string
+        endDate?: string,
+        searchQuery?: string
     ): Promise<PaginatedResponse<OrderResponse>> {
         try {
             const params = new URLSearchParams({
@@ -32,6 +33,9 @@ class OrderService {
                 const endDateTime = new Date(endDate);
                 endDateTime.setHours(23, 59, 59, 999);
                 params.append('endDate', endDateTime.toISOString());
+            }
+            if (searchQuery && searchQuery.trim()) {
+                params.append('searchQuery', searchQuery.trim());
             }
             const response = await axios.get(`${$URLADMIN}/orders?${params.toString()}`);
             return response.data;

@@ -2,40 +2,6 @@ import axios from "axios";
 import { ConversionRate, CustomerStatistics, InventoryReport, MonthlyTrends, OrdersByStatus, OrderStatistics, PaymentMethodReport, ProductsWithoutMovement, SalesByBrand, SalesByCategory, SalesByPeriodReport, ShippingMethodReport, TopCustomer, TopProductByPeriod, TopProductReport } from "@/interfaces/data.interfaces";
 
 const $URL = process.env.NEXT_PUBLIC_API_URL_ADMIN;
-// Función para formatear fechas correctamente - VERSIÓN GARANTIZADA
-const formatDateForApi = (dateString: string | undefined, isEndDate: boolean = false): string => {
-  if (!dateString) return '';
-  
-  // Limpiar la cadena de fecha
-  const cleanDateString = dateString.trim();
-  
-  // Crear objeto Date
-  const date = new Date(cleanDateString);
-  
-  // Si la fecha no es válida, intentar otro formato
-  if (isNaN(date.getTime())) {
-    // Intentar con formato YYYY-MM-DD
-    const [year, month, day] = cleanDateString.split('-');
-    const adjustedDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    
-    if (isEndDate) {
-      adjustedDate.setHours(23, 59, 59, 999);
-      return adjustedDate.toISOString();
-    } else {
-      adjustedDate.setHours(0, 0, 0, 0);
-      return adjustedDate.toISOString();
-    }
-  }
-  
-  // Si la fecha es válida, ajustar horas
-  if (isEndDate) {
-    date.setHours(23, 59, 59, 999);
-  } else {
-    date.setHours(0, 0, 0, 0);
-  }
-  
-  return date.toISOString();
-};
 
 class ReportService {
   static async getPaymentMethodReport(

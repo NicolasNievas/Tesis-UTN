@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { withAdmin } from '@/hoc/isAdmin';
 import OrderService from '@/services/OrderService';
 import { OrderResponse } from '@/interfaces/data.interfaces';
@@ -8,10 +8,8 @@ import OrderDetailsModal from '@/components/organisms/OrderDetailsModal';
 import ShipmentModal from '@/components/organisms/ShipmentModal';
 import { 
   Package, Truck, Calendar, Mail, Clock, DollarSign, 
-  ChevronLeft, ChevronRight, ChevronDown, ChevronUp, 
-  FilterIcon, Search, FileText, User, CreditCard, X,
-  ShoppingBag, ClockIcon, CheckCircle, PackageCheck, Home,
-  AlertCircle
+  ChevronLeft, ChevronRight, ChevronDown, Search, X,
+  ShoppingBag, ClockIcon, CheckCircle, PackageCheck, 
 } from 'lucide-react';
 import Line from '@/components/atoms/Line';
 
@@ -36,95 +34,32 @@ const AdminOrders = () => {
     const [endDate, setEndDate] = useState('');
     const [selectedStatus, setSelectedStatus] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
     const STATUS_OPTIONS = ['ALL', 'PENDING', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
 
-    // Hardcoded KPI data
-    const kpiData = [
-        {
-            title: "Total Orders",
-            value: "1,234",
-            icon: <ShoppingBag className="w-6 h-6" />,
-            color: "bg-blue-500",
-            textColor: "text-blue-600",
-            bgColor: "bg-blue-50",
-            borderColor: "border-blue-200"
-        },
-        {
-            title: "Pending",
-            value: "56",
-            icon: <ClockIcon className="w-6 h-6" />,
-            color: "bg-yellow-500",
-            textColor: "text-yellow-600",
-            bgColor: "bg-yellow-50",
-            borderColor: "border-yellow-200"
-        },
-        {
-            title: "Paid",
-            value: "847",
-            icon: <CheckCircle className="w-6 h-6" />,
-            color: "bg-green-500",
-            textColor: "text-green-600",
-            bgColor: "bg-green-50",
-            borderColor: "border-green-200"
-        },
-        {
-            title: "Shipped",
-            value: "289",
-            icon: <Truck className="w-6 h-6" />,
-            color: "bg-purple-500",
-            textColor: "text-purple-600",
-            bgColor: "bg-purple-50",
-            borderColor: "border-purple-200"
-        },
-        {
-            title: "Delivered",
-            value: "654",
-            icon: <PackageCheck className="w-6 h-6" />,
-            color: "bg-emerald-500",
-            textColor: "text-emerald-600",
-            bgColor: "bg-emerald-50",
-            borderColor: "border-emerald-200"
-        }
-    ];
+    const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Debounce para la búsqueda
-    const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+    useEffect(() => {
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+
+        searchTimeoutRef.current = setTimeout(() => {
+            setDebouncedSearchQuery(searchQuery);
+            setCurrentPage(0);
+        }, 800);
+
+        return () => {
+            if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current);
+            }
+        };
+    }, [searchQuery]);
 
     const loadOrders = useCallback(async () => {
         try {
             setLoading(true);
-            
-            let searchParam = {};
-            
-            // Detectar automáticamente el tipo de búsqueda basado en el contenido
-            if (searchQuery.trim()) {
-                const trimmedQuery = searchQuery.trim();
-                
-                // Detectar si es un número (posiblemente orderId o paymentId)
-                if (/^\d+$/.test(trimmedQuery)) {
-                    searchParam = { 
-                        orderId: trimmedQuery,
-                        paymentId: trimmedQuery 
-                    };
-                } 
-                // Detectar si es un email
-                else if (/\S+@\S+\.\S+/.test(trimmedQuery)) {
-                    searchParam = { customerEmail: trimmedQuery };
-                } 
-                // Detectar si es un DNI (solo números y letras, 6-12 caracteres)
-                else if (/^[a-zA-Z0-9]{6,12}$/.test(trimmedQuery)) {
-                    searchParam = { dni: trimmedQuery };
-                }
-                // Búsqueda general en múltiples campos
-                else {
-                    searchParam = { 
-                        orderId: trimmedQuery,
-                        paymentId: trimmedQuery,
-                        customerEmail: trimmedQuery
-                    };
-                }
-            }
             
             const response = await OrderService.getAllOrders(
                 currentPage,
@@ -132,7 +67,7 @@ const AdminOrders = () => {
                 selectedStatus === 'ALL' ? undefined : selectedStatus,
                 startDate,
                 endDate,
-                //searchParam
+                debouncedSearchQuery.trim() || undefined
             );
             
             setOrders(response.content);
@@ -145,7 +80,7 @@ const AdminOrders = () => {
         } finally {
             setLoading(false);
         }
-    }, [currentPage, selectedStatus, startDate, endDate, searchQuery]);
+    }, [currentPage, selectedStatus, startDate, endDate, debouncedSearchQuery]);
 
     useEffect(() => {
         loadOrders();
@@ -160,6 +95,7 @@ const AdminOrders = () => {
         setEndDate('');
         setSelectedStatus('');
         setSearchQuery('');
+        setDebouncedSearchQuery('');
         setCurrentPage(0);
     };
 
@@ -191,38 +127,27 @@ const AdminOrders = () => {
 
     const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setStartDate(e.target.value);
-        setCurrentPage(0); // Resetear a primera página
+        setCurrentPage(0);
     };
 
     const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEndDate(e.target.value);
-        setCurrentPage(0); // Resetear a primera página
+        setCurrentPage(0);
     };
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearchQuery(value);
-        
-        // Clear existing timeout
-        if (searchTimeout) {
-            clearTimeout(searchTimeout);
-        }
-        
-        // Set new timeout for debouncing
-        const timeout = setTimeout(() => {
-            setCurrentPage(0); // Resetear a primera página al buscar
-        }, 500); // 500ms debounce
-        
-        setSearchTimeout(timeout);
     };
 
     const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedStatus(e.target.value);
-        setCurrentPage(0); // Resetear a primera página
+        setCurrentPage(0);
     };
 
     const handleClearSearch = () => {
         setSearchQuery('');
+        setDebouncedSearchQuery('');
         setCurrentPage(0);
     };
 
@@ -325,9 +250,6 @@ const AdminOrders = () => {
             <div className="mb-8">
                 <div className="flex items-center justify-between mb-6">
                     <h1 className="text-3xl font-bold text-gray-800">Orders Management</h1>
-                    {/* <div className="flex items-center gap-4">
-                        <span className="text-sm text-gray-500">Real-time Orders: {totalElements}</span>
-                    </div> */}
                 </div>
 
                 {/* KPI Cards */}
@@ -337,7 +259,7 @@ const AdminOrders = () => {
                         <div className="flex items-start justify-between">
                             <div>
                                 <p className="text-xs font-medium text-gray-600 mb-1">Total Orders</p>
-                                <p className="text-2xl font-bold text-gray-900">14</p>
+                                <p className="text-2xl font-bold text-gray-900">{totalElements}</p>
                                 <p className="text-xs text-gray-500 mt-1">All time orders</p>
                             </div>
                             <div className="p-2 bg-blue-50 rounded-lg">
@@ -426,6 +348,9 @@ const AdminOrders = () => {
                                     </button>
                                 )}
                             </div>
+                            {searchQuery !== debouncedSearchQuery && (
+                                <p className="text-xs text-gray-400 mt-1">Searching...</p>
+                            )}
                         </div>
 
                         {/* Filtro por Estado */}

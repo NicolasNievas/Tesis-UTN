@@ -19,25 +19,44 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     List<OrderEntity> findByCustomerIdOrderByDateDesc(Long customerId);
     List<OrderEntity> findAllByOrderByDateDesc();
     @Query(value = """
-            SELECT * FROM orders o 
-            WHERE 
-            (COALESCE(:status, o.status) = o.status) 
-            AND (COALESCE(CAST(:startDate AS TIMESTAMP), o.date) <= o.date)
-            AND (COALESCE(CAST(:endDate AS TIMESTAMP), o.date) >= o.date)
-            ORDER BY o.date DESC
-            """,
+    SELECT o.* FROM orders o 
+    LEFT JOIN users u ON o.user_id = u.id
+    WHERE 
+    (CAST(:status AS VARCHAR) IS NULL OR o.status = CAST(:status AS VARCHAR))
+    AND (CAST(:startDate AS TIMESTAMP) IS NULL OR o.date >= CAST(:startDate AS TIMESTAMP))
+    AND (CAST(:endDate AS TIMESTAMP) IS NULL OR o.date <= CAST(:endDate AS TIMESTAMP))
+    AND (
+        CAST(:searchQuery AS VARCHAR) IS NULL 
+        OR CAST(o.id AS TEXT) LIKE CONCAT('%', CAST(:searchQuery AS VARCHAR), '%')
+        OR o.payment_id LIKE CONCAT('%', CAST(:searchQuery AS VARCHAR), '%')
+        OR o.mercadopago_order_id LIKE CONCAT('%', CAST(:searchQuery AS VARCHAR), '%')
+        OR LOWER(u.email) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS VARCHAR), '%'))
+        OR o.customer_nro_doc LIKE CONCAT('%', CAST(:searchQuery AS VARCHAR), '%')
+    )
+    ORDER BY o.date DESC
+    """,
             countQuery = """
-            SELECT COUNT(*) FROM orders o 
-            WHERE 
-            (COALESCE(:status, o.status) = o.status)
-            AND (COALESCE(CAST(:startDate AS TIMESTAMP), o.date) <= o.date)
-            AND (COALESCE(CAST(:endDate AS TIMESTAMP), o.date) >= o.date)
-            """,
+    SELECT COUNT(o.id) FROM orders o 
+    LEFT JOIN users u ON o.user_id = u.id
+    WHERE 
+    (CAST(:status AS VARCHAR) IS NULL OR o.status = CAST(:status AS VARCHAR))
+    AND (CAST(:startDate AS TIMESTAMP) IS NULL OR o.date >= CAST(:startDate AS TIMESTAMP))
+    AND (CAST(:endDate AS TIMESTAMP) IS NULL OR o.date <= CAST(:endDate AS TIMESTAMP))
+    AND (
+        CAST(:searchQuery AS VARCHAR) IS NULL 
+        OR CAST(o.id AS TEXT) LIKE CONCAT('%', CAST(:searchQuery AS VARCHAR), '%')
+        OR o.payment_id LIKE CONCAT('%', CAST(:searchQuery AS VARCHAR), '%')
+        OR o.mercadopago_order_id LIKE CONCAT('%', CAST(:searchQuery AS VARCHAR), '%')
+        OR LOWER(u.email) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS VARCHAR), '%'))
+        OR o.customer_nro_doc LIKE CONCAT('%', CAST(:searchQuery AS VARCHAR), '%')
+    )
+    """,
             nativeQuery = true)
     Page<OrderEntity> findOrdersByFilters(
             @Param("status") String status,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
+            @Param("searchQuery") String searchQuery,
             Pageable pageable);
 
     // Reporte de ventas por método de pago
