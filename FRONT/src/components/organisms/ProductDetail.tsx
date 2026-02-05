@@ -210,7 +210,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, brand, category 
             <Button
               className={`w-full py-4 text-lg font-semibold ${
                 isInCart 
-                  ? 'bg-green-600 hover:bg-green-700' 
+                  ? 'bg-gray-400 hover:bg-gray-400' 
                   : 'bg-black-btn hover:bg-black-hover'
               } text-gray-bg-light shadow-lg hover:shadow-xl transition-all`}
               name={getButtonText()}

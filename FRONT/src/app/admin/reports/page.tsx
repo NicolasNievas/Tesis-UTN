@@ -110,9 +110,9 @@ const ReportsPage = () => {
   //const BAR_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('es-AR', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'ARS',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
@@ -199,162 +199,787 @@ const ReportsPage = () => {
   }
 };
 
-  const exportToExcel = () => {
-    const wb = XLSX.utils.book_new();
+ const exportToExcel = (
+  activeTab: string,
+  startDate: string,
+  endDate: string,
+  data: any
+) => {
+  const wb = XLSX.utils.book_new();
+  const filename = `${activeTab}_report_${startDate}_${endDate}.xlsx`;
 
-    switch (activeTab) {
-      case 'sales':
-        if (paymentMethodData.length > 0) {
-          const ws1 = XLSX.utils.json_to_sheet(paymentMethodData.map(item => ({
-            'Payment Method': item.paymentMethod,
-            'Order Count': item.orderCount,
-            'Total Sales': formatCurrency(item.totalSales)
-          })));
-          XLSX.utils.book_append_sheet(wb, ws1, "Payment Methods");
-        }
-        if (topProductsData.length > 0) {
-          const ws2 = XLSX.utils.json_to_sheet(topProductsData.map(item => ({
-            'Product': item.productName,
-            'Quantity': item.totalQuantity,
-            'Total Sales': formatCurrency(item.totalSales)
-          })));
-          XLSX.utils.book_append_sheet(wb, ws2, "Top Products");
-        }
-        if (salesByPeriodData.length > 0) {
-          const ws3 = XLSX.utils.json_to_sheet(salesByPeriodData.map(item => ({
-            'Period': item.period,
-            'Orders': item.orderCount,
-            'Total Sales': formatCurrency(item.totalSales)
-          })));
-          XLSX.utils.book_append_sheet(wb, ws3, "Sales by Period");
-        }
-        break;
+  switch (activeTab) {
+    case 'sales':
+      exportSalesTabToExcel(wb, data);
+      break;
+    case 'customers':
+      exportCustomersTabToExcel(wb, data);
+      break;
+    case 'inventory':
+      exportInventoryTabToExcel(wb, data);
+      break;
+    case 'analytics':
+      exportAnalyticsTabToExcel(wb, data);
+      break;
+    case 'performance':
+      exportPerformanceTabToExcel(wb, data);
+      break;
+  }
 
-      case 'customers':
-        if (customerStatsData.length > 0) {
-          const ws1 = XLSX.utils.json_to_sheet(customerStatsData.map(item => ({
-            'Customer': item.customerName,
-            'Email': item.email,
-            'Orders': item.totalOrders,
-            'Total Spent': formatCurrency(item.totalSpent),
-            'Avg Order': formatCurrency(item.averageOrderValue),
-            'Last Order': formatDate(item.lastPurchaseDate)
-          })));
-          XLSX.utils.book_append_sheet(wb, ws1, "Customer Statistics");
-        }
-        if (topCustomersData.length > 0) {
-          const ws2 = XLSX.utils.json_to_sheet(topCustomersData.map(item => ({
-            'Customer': item.customerName,
-            'Email': item.customerEmail,
-            'Total Spent': formatCurrency(item.totalSpent),
-            'Orders': item.totalOrders
-          })));
-          XLSX.utils.book_append_sheet(wb, ws2, "Top Customers");
-        }
-        break;
-
-      case 'inventory':
-        if (inventoryData.length > 0) {
-          const ws = XLSX.utils.json_to_sheet(inventoryData.map(item => ({
-            'Product': item.productName,
-            'Current Stock': item.currentStock,
-            'Sold': item.totalSold,
-            'Revenue': formatCurrency(item.totalRevenue),
-            'Turnover Rate': `${(item.turnoverRate || 0).toFixed(1)}%`
-          })));
-          XLSX.utils.book_append_sheet(wb, ws, "Inventory");
-        }
-        break;
-    }
-
-    XLSX.writeFile(wb, `${activeTab}_report_${startDate}_${endDate}.xlsx`);
-    toast.success('Excel file downloaded successfully');
+  XLSX.writeFile(wb, filename);
   };
 
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.setFont('helvetica');
-    doc.setFontSize(18);
-    doc.text(`${activeTab.toUpperCase()} REPORT`, 105, 15, { align: 'center' });
-    doc.setFontSize(10);
-    doc.text(`Period: ${startDate} to ${endDate}`, 105, 22, { align: 'center' });
+  // Exportar tab de ventas
+  const exportSalesTabToExcel = (wb: XLSX.WorkBook, data: any) => {
+    const {
+      paymentMethodData = [],
+      topProductsData = [],
+      salesByPeriodData = [],
+      orderStatsData = null,
+      shippingMethodData = [],
+      monthlyTrendsData = [],
+      topProductPeriodData = null,
+      period = 'day'
+    } = data;
 
-    let yPos = 30;
-
-    switch (activeTab) {
-      case 'sales':
-        if (paymentMethodData.length > 0) {
-          doc.setFontSize(12);
-          doc.text('Payment Methods', 14, yPos);
-          yPos += 5;
-          autoTable(doc, {
-            startY: yPos,
-            head: [['Method', 'Orders', 'Total Sales']],
-            body: paymentMethodData.map(item => [
-              item.paymentMethod,
-              item.orderCount.toString(),
-              formatCurrency(item.totalSales)
-            ]),
-            margin: { top: 10 }
-          });
-          yPos = (doc as JsPDFWithAutoTable).lastAutoTable.finalY + 15;
-        }
-
-        if (topProductsData.length > 0 && yPos < 270) {
-          doc.setFontSize(12);
-          doc.text('Top Products', 14, yPos);
-          yPos += 5;
-          autoTable(doc, {
-            startY: yPos,
-            head: [['Product', 'Quantity', 'Total Sales']],
-            body: topProductsData.map(item => [
-              item.productName,
-              item.totalQuantity.toString(),
-              formatCurrency(item.totalSales)
-            ])
-          });
-        }
-        break;
-
-      case 'customers':
-        if (topCustomersData.length > 0) {
-          doc.setFontSize(12);
-          doc.text('Top Customers', 14, yPos);
-          yPos += 5;
-          autoTable(doc, {
-            startY: yPos,
-            head: [['Customer', 'Email', 'Total Spent', 'Orders']],
-            body: topCustomersData.map(item => [
-              item.customerName,
-              item.customerEmail,
-              formatCurrency(item.totalSpent),
-              item.totalOrders.toString()
-            ])
-          });
-        }
-        break;
-
-      case 'inventory':
-        if (inventoryData.length > 0) {
-          doc.setFontSize(12);
-          doc.text('Inventory Status', 14, yPos);
-          yPos += 5;
-          autoTable(doc, {
-            startY: yPos,
-            head: [['Product', 'Stock', 'Sold', 'Revenue']],
-            body: inventoryData.map(item => [
-              item.productName,
-              item.currentStock.toString(),
-              item.totalSold.toString(),
-              formatCurrency(item.totalRevenue)
-            ])
-          });
-        }
-        break;
+    // Hoja 1: Order Statistics
+    if (orderStatsData) {
+      const ws1 = XLSX.utils.json_to_sheet([
+        { 'Metric': 'Total Orders', 'Value': orderStatsData.totalOrders },
+        { 'Metric': 'Average Ticket', 'Value': formatCurrency(orderStatsData.averageTicket) },
+        { 'Metric': 'Max Ticket', 'Value': formatCurrency(orderStatsData.maxTicket) },
+        { 'Metric': 'Min Ticket', 'Value': formatCurrency(orderStatsData.minTicket) }
+      ]);
+      XLSX.utils.book_append_sheet(wb, ws1, 'Order Statistics');
     }
 
-    doc.save(`${activeTab}_report_${startDate}_${endDate}.pdf`);
-    toast.success('PDF file downloaded successfully');
+    // Hoja 2: Top Product by Period
+    if (topProductPeriodData) {
+      const ws2 = XLSX.utils.json_to_sheet([
+        {
+          'Period Type': period.charAt(0).toUpperCase() + period.slice(1),
+          'Period': formatPeriod(topProductPeriodData.period, period),
+          'Product Name': topProductPeriodData.productName,
+          'Total Quantity': topProductPeriodData.totalQuantity,
+          'Total Sales': formatCurrency(topProductPeriodData.totalSales)
+        }
+      ]);
+      XLSX.utils.book_append_sheet(wb, ws2, 'Top Product by Period');
+    }
+
+    // Hoja 3: Monthly Trends
+    if (monthlyTrendsData.length > 0) {
+      const ws3 = XLSX.utils.json_to_sheet(
+        monthlyTrendsData.map((item: any) => ({
+          'Month': formatMonth(item.month),
+          'Total Sales': formatCurrency(item.totalSales),
+          'Order Count': item.orderCount,
+          'Average Ticket': formatCurrency(item.averageTicket)
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, ws3, 'Monthly Trends');
+    }
+
+    // Hoja 4: Payment Methods
+    if (paymentMethodData.length > 0) {
+      const ws4 = XLSX.utils.json_to_sheet(
+        paymentMethodData.map((item: any) => ({
+          'Payment Method': item.paymentMethod,
+          'Order Count': item.orderCount,
+          'Total Sales': formatCurrency(item.totalSales)
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, ws4, 'Payment Methods');
+    }
+
+    // Hoja 5: Top Products
+    if (topProductsData.length > 0) {
+      const ws5 = XLSX.utils.json_to_sheet(
+        topProductsData.map((item: any) => ({
+          'Product': item.productName,
+          'Quantity Sold': item.totalQuantity,
+          'Total Sales': formatCurrency(item.totalSales)
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, ws5, 'Top Products');
+    }
+
+    // Hoja 6: Sales by Period
+    if (salesByPeriodData.length > 0) {
+      const ws6 = XLSX.utils.json_to_sheet(
+        salesByPeriodData.map((item: any) => ({
+          'Period': formatDate(item.period),
+          'Orders': item.orderCount,
+          'Total Sales': formatCurrency(item.totalSales)
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, ws6, 'Sales by Period');
+    }
+
+    // Hoja 7: Shipping Methods
+    if (shippingMethodData.length > 0) {
+      const ws7 = XLSX.utils.json_to_sheet(
+        shippingMethodData.map((item: any) => ({
+          'Shipping Method': item.shippingMethod,
+          'Order Count': item.orderCount,
+          'Total Sales': formatCurrency(item.totalSales),
+          'Avg Shipping Cost': formatCurrency(item.averageShippingCost)
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, ws7, 'Shipping Methods');
+    }
+  };
+
+  // Exportar tab de clientes
+  const exportCustomersTabToExcel = (wb: XLSX.WorkBook, data: any) => {
+    const { customerStatsData = [], topCustomersData = [] } = data;
+
+    if (customerStatsData.length > 0) {
+      const ws1 = XLSX.utils.json_to_sheet(
+        customerStatsData.map((item: any) => ({
+          'Customer': item.customerName,
+          'Email': item.email,
+          'Total Orders': item.totalOrders,
+          'Total Spent': formatCurrency(item.totalSpent),
+          'Avg Order Value': formatCurrency(item.averageOrderValue),
+          'Last Purchase': formatDate(item.lastPurchaseDate)
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, ws1, 'Customer Statistics');
+    }
+
+    if (topCustomersData.length > 0) {
+      const ws2 = XLSX.utils.json_to_sheet(
+        topCustomersData.map((item: any) => ({
+          'Customer': item.customerName,
+          'Email': item.customerEmail,
+          'Total Spent': formatCurrency(item.totalSpent),
+          'Total Orders': item.totalOrders
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, ws2, 'Top Customers');
+    }
+  };
+
+  // Exportar tab de inventario
+  const exportInventoryTabToExcel = (wb: XLSX.WorkBook, data: any) => {
+    const { inventoryData = [], productsWithoutMovementData = [] } = data;
+
+    if (inventoryData.length > 0) {
+      const ws1 = XLSX.utils.json_to_sheet(
+        inventoryData.map((item: any) => ({
+          'Product': item.productName,
+          'Current Stock': item.currentStock,
+          'Sold Quantity': item.totalSold,
+          'Total Revenue': formatCurrency(item.totalRevenue),
+          'Turnover Rate': formatPercentage(item.turnoverRate || 0),
+          'Stock Status': item.currentStock === 0 ? 'Out of Stock' : 
+                        item.currentStock < 10 ? 'Low Stock' : 'In Stock'
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, ws1, 'Inventory Report');
+    }
+
+    if (productsWithoutMovementData.length > 0) {
+      const ws2 = XLSX.utils.json_to_sheet(
+        productsWithoutMovementData.map((item: any) => ({
+          'Product': item.productName,
+          'Stock': item.stock,
+          'Price': formatCurrency(item.price),
+          'Inventory Value': formatCurrency(item.inventoryValue),
+          'Last Movement': item.lastMovementDate || 'Never'
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, ws2, 'Products No Movement');
+    }
+  };
+
+  // Exportar tab de analytics
+  const exportAnalyticsTabToExcel = (wb: XLSX.WorkBook, data: any) => {
+    const {
+      orderStatsData = null,
+      ordersByStatusData = [],
+      conversionRateData = null
+    } = data;
+
+    if (orderStatsData) {
+      const ws1 = XLSX.utils.json_to_sheet([
+        { 'Metric': 'Total Orders', 'Value': orderStatsData.totalOrders },
+        { 'Metric': 'Average Ticket', 'Value': formatCurrency(orderStatsData.averageTicket) },
+        { 'Metric': 'Max Ticket', 'Value': formatCurrency(orderStatsData.maxTicket) },
+        { 'Metric': 'Min Ticket', 'Value': formatCurrency(orderStatsData.minTicket) }
+      ]);
+      XLSX.utils.book_append_sheet(wb, ws1, 'Order Statistics');
+    }
+
+    if (ordersByStatusData.length > 0) {
+      const ws2 = XLSX.utils.json_to_sheet(
+        ordersByStatusData.map((item: any) => ({
+          'Status': item.status,
+          'Order Count': item.orderCount,
+          'Total Amount': formatCurrency(item.totalAmount)
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, ws2, 'Orders by Status');
+    }
+
+    if (conversionRateData) {
+      const ws3 = XLSX.utils.json_to_sheet([
+        {
+          'Metric': 'Completed Orders',
+          'Value': conversionRateData.completed,
+          'Rate': formatPercentage(conversionRateData.completionRate)
+        },
+        {
+          'Metric': 'Cancelled Orders',
+          'Value': conversionRateData.cancelled,
+          'Rate': formatPercentage(conversionRateData.cancellationRate)
+        },
+        {
+          'Metric': 'Pending Orders',
+          'Value': conversionRateData.pending,
+          'Rate': '-'
+        },
+        {
+          'Metric': 'Total Orders',
+          'Value': conversionRateData.total,
+          'Rate': '100.00%'
+        }
+      ]);
+      XLSX.utils.book_append_sheet(wb, ws3, 'Conversion Rate');
+    }
+  };
+
+  // Exportar tab de performance
+  const exportPerformanceTabToExcel = (wb: XLSX.WorkBook, data: any) => {
+    const {
+      salesByBrandData = [],
+      salesByCategoryData = []
+    } = data;
+
+    if (salesByBrandData.length > 0) {
+      const ws1 = XLSX.utils.json_to_sheet(
+        salesByBrandData.map((item: any) => ({
+          'Brand': item.brandName,
+          'Items Sold': item.itemsSold,
+          'Total Quantity': item.totalQuantity,
+          'Total Sales': formatCurrency(item.totalSales)
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, ws1, 'Sales by Brand');
+    }
+
+    if (salesByCategoryData.length > 0) {
+      const ws2 = XLSX.utils.json_to_sheet(
+        salesByCategoryData.map((item: any) => ({
+          'Category': item.categoryName,
+          'Brand': item.brandName,
+          'Items Sold': item.itemsSold,
+          'Total Quantity': item.totalQuantity,
+          'Total Sales': formatCurrency(item.totalSales)
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, ws2, 'Sales by Category');
+    }
+  };
+
+  const exportToPDF = (
+    activeTab: string,
+    startDate: string,
+    endDate: string,
+    data: any,
+    logoPath?: string
+  ) => {
+  const doc = new jsPDF() as JsPDFWithAutoTable;
+  const filename = `${activeTab}_report_${startDate}_${endDate}.pdf`;
+
+  let yStart = 15;
+  if (logoPath) {
+    try {
+      doc.addImage(logoPath, 'PNG', 14, 10, 30, 15);
+      yStart = 30;
+    } catch (error) {
+      console.log('Logo not found, continuing without it');
+    }
+  }
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(20);
+  doc.text(`${activeTab.toUpperCase()} REPORT`, 105, yStart, { align: 'center' });
+  
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.text(`Period: ${startDate} to ${endDate}`, 105, yStart + 7, { align: 'center' });
+  doc.text(`Generated: ${new Date().toLocaleString('es-AR')}`, 105, yStart + 12, { align: 'center' });
+
+  switch (activeTab) {
+    case 'sales':
+      exportSalesTabToPDF(doc, data, yStart + 20);
+      break;
+    case 'customers':
+      exportCustomersTabToPDF(doc, data, yStart + 20);
+      break;
+    case 'inventory':
+      exportInventoryTabToPDF(doc, data, yStart + 20);
+      break;
+    case 'analytics':
+      exportAnalyticsTabToPDF(doc, data, yStart + 20);
+      break;
+    case 'performance':
+      exportPerformanceTabToPDF(doc, data, yStart + 20);
+      break;
+  }
+
+  doc.save(filename);
+  };
+
+  // Exportar tab de ventas a PDF 
+  const exportSalesTabToPDF = (doc: JsPDFWithAutoTable, data: any, startY: number) => {
+    const {
+      paymentMethodData = [],
+      topProductsData = [],
+      salesByPeriodData = [],
+      orderStatsData = null,
+      shippingMethodData = [],
+      monthlyTrendsData = [],
+      topProductPeriodData = null,
+      period = 'day'
+    } = data;
+
+    let yPos = startY;
+
+    // Top Product by Period - NUEVO
+    if (topProductPeriodData) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Top Product by ${period.charAt(0).toUpperCase() + period.slice(1)}`, 14, yPos);
+      yPos += 7;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Period', 'Product', 'Quantity', 'Total Sales']],
+        body: [[
+          formatPeriod(topProductPeriodData.period, period),
+          topProductPeriodData.productName,
+          topProductPeriodData.totalQuantity.toString(),
+          formatCurrency(topProductPeriodData.totalSales)
+        ]],
+        theme: 'grid',
+        headStyles: { fillColor: [59, 130, 246] },
+        margin: { top: 10 }
+      });
+      yPos = doc.lastAutoTable.finalY + 10;
+    }
+
+    // Monthly Trends - NUEVO
+    if (monthlyTrendsData.length > 0) {
+      if (yPos > 200) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Monthly Trends', 14, yPos);
+      yPos += 7;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Month', 'Orders', 'Total Sales', 'Avg. Ticket']],
+        body: monthlyTrendsData.map((item: any) => [
+          formatMonth(item.month),
+          item.orderCount.toString(),
+          formatCurrency(item.totalSales),
+          formatCurrency(item.averageTicket)
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [139, 92, 246] },
+        styles: { fontSize: 9 }
+      });
+      yPos = doc.lastAutoTable.finalY + 10;
+    }
+
+    // Order Statistics Summary
+    if (orderStatsData) {
+      if (yPos > 200) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Order Statistics Summary', 14, yPos);
+      yPos += 7;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Metric', 'Value']],
+        body: [
+          ['Total Orders', orderStatsData.totalOrders.toString()],
+          ['Average Ticket', formatCurrency(orderStatsData.averageTicket)],
+          ['Max Ticket', formatCurrency(orderStatsData.maxTicket)],
+          ['Min Ticket', formatCurrency(orderStatsData.minTicket)]
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [59, 130, 246] },
+        margin: { top: 10 }
+      });
+      yPos = doc.lastAutoTable.finalY + 10;
+    }
+
+    // Payment Methods
+    if (paymentMethodData.length > 0 && yPos < 250) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Payment Methods', 14, yPos);
+      yPos += 7;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Method', 'Orders', 'Total Sales']],
+        body: paymentMethodData.map((item: any) => [
+          item.paymentMethod,
+          item.orderCount.toString(),
+          formatCurrency(item.totalSales)
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [59, 130, 246] }
+      });
+      yPos = doc.lastAutoTable.finalY + 10;
+    }
+
+    // Top Products
+    if (topProductsData.length > 0) {
+      if (yPos > 200) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Top Selling Products', 14, yPos);
+      yPos += 7;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Product', 'Quantity', 'Total Sales']],
+        body: topProductsData.slice(0, 15).map((item: any) => [
+          item.productName,
+          item.totalQuantity.toString(),
+          formatCurrency(item.totalSales)
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [16, 185, 129] }
+      });
+      yPos = doc.lastAutoTable.finalY + 10;
+    }
+
+    // Shipping Methods
+    if (shippingMethodData.length > 0) {
+      if (yPos > 200) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Shipping Methods', 14, yPos);
+      yPos += 7;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Method', 'Orders', 'Total Sales', 'Avg Shipping Cost']],
+        body: shippingMethodData.map((item: any) => [
+          item.shippingMethod,
+          item.orderCount.toString(),
+          formatCurrency(item.totalSales),
+          formatCurrency(item.averageShippingCost)
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [6, 182, 212] }
+      });
+    }
+  };
+
+  // Exportar tab de clientes a PDF
+  const exportCustomersTabToPDF = (doc: JsPDFWithAutoTable, data: any, startY: number) => {
+    const { customerStatsData = [], topCustomersData = [] } = data;
+    let yPos = startY;
+
+    // Top Customers
+    if (topCustomersData.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Top Customers', 14, yPos);
+      yPos += 7;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Customer', 'Email', 'Total Spent', 'Orders']],
+        body: topCustomersData.map((item: any) => [
+          item.customerName,
+          item.customerEmail,
+          formatCurrency(item.totalSpent),
+          item.totalOrders.toString()
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [245, 158, 11] },
+        styles: { fontSize: 8 }
+      });
+      yPos = doc.lastAutoTable.finalY + 10;
+    }
+
+    // Customer Statistics
+    if (customerStatsData.length > 0) {
+      if (yPos > 200) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Customer Statistics', 14, yPos);
+      yPos += 7;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Customer', 'Email', 'Orders', 'Total Spent', 'Avg Order', 'Last Purchase']],
+        body: customerStatsData.slice(0, 20).map((item: any) => [
+          item.customerName,
+          item.email,
+          item.totalOrders.toString(),
+          formatCurrency(item.totalSpent),
+          formatCurrency(item.averageOrderValue),
+          formatDate(item.lastPurchaseDate)
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [139, 92, 246] },
+        styles: { fontSize: 7 }
+      });
+    }
+  };
+
+  // Exportar tab de inventario a PDF
+  const exportInventoryTabToPDF = (doc: JsPDFWithAutoTable, data: any, startY: number) => {
+    const { inventoryData = [], productsWithoutMovementData = [] } = data;
+    let yPos = startY;
+
+    if (inventoryData.length > 0) {
+      const totalProducts = inventoryData.length;
+      const totalRevenue = inventoryData.reduce((sum: number, item: any) => sum + item.totalRevenue, 0);
+      const totalSold = inventoryData.reduce((sum: number, item: any) => sum + item.totalSold, 0);
+      const outOfStock = inventoryData.filter((item: any) => item.currentStock === 0).length;
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Inventory Summary', 14, yPos);
+      yPos += 7;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Metric', 'Value']],
+        body: [
+          ['Total Products', totalProducts.toString()],
+          ['Total Revenue', formatCurrency(totalRevenue)],
+          ['Total Sold', totalSold.toString()],
+          ['Out of Stock', outOfStock.toString()]
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [249, 115, 22] }
+      });
+      yPos = doc.lastAutoTable.finalY + 10;
+
+      if (yPos > 200) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.text('Inventory Details', 14, yPos);
+      yPos += 7;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Product', 'Stock', 'Sold', 'Revenue', 'Turnover']],
+        body: inventoryData.slice(0, 20).map((item: any) => [
+          item.productName,
+          item.currentStock.toString(),
+          item.totalSold.toString(),
+          formatCurrency(item.totalRevenue),
+          formatPercentage(item.turnoverRate || 0)
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [249, 115, 22] },
+        styles: { fontSize: 9 }
+      });
+      yPos = doc.lastAutoTable.finalY + 10;
+    }
+
+    if (productsWithoutMovementData.length > 0) {
+      if (yPos > 200) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Products Without Movement', 14, yPos);
+      yPos += 7;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Product', 'Stock', 'Price', 'Inventory Value']],
+        body: productsWithoutMovementData.map((item: any) => [
+          item.productName,
+          item.stock.toString(),
+          formatCurrency(item.price),
+          formatCurrency(item.inventoryValue)
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [239, 68, 68] },
+        styles: { fontSize: 9 }
+      });
+    }
+  };
+
+  // Exportar tab de analytics a PDF
+  const exportAnalyticsTabToPDF = (doc: JsPDFWithAutoTable, data: any, startY: number) => {
+    const {
+      orderStatsData = null,
+      ordersByStatusData = [],
+      conversionRateData = null
+    } = data;
+
+    let yPos = startY;
+
+    if (orderStatsData) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Order Statistics', 14, yPos);
+      yPos += 7;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Metric', 'Value']],
+        body: [
+          ['Total Orders', orderStatsData.totalOrders.toString()],
+          ['Average Ticket', formatCurrency(orderStatsData.averageTicket)],
+          ['Max Ticket', formatCurrency(orderStatsData.maxTicket)],
+          ['Min Ticket', formatCurrency(orderStatsData.minTicket)]
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [99, 102, 241] }
+      });
+      yPos = doc.lastAutoTable.finalY + 10;
+    }
+
+    if (ordersByStatusData.length > 0) {
+      if (yPos > 200) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Orders by Status', 14, yPos);
+      yPos += 7;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Status', 'Order Count', 'Total Amount']],
+        body: ordersByStatusData.map((item: any) => [
+          item.status,
+          item.orderCount.toString(),
+          formatCurrency(item.totalAmount)
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [139, 92, 246] }
+      });
+      yPos = doc.lastAutoTable.finalY + 10;
+    }
+
+    if (conversionRateData) {
+      if (yPos > 200) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Conversion Rate Analysis', 14, yPos);
+      yPos += 7;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Metric', 'Count', 'Rate']],
+        body: [
+          ['Completed Orders', conversionRateData.completed.toString(), formatPercentage(conversionRateData.completionRate)],
+          ['Cancelled Orders', conversionRateData.cancelled.toString(), formatPercentage(conversionRateData.cancellationRate)],
+          ['Pending Orders', conversionRateData.pending.toString(), '-'],
+          ['Total Orders', conversionRateData.total.toString(), '100.00%']
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [16, 185, 129] }
+      });
+    }
+  };
+
+  // Exportar tab de performance a PDF
+  const exportPerformanceTabToPDF = (doc: JsPDFWithAutoTable, data: any, startY: number) => {
+    const {
+      salesByBrandData = [],
+      salesByCategoryData = []
+    } = data;
+
+    let yPos = startY;
+
+    if (salesByBrandData.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Sales by Brand', 14, yPos);
+      yPos += 7;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Brand', 'Items Sold', 'Quantity', 'Total Sales']],
+        body: salesByBrandData.map((item: any) => [
+          item.brandName,
+          item.itemsSold.toString(),
+          item.totalQuantity.toString(),
+          formatCurrency(item.totalSales)
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [249, 115, 22] }
+      });
+      yPos = doc.lastAutoTable.finalY + 10;
+    }
+
+    if (salesByCategoryData.length > 0) {
+      if (yPos > 200) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Sales by Category', 14, yPos);
+      yPos += 7;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Category', 'Brand', 'Items', 'Quantity', 'Sales']],
+        body: salesByCategoryData.map((item: any) => [
+          item.categoryName,
+          item.brandName,
+          item.itemsSold.toString(),
+          item.totalQuantity.toString(),
+          formatCurrency(item.totalSales)
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [139, 92, 246] },
+        styles: { fontSize: 8 }
+      });
+    }
   };
 
   // Función para calcular el turnover rate
@@ -424,24 +1049,24 @@ const ReportsPage = () => {
   };
 
   // Función para formatear porcentaje
-const formatPercentage = (value: number) => {
-  return `${value.toFixed(2)}%`;
-};
+  const formatPercentage = (value: number) => {
+    return `${value.toFixed(2)}%`;
+  };
 
-// Función para formatear fecha más detallada
-const formatDateTime = (dateString: string) => {
-  if (!dateString) return 'Nunca';
-  return new Date(dateString).toLocaleString('en-US', { // es-AR para formato Arg
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-};
+  // Función para formatear fecha más detallada
+  const formatDateTime = (dateString: string) => {
+    if (!dateString) return 'Nunca';
+    return new Date(dateString).toLocaleString('en-US', { // es-AR para formato Arg
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
-// Función para obtener color según estado
-const getStatusColor = (status: string) => {
+  // Función para obtener color según estado
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'COMPLETED':
         return 'bg-green-100 text-green-800 border-green-200';
@@ -634,6 +1259,8 @@ const getStatusColor = (status: string) => {
                       onChange={(e) => setMaxStock(e.target.value ? parseInt(e.target.value) : '')}
                       className="w-20 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
+                    <label className="text-sm text-gray-600">Show:</label>
+                     
                   </div>
                   
                   <div className="flex items-center gap-2">
@@ -656,14 +1283,65 @@ const getStatusColor = (status: string) => {
                   customerStatsData.length > 0 || topCustomersData.length > 0 || inventoryData.length > 0) && (
                   <>
                     <button
-                      onClick={exportToExcel}
-                      className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium"
-                    >
+                      onClick={() => exportToExcel(activeTab, startDate, endDate, {
+                        // Sales tab
+                        paymentMethodData,
+                        topProductsData,
+                        salesByPeriodData,
+                        orderStatsData,
+                        shippingMethodData,
+                        monthlyTrendsData,
+                        topProductPeriodData,
+                        period,
+
+                        // Customers tab
+                        customerStatsData,
+                        topCustomersData,
+                        
+                        // Inventory tab
+                        inventoryData,
+                        productsWithoutMovementData,
+                        
+                        // Analytics tab
+                        ordersByStatusData,
+                        conversionRateData,
+                        
+                        // Performance tab
+                        salesByBrandData,
+                        salesByCategoryData
+                      })}
+                      className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium">
                       <FileSpreadsheet className="w-4 h-4" />
                       Export Excel
                     </button>
                     <button
-                      onClick={exportToPDF}
+                      onClick={() => exportToPDF(activeTab, startDate, endDate, {
+                        // Sales tab
+                        paymentMethodData,
+                        topProductsData,
+                        salesByPeriodData,
+                        orderStatsData,
+                        shippingMethodData,
+                        monthlyTrendsData,
+                        topProductPeriodData,
+                        period,
+                        
+                        // Customers tab
+                        customerStatsData,
+                        topCustomersData,
+                        
+                        // Inventory tab
+                        inventoryData,
+                        productsWithoutMovementData,
+                        
+                        // Analytics tab
+                        ordersByStatusData,
+                        conversionRateData,
+                        
+                        // Performance tab
+                        salesByBrandData,
+                        salesByCategoryData
+                      }, '/logo2.png')} 
                       className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium"
                     >
                       <FileDown className="w-4 h-4" />
@@ -671,7 +1349,6 @@ const getStatusColor = (status: string) => {
                     </button>
                   </>
                 )}
-
                 <button
                   onClick={handleGenerateReports}
                   disabled={loading}
@@ -1684,36 +2361,39 @@ const getStatusColor = (status: string) => {
 
                 <div className="h-96 mb-6">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={salesByBrandData.slice(0, 10)}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="brandName" 
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                        interval={0}
-                        fontSize={12}
-                      />
-                      <YAxis />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend />
-                      <Bar 
-                        dataKey="totalSales" 
-                        name="Total Sales" 
-                        fill="#f97316"
-                        radius={[4, 4, 0, 0]}
-                      />
-                      <Bar 
-                        dataKey="totalQuantity" 
-                        name="Quantity Sold" 
-                        fill="#8b5cf6"
-                        radius={[4, 4, 0, 0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <BarChart
+                    data={salesByBrandData.slice(0, 10)}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="brandName" 
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                      interval={0}
+                      fontSize={12}
+                    />
+                    <YAxis yAxisId="left" orientation="left" stroke="#f97316" />
+                    <YAxis yAxisId="right" orientation="right" stroke="#8b5cf6" />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Bar 
+                      yAxisId="left"
+                      dataKey="totalSales" 
+                      name="Total Sales" 
+                      fill="#f97316"
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <Bar 
+                      yAxisId="right"
+                      dataKey="totalQuantity" 
+                      name="Quantity Sold" 
+                      fill="#8b5cf6"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
                 </div>
 
                 <div className="overflow-x-auto">
@@ -1788,36 +2468,41 @@ const getStatusColor = (status: string) => {
                 {/* Gráfico de categorías */}
                 <div className="h-96">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={salesByCategoryData.slice(0, 15)}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="categoryName" 
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                        interval={0}
-                        fontSize={12}
-                      />
-                      <YAxis />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend />
-                      <Bar 
-                        dataKey="totalSales" 
-                        name="Total Sales" 
-                        fill="#8b5cf6"
-                        radius={[4, 4, 0, 0]}
-                      />
-                      <Bar 
-                        dataKey="totalQuantity" 
-                        name="Quantity Sold" 
-                        fill="#06b6d4"
-                        radius={[4, 4, 0, 0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
+    <BarChart
+      data={salesByCategoryData.slice(0, 15)}
+      margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
+    >
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis 
+        dataKey="categoryName" 
+        angle={-45}
+        textAnchor="end"
+        height={60}
+        interval={0}
+        fontSize={12}
+      />
+      {/* CAMBIO: Agregar dos ejes Y separados */}
+      <YAxis yAxisId="left" orientation="left" stroke="#8b5cf6" />
+      <YAxis yAxisId="right" orientation="right" stroke="#06b6d4" />
+      <Tooltip content={<CustomTooltip />} />
+      <Legend />
+      {/* CAMBIO: Usar yAxisId diferentes para cada barra */}
+      <Bar 
+        yAxisId="left"
+        dataKey="totalSales" 
+        name="Total Sales" 
+        fill="#8b5cf6"
+        radius={[4, 4, 0, 0]}
+      />
+      <Bar 
+        yAxisId="right"
+        dataKey="totalQuantity" 
+        name="Quantity Sold" 
+        fill="#06b6d4"
+        radius={[4, 4, 0, 0]}
+      />
+    </BarChart>
+  </ResponsiveContainer>
                 </div>
               </div>
             )}
