@@ -18,6 +18,54 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     List<OrderEntity> findByCustomerIdOrderByDateDesc(Long customerId);
     List<OrderEntity> findAllByOrderByDateDesc();
+
+    // Buscar órdenes de un usuario
+    @Query(value = """
+    SELECT o.* FROM orders o 
+    LEFT JOIN users u ON o.user_id = u.id
+    WHERE 
+    o.user_id = :userId
+    AND (CAST(:status AS VARCHAR) IS NULL OR o.status = CAST(:status AS VARCHAR))
+    AND (CAST(:startDate AS TIMESTAMP) IS NULL OR o.date >= CAST(:startDate AS TIMESTAMP))
+    AND (CAST(:endDate AS TIMESTAMP) IS NULL OR o.date <= CAST(:endDate AS TIMESTAMP))
+    AND (
+        CAST(:searchQuery AS VARCHAR) IS NULL 
+        OR CAST(o.id AS TEXT) LIKE CONCAT('%', CAST(:searchQuery AS VARCHAR), '%')
+        OR o.payment_id LIKE CONCAT('%', CAST(:searchQuery AS VARCHAR), '%')
+        OR o.mercadopago_order_id LIKE CONCAT('%', CAST(:searchQuery AS VARCHAR), '%')
+        OR LOWER(o.shipping_address) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS VARCHAR), '%'))
+        OR LOWER(o.shipping_city) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS VARCHAR), '%'))
+        OR o.shipping_postal_code LIKE CONCAT('%', CAST(:searchQuery AS VARCHAR), '%')
+    )
+    ORDER BY o.date DESC
+    """,
+            countQuery = """
+    SELECT COUNT(o.id) FROM orders o 
+    LEFT JOIN users u ON o.user_id = u.id
+    WHERE 
+    o.user_id = :userId
+    AND (CAST(:status AS VARCHAR) IS NULL OR o.status = CAST(:status AS VARCHAR))
+    AND (CAST(:startDate AS TIMESTAMP) IS NULL OR o.date >= CAST(:startDate AS TIMESTAMP))
+    AND (CAST(:endDate AS TIMESTAMP) IS NULL OR o.date <= CAST(:endDate AS TIMESTAMP))
+    AND (
+        CAST(:searchQuery AS VARCHAR) IS NULL 
+        OR CAST(o.id AS TEXT) LIKE CONCAT('%', CAST(:searchQuery AS VARCHAR), '%')
+        OR o.payment_id LIKE CONCAT('%', CAST(:searchQuery AS VARCHAR), '%')
+        OR o.mercadopago_order_id LIKE CONCAT('%', CAST(:searchQuery AS VARCHAR), '%')
+        OR LOWER(o.shipping_address) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS VARCHAR), '%'))
+        OR LOWER(o.shipping_city) LIKE LOWER(CONCAT('%', CAST(:searchQuery AS VARCHAR), '%'))
+        OR o.shipping_postal_code LIKE CONCAT('%', CAST(:searchQuery AS VARCHAR), '%')
+    )
+    """,
+            nativeQuery = true)
+    Page<OrderEntity> findUserOrdersByFilters(
+            @Param("userId") Long userId,
+            @Param("status") String status,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("searchQuery") String searchQuery,
+            Pageable pageable);
+
     @Query(value = """
     SELECT o.* FROM orders o 
     LEFT JOIN users u ON o.user_id = u.id

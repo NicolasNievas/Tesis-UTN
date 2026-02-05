@@ -1,17 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { 
   Calendar, Package, Truck, CreditCard, AlertCircle, 
   ShoppingCart, Clock, CheckCircle, DollarSign, 
   MapPin, User, Mail, Phone, ExternalLink,
   ChevronDown, ChevronUp, Box, FileText,
-  RefreshCw, Filter,
-  Star,
-  RotateCcw,
-  ShoppingBag,
-  Search,
-  X
+  RefreshCw, Filter, Star, RotateCcw, ShoppingBag,
+  Search, X, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import OrderService from '@/services/OrderService';
 import CartService from '@/services/CartService';
@@ -40,22 +36,67 @@ const UserOrders = () => {
     const router = useRouter();
     const { getCart } = useAuthContext();
 
-    useEffect(() => {
-        loadOrders();
-        loadStatistics();
-    }, []);
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalElements, setTotalElements] = useState(0);
+    const pageSize = 10;
+    
+    // Filter states
+    const [selectedStatus, setSelectedStatus] = useState('all');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+    const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    const loadOrders = async () => {
+    useEffect(() => {
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+
+        searchTimeoutRef.current = setTimeout(() => {
+            setDebouncedSearchQuery(searchQuery);
+            setCurrentPage(0);
+        }, 800);
+
+        return () => {
+            if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current);
+            }
+        };
+    }, [searchQuery]);
+
+    const loadOrders = useCallback(async () => {
         try {
-            const data = await OrderService.getUserOrders();
-            setOrders(data);
+            setLoading(true);
+            const response = await OrderService.getUserOrders(
+                currentPage,
+                pageSize,
+                selectedStatus === 'all' ? undefined : selectedStatus,
+                startDate,
+                endDate,
+                debouncedSearchQuery.trim() || undefined
+            );
+            
+            setOrders(response.content);
+            setTotalPages(response.totalPages);
+            setTotalElements(response.totalElements);
         } catch (error) {
             toast.error('Error loading your orders');
             console.error('Error:', error);
         } finally {
             setLoading(false);
         }
-    };
+    }, [currentPage, selectedStatus, startDate, endDate, debouncedSearchQuery]);
+
+    useEffect(() => {
+        loadOrders();
+    }, [loadOrders]);
+
+    useEffect(() => {
+        loadStatistics();
+    }, []);
 
     const loadStatistics = async () => {
         try {
@@ -64,6 +105,57 @@ const UserOrders = () => {
         } catch (error) {
             console.error('Error loading statistics:', error);
         }
+    };
+
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const resetFilters = () => {
+        setStartDate('');
+        setEndDate('');
+        setSelectedStatus('all');
+        setSearchQuery('');
+        setDebouncedSearchQuery('');
+        setCurrentPage(0);
+    };
+
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(e.target.value);
+    };
+
+    const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedStatus(e.target.value);
+        setCurrentPage(0);
+    };
+
+    const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newStartDate = e.target.value;
+        setStartDate(newStartDate);
+        
+        if (endDate && newStartDate > endDate) {
+            setEndDate('');
+        }
+        
+        setCurrentPage(0);
+    };
+
+    const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newEndDate = e.target.value;
+        setEndDate(newEndDate);
+        
+        if (startDate && newEndDate < startDate) {
+            setStartDate('');
+        }
+        
+        setCurrentPage(0);
+    };
+
+    const handleClearSearch = () => {
+        setSearchQuery('');
+        setDebouncedSearchQuery('');
+        setCurrentPage(0);
     };
 
     const formatDate = (dateArray: string | number[]) => {
@@ -359,19 +451,32 @@ const UserOrders = () => {
                 </div>
             )}
 
-            {/* Filtros de búsqueda */}
+            {/* Filtros */}
             <div className="bg-white rounded-xl p-3 border border-gray-200 shadow-sm mb-6">
                 <div className="flex flex-col md:flex-row md:items-center gap-3">
-                    {/* Buscador General */}
+                    {/* Buscador */}
                     <div className="flex-1">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
                                 type="text"
+                                value={searchQuery}
+                                onChange={handleSearchChange}
                                 placeholder="Search by Order ID, Address, City, Postal Code..."
-                                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                             />
+                            {searchQuery && (
+                                <button
+                                    onClick={handleClearSearch}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            )}
                         </div>
+                        {searchQuery !== debouncedSearchQuery && (
+                            <p className="text-xs text-gray-400 mt-1">Searching...</p>
+                        )}
                     </div>
 
                     {/* Filtro por Estado */}
@@ -379,9 +484,9 @@ const UserOrders = () => {
                         <div className="relative">
                             <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
                             <select
-                                value={filter}
-                                onChange={(e) => setFilter(e.target.value as 'all' | 'pending' | 'completed' | 'in_process' | 'cancelled')}
-                                className="w-full md:w-48 pl-10 pr-8 py-2 appearance-none border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white relative"
+                                value={selectedStatus}
+                                onChange={handleStatusChange}
+                                className="w-full md:w-48 pl-10 pr-8 py-2 appearance-none border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
                             >
                                 <option value="all">All Status</option>
                                 <option value="pending">Pending</option>
@@ -398,21 +503,33 @@ const UserOrders = () => {
 
                     {/* Filtro por Fecha */}
                     <div className="flex gap-3 w-full md:w-auto">
+                        {/* Fecha Desde */}
                         <div className="flex-1 md:w-auto">
                             <div className="relative">
                                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                                 <input
                                     type="date"
+                                    value={startDate}
+                                    onChange={handleStartDateChange}
+                                    max={endDate || new Date().toISOString().split('T')[0]}
                                     className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                    placeholder="From"
                                 />
                             </div>
                         </div>
+                        
+                        {/* Fecha Hasta */}
                         <div className="flex-1 md:w-auto">
                             <div className="relative">
                                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                                 <input
                                     type="date"
+                                    value={endDate}
+                                    onChange={handleEndDateChange}
+                                    min={startDate || undefined}
+                                    max={new Date().toISOString().split('T')[0]}
                                     className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                    placeholder="To"
                                 />
                             </div>
                         </div>
@@ -421,10 +538,7 @@ const UserOrders = () => {
                     {/* Botones */}
                     <div className="flex gap-2 w-full md:w-auto">
                         <button
-                            onClick={() => {
-                                setFilter('all');
-                                // Aquí también limpiarías el buscador y fechas cuando los implementes
-                            }}
+                            onClick={resetFilters}
                             className="px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center gap-1.5"
                         >
                             <X className="w-4 h-4" />
@@ -721,6 +835,34 @@ const UserOrders = () => {
                     );
                 })}
             </div>
+
+            {/* Pagination */}
+            {orders.length > 0 && (
+                <div className="flex items-center justify-between mt-8 bg-white p-4 rounded-lg shadow-sm">
+                    <div className="text-sm text-gray-700">
+                        Showing {orders.length} of {totalElements} orders
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 0}
+                            className="p-2 rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
+                        >
+                            <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <span className="text-sm text-gray-700">
+                            Page {currentPage + 1} of {totalPages}
+                        </span>
+                        <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage >= totalPages - 1}
+                            className="p-2 rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
+                        >
+                            <ChevronRight className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Empty State */}
             {filteredOrders.length === 0 && (

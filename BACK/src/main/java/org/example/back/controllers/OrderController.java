@@ -26,12 +26,28 @@ public class OrderController {
 
     @GetMapping("/orders/get")
     @Operation(summary = "Get all orders for current user",
-            description = "Retrieves all orders for the authenticated user")
+            description = "Retrieves all orders for the authenticated user with filters and pagination")
     @ApiResponse(responseCode = "200", description = "Orders retrieved successfully")
     @ApiResponse(responseCode = "401", description = "Unauthorized")
-    public ResponseEntity<List<OrderResponse>> getUserOrders() {
-        List<OrderResponse> orders = orderService.getUserOrders();
-        return ResponseEntity.ok(orders);
+    public ResponseEntity<PageResponse<OrderResponse>> getUserOrders(
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required = false) String searchQuery,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        PageResponse<OrderResponse> response = orderService.getUserOrders(
+                status,
+                startDate,
+                endDate,
+                searchQuery,
+                page,
+                size
+        );
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/admin/orders")

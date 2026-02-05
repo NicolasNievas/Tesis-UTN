@@ -13,8 +13,7 @@ import java.util.List;
 @Service
 public interface OrderService {
     OrderResponse createOrder (OrderRequest orderRequest, String userEmail);
-    List<OrderResponse> getUserOrders();
-    List<OrderResponse> getAllOrders();
+    PageResponse<OrderResponse> getUserOrders(OrderStatus status, LocalDateTime startDate, LocalDateTime endDate, String searchQuery, int page, int size)  ;
    PageResponse<OrderResponse> getAllOrders(OrderStatus status, LocalDateTime startDate,  LocalDateTime endDate, String searchQuery, int page, int size);
    OrderResponse updateOrderStatus(Long orderId, OrderStatus status);
    UserOrderStatisticsDTO getUserOrderStatistics();
