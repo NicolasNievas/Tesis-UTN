@@ -6,7 +6,6 @@ import {
   Calendar, 
   User, 
   Download,
-  Package,
   MapPin,
   Truck,
   Clock,
@@ -16,7 +15,10 @@ import {
   IdCard,
   Store,
   Navigation,
-  MapPinIcon
+  MapPinIcon,
+  AlertCircle,
+  CheckCircle2,
+  XCircle
 } from 'lucide-react';
 import Link from "next/link";
 
@@ -93,7 +95,7 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
     method: paymentDetails.metadata.shipping_method_name?.toLowerCase() || 'standard',
     display_name: paymentDetails.metadata.shipping_display_name || 
                   paymentDetails.metadata.shipping_method_name || 
-                  'Envío estándar',
+                  'Standard Shipping',
     cost: parseFloat(paymentDetails.metadata.shipping_cost || '0'),
     estimated_days: paymentDetails.metadata.shipping_estimated_days,
     address: paymentDetails.metadata.shipping_address || '',
@@ -120,7 +122,7 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
         estimatedDeliveryText: 'business days'
       },
       'correo_argentino': { 
-        name: displayName || 'Argentine Mail', 
+        name: displayName || 'Correo Argentino', 
         icon: <Truck className="h-5 w-5" />,
         color: 'text-blue-600',
         estimatedDeliveryText: 'business days'
@@ -162,12 +164,101 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
     const productsSubtotal = calculateProductsSubtotal();
     const shippingCost = shippingInfo?.cost || 0;
     const total = paymentDetails.transaction_amount;
-    console.log('Renderizando PaymentDetailsContent');
-    console.log('Status:', status);
-    console.log('Status Info:', statusInfo);
-    console.log('Payment Details tiene shipping?', shippingInfo);
-    console.log('Email:', email);
     
+    const getStatusIcon = () => {
+    switch (status) {
+      case 'approved':
+        return <CheckCircle2 className="h-6 w-6" />;
+      case 'pending':
+        return <Clock className="h-6 w-6" />;
+      default:
+        return <XCircle className="h-6 w-6" />;
+    }
+  };
+
+  const getStatusBadgeColor = () => {
+    switch (status) {
+      case 'approved':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-red-100 text-red-800';
+    }
+  };
+
+  const getNextStepsContent = () => {
+    switch (status) {
+      case 'approved':
+        return (
+          <>
+            <li className="flex items-start">
+              <span className="text-green-600 mr-2">✓</span>
+              <span>You will receive a confirmation email shortly</span>
+            </li>
+            <li className="flex items-start">
+              <span className="text-green-600 mr-2">✓</span>
+              <span>Your order is being processed</span>
+            </li>
+            <li className="flex items-start">
+              <span className="text-green-600 mr-2">✓</span>
+              <span>
+                {shippingInfo?.isPickup ? (
+                  shippingInfo.estimated_days === 0 
+                    ? 'Your order is ready for pickup today at our store'
+                    : `Your order will be ready for pickup in ${shippingInfo.estimated_days} business days`
+                ) : (
+                  `Estimated delivery time: ${shippingInfo?.estimated_days || 3} business days`
+                )}
+              </span>
+            </li>
+            <li className="flex items-start">
+              <span className="text-green-600 mr-2">✓</span>
+              <span>Track your order in your account</span>
+            </li>
+          </>
+        );
+      case 'pending':
+        return (
+          <>
+            <li className="flex items-start">
+              <AlertCircle className="h-4 w-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
+              <span>Your payment is being processed by the bank</span>
+            </li>
+            <li className="flex items-start">
+              <Clock className="h-4 w-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
+              <span>This may take up to 24 hours</span>
+            </li>
+            <li className="flex items-start">
+              <Mail className="h-4 w-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
+              <span>You will receive an email when confirmed</span>
+            </li>
+            <li className="flex items-start">
+              <FileText className="h-4 w-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
+              <span>Keep this receipt for your records</span>
+            </li>
+          </>
+        );
+      default:
+        return (
+          <>
+            <li className="flex items-start">
+              <XCircle className="h-4 w-4 text-red-600 mr-2 mt-0.5 flex-shrink-0" />
+              <span>Please check your payment method details</span>
+            </li>
+            <li className="flex items-start">
+              <CreditCard className="h-4 w-4 text-red-600 mr-2 mt-0.5 flex-shrink-0" />
+              <span>Ensure you have sufficient funds</span>
+            </li>
+            <li className="flex items-start">
+              <ArrowLeft className="h-4 w-4 text-red-600 mr-2 mt-0.5 flex-shrink-0" />
+              <span>Try again or use a different payment method</span>
+            </li>
+          </>
+        );
+    }
+  };
+
     return (    
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-12 px-4">
         <div className="max-w-6xl mx-auto">
@@ -255,7 +346,7 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
                   ))}
                 </div>
 
-                {/* Shipping Section - Manteniendo estructura pero mejorando la tarjeta de dirección */}
+                {/* Shipping Section */}
                 {shippingInfo && (
                   <div className="mt-8 pt-8 border-t border-gray-100">
                     <h3 className="text-lg font-semibold text-gray-700 mb-6 flex items-center">
@@ -380,7 +471,7 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
                                   </button>
                                 </>
                               ) : (
-                                // Dirección de envío normal - MEJORADA
+                                // Dirección de envío normal
                                 <>
                                   {shippingInfo.address && (
                                     <div className="space-y-3">
@@ -409,22 +500,14 @@ export const PaymentDetailsContent: React.FC<IPaymentDetailsContentProps> = ({
                                         </div>
                                       </div>
                                       
-                                      <div className="flex gap-2 mt-4">
-                                        <button
-                                          onClick={() => openInGoogleMaps(shippingInfo.address, shippingInfo.city)}
-                                          className="flex-1 flex items-center justify-center px-4 py-2.5 text-sm font-medium text-indigo-700 bg-white border border-indigo-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition-all duration-200"
-                                        >
-                                          <Navigation className="h-4 w-4 mr-2" />
-                                          View Map
-                                        </button>
-                                        <button
-                                          onClick={() => router.push('/tracking')}
-                                          className="flex-1 flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-sm"
-                                        >
-                                          <Package className="h-4 w-4 mr-2" />
-                                          Track Order
-                                        </button>
-                                      </div>
+                                      {/* Botón único para View Map */}
+                                      <button
+                                        onClick={() => openInGoogleMaps(shippingInfo.address, shippingInfo.city)}
+                                        className="w-full flex items-center justify-center px-4 py-2.5 text-sm font-medium text-indigo-700 bg-white border border-indigo-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition-all duration-200"
+                                      >
+                                        <Navigation className="h-4 w-4 mr-2" />
+                                        View on Map
+                                      </button>
                                       
                                       <div className="mt-4 pt-4 border-t border-gray-200">
                                         <div className="flex items-center justify-between">

@@ -372,4 +372,50 @@ public class ReportServiceImp implements ReportService {
             throw new RuntimeException("Error generating shipping method report: " + e.getMessage(), e);
         }
     }
+
+    @Override
+    public List<MonthlyTrendsDTO> getMonthlyTrends(LocalDateTime startDate, LocalDateTime endDate) {
+        List<Object[]> results = reportRepository.getTTMonthSales(startDate, endDate);
+
+        if (results.isEmpty()) {
+            throw new IllegalArgumentException("No monthly trends data found for the specified period.");
+        }
+
+        return results.stream()
+                .map(row -> {
+                    String month = (String) row[0]; // Formato YYYY-MM
+                    Long orderCount = ((Number) row[1]).longValue();
+                    BigDecimal totalSales = new BigDecimal(row[2].toString());
+                    BigDecimal averageTicket = new BigDecimal(row[3].toString());
+
+                    return new MonthlyTrendsDTO(month, orderCount, totalSales, averageTicket);
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public TopProductByPeriodDTO getTopProductByPeriod(String periodType, LocalDateTime startDate, LocalDateTime endDate) {
+        List<Object[]> results = reportRepository.getTopProductByPeriod(periodType, startDate, endDate);
+
+        if (results.isEmpty()) {
+            throw new IllegalArgumentException("No top product data found for the specified period.");
+        }
+
+        Object[] row = results.get(0);
+        TopProductByPeriodDTO dto = new TopProductByPeriodDTO();
+        dto.setProductId(((Number) row[0]).longValue());
+        dto.setProductName((String) row[1]);
+        dto.setTotalQuantity(((Number) row[2]).longValue());
+        dto.setTotalSales(new BigDecimal(row[3].toString()));
+
+        if (row[4] instanceof java.sql.Timestamp) {
+            dto.setPeriod(((java.sql.Timestamp) row[4]).toLocalDateTime());
+        } else if (row[4] instanceof LocalDateTime) {
+            dto.setPeriod((LocalDateTime) row[4]);
+        }
+
+        dto.setPeriodType(periodType);
+
+        return dto;
+    }
 }

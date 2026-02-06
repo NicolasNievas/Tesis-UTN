@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ConversionRate, CustomerStatistics, InventoryReport, OrdersByStatus, OrderStatistics, PaymentMethodReport, ProductsWithoutMovement, SalesByBrand, SalesByCategory, SalesByPeriodReport, ShippingMethodReport, TopCustomer, TopProductReport } from "@/interfaces/data.interfaces";
+import { ConversionRate, CustomerStatistics, InventoryReport, MonthlyTrends, OrdersByStatus, OrderStatistics, PaymentMethodReport, ProductsWithoutMovement, SalesByBrand, SalesByCategory, SalesByPeriodReport, ShippingMethodReport, TopCustomer, TopProductByPeriod, TopProductReport } from "@/interfaces/data.interfaces";
 
 const $URL = process.env.NEXT_PUBLIC_API_URL_ADMIN;
 
@@ -216,6 +216,57 @@ class ReportService {
       throw error;
     }
   }
+
+  static async getMonthlyTrendsReport(
+  startDate?: string, 
+  endDate?: string
+): Promise<MonthlyTrends[]> {
+  try {
+    const params = new URLSearchParams();
+    if (startDate) {
+      const startDateTime = new Date(startDate);
+      startDateTime.setHours(0, 0, 0, 0);
+      params.append('startDate', startDateTime.toISOString());
+    }
+    if (endDate) {
+      const endDateTime = new Date(endDate);
+      endDateTime.setHours(23, 59, 59, 999);
+      params.append('endDate', endDateTime.toISOString());
+    }
+    
+    const response = await axios.get(`${$URL}/reports/monthly-trends?${params.toString()}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+static async getTopProductByPeriodReport(
+  period: string = 'day',
+  startDate?: string,
+  endDate?: string
+): Promise<TopProductByPeriod> {
+  try {
+    const params = new URLSearchParams();
+    params.append('period', period);
+    
+    if (startDate) {
+      const startDateTime = new Date(startDate);
+      startDateTime.setHours(0, 0, 0, 0);
+      params.append('startDate', startDateTime.toISOString());
+    }
+    if (endDate) {
+      const endDateTime = new Date(endDate);
+      endDateTime.setHours(23, 59, 59, 999);
+      params.append('endDate', endDateTime.toISOString());
+    }
+    
+    const response = await axios.get(`${$URL}/reports/top-product-period?${params.toString()}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
 }
 
 export default ReportService;

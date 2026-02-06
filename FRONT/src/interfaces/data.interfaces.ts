@@ -52,6 +52,7 @@ export interface RegisterRequest {
   city: string;
   nroDoc: string;
   typeDoc: TypeDocument;
+  termsAccepted: boolean;
 }
   
 export interface AuthResponse {
@@ -308,6 +309,22 @@ export interface ProductPerformanceReport {
   totalRevenue: number;
   averageRating?: number;
   returnRate?: number;
+}
+
+export interface MonthlyTrends {
+  month: string;
+  orderCount: number;
+  totalSales: number;
+  averageTicket: number;
+}
+
+export interface TopProductByPeriod {
+  productId: number;
+  productName: string;
+  totalQuantity: number;
+  totalSales: number;
+  period: string;
+  periodType: string;
 }
 
 //Purchase interfaces

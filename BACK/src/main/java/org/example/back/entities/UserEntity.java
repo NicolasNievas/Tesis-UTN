@@ -70,6 +70,12 @@ public class UserEntity implements UserDetails {
     @Column
     private LocalDateTime verificationCodeExpiry;
 
+    @Column(nullable = false)
+    private boolean termsAccepted = false;
+
+    @Column
+    private LocalDateTime termsAcceptedAt;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

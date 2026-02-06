@@ -132,32 +132,61 @@ public class OrderServiceImp implements OrderService {
     }
 
     @Override
-    public List<OrderResponse> getUserOrders() {
+    public PageResponse<OrderResponse> getUserOrders(
+            OrderStatus status,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            String searchQuery,
+            int page,
+            int size
+    ) {
         User currentUser = userService.getCurrentUser();
-        List<OrderEntity> orders = orderRepository.findByCustomerIdOrderByDateDesc(currentUser.getId());
-        return orders.stream()
+        Pageable pageable = PageRequest.of(page, size);
+        String statusStr = status != null ? status.name() : null;
+
+        String normalizedSearchQuery = searchQuery != null && !searchQuery.trim().isEmpty()
+                ? searchQuery.trim()
+                : null;
+
+        Page<OrderEntity> orderPage = orderRepository.findUserOrdersByFilters(
+                currentUser.getId(),
+                statusStr,
+                startDate,
+                endDate,
+                normalizedSearchQuery,
+                pageable
+        );
+
+        List<OrderResponse> orders = orderPage.getContent().stream()
                 .map(this::convertToOrderResponse)
                 .collect(Collectors.toList());
+
+        return PageResponse.<OrderResponse>builder()
+                .content(orders)
+                .pageNumber(orderPage.getNumber())
+                .pageSize(orderPage.getSize())
+                .totalElements(orderPage.getTotalElements())
+                .totalPages(orderPage.getTotalPages())
+                .build();
     }
 
-    @Override
-    public List<OrderResponse> getAllOrders() {
-        List<OrderEntity> orders = orderRepository.findAllByOrderByDateDesc();
-        return orders.stream()
-                .map(this::convertToOrderResponse)
-                .collect(Collectors.toList());
-    }
     @Override
     public PageResponse<OrderResponse> getAllOrders(
             OrderStatus status,
             LocalDateTime startDate,
             LocalDateTime endDate,
+            String searchQuery,
             int page,
             int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
         String statusStr = status != null ? status.name() : null;
-        Page<OrderEntity> orderPage = orderRepository.findOrdersByFilters(statusStr,startDate, endDate, pageable);
+
+        String normalizedSearchQuery = searchQuery != null && !searchQuery.trim().isEmpty()
+                ? searchQuery.trim()
+                : null;
+
+        Page<OrderEntity> orderPage = orderRepository.findOrdersByFilters(statusStr,startDate, endDate, normalizedSearchQuery, pageable);
 
         List<OrderResponse> orders = orderPage.getContent().stream()
                 .map(this::convertToOrderResponse)

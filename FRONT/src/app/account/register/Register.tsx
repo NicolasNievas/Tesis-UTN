@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { LOGIN_VIEW, TypeDocument } from '@/interfaces/enums';
 import { useAuthContext } from '@/context/data.context';
 import Button from '@/components/atoms/Button';
+import { Modal, TermsAndConditions } from '@/components/organisms/TermsAndConditionModal';
 
 interface IRegisterProps {
     setCurrentView: (view: LOGIN_VIEW) => void;
@@ -20,15 +21,17 @@ const Register = ({ setCurrentView }: IRegisterProps) => {
     address: '',
     city: '',
     nroDoc: '',
-    typeDoc: 'DNI' as unknown as TypeDocument
+    typeDoc: 'DNI' as unknown as TypeDocument,
+    termsAccepted: false,
   });
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { register, isAuthenticated } = useAuthContext();
   const [isDisabled, setIsDisabled] = useState(true);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
 
   useEffect(() => {
-    setIsDisabled(!(formData.email && formData.password && formData.firstname && formData.lastname && formData.phoneNumber && formData.address && formData.city && formData.nroDoc && formData.typeDoc));
+    setIsDisabled(!(formData.email && formData.password && formData.firstname && formData.lastname && formData.phoneNumber && formData.address && formData.city && formData.nroDoc && formData.typeDoc && formData.termsAccepted));
   }, [formData]);
 
   useEffect(() => {
@@ -39,11 +42,26 @@ const Register = ({ setCurrentView }: IRegisterProps) => {
   }, [isAuthenticated, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, type,  value } = e.target;
+
+    if (type === 'checkbox'){
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData({ ...formData, [name]: checked });
+      return;
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+    //setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formData.termsAccepted) {
+      toast.error('You must accept the terms and conditions to register.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -223,6 +241,37 @@ const Register = ({ setCurrentView }: IRegisterProps) => {
                 disabled={isLoading}
               />
             </div>
+
+            <div className="flex items-start gap-2 m-2 text-left">
+              <input
+                type="checkbox"
+                id="termsAccepted"
+                name="termsAccepted"
+                checked={formData.termsAccepted}
+                onChange={handleChange}
+                className="mt-1 w-4 h-4 cursor-pointer"
+                required
+                disabled={isLoading}
+              />
+              <label htmlFor="termsAccepted" className="text-sm text-gray-700">
+                I accept the{' '}
+                <button
+                  type="button"
+                  onClick={() => setIsTermsModalOpen(true)}
+                  className="text-brand-blue hover:underline font-medium"
+                >
+                  Terms and Conditions
+                </button>
+                {' '}and{' '}
+                <button
+                  type="button"
+                  onClick={() => setIsTermsModalOpen(true)}
+                  className="text-brand-blue hover:underline font-medium"
+                >
+                  Privacy Policy
+                </button>
+              </label>
+            </div>
   
             <Button 
               name="Sign up" 
@@ -240,6 +289,14 @@ const Register = ({ setCurrentView }: IRegisterProps) => {
           </div>
         </div>
       </div>
+
+      <Modal
+        isOpen={isTermsModalOpen}
+        onClose={() => setIsTermsModalOpen(false)}
+      >
+        <TermsAndConditions />
+      </Modal>
+
     </div>
   );
 };

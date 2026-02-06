@@ -102,41 +102,42 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
      * Estado del inventario
      */
     @Query(value = """
+    SELECT 
+        p.id as productId,
+        p.name as productName,
+        p.stock as currentStock,
+        p.price,
+        (p.stock * p.price) as inventoryValue,
+        COALESCE(sales.total_sold, 0) as totalSold,
+        COALESCE(sales.total_revenue, 0) as totalRevenue,
+        CASE 
+            WHEN p.stock = 0 THEN 'OUT_OF_STOCK'
+            WHEN p.stock <= 10 THEN 'LOW_STOCK'
+            WHEN p.stock <= 50 THEN 'AVERAGE_STOCK'
+            ELSE 'HIGH_STOCK'
+        END as stockStatus,
+        CASE 
+            WHEN p.stock = 0 AND COALESCE(sales.total_sold, 0) > 0 THEN 100.00
+            WHEN p.stock > 0 THEN 
+                (COALESCE(sales.total_sold, 0) * 100.00) / NULLIF(p.stock + COALESCE(sales.total_sold, 0), 0)
+            ELSE 0.00
+        END as turnoverRate
+    FROM products p
+    LEFT JOIN (
         SELECT 
-            p.id as productId,
-            p.name as productName,
-            p.stock as currentStock,
-            p.price,
-            (p.stock * p.price) as inventoryValue,
-            COALESCE(sales.total_sold, 0) as totalSold,
-            COALESCE(sales.total_revenue, 0) as totalRevenue,
-            CASE 
-                WHEN p.stock = 0 THEN 'OUT_OF_STOCK'
-                WHEN p.stock <= 10 THEN 'LOW_STOCK'
-                WHEN p.stock <= 50 THEN 'AVERAGE_STOCK'
-                ELSE 'HIGH_STOCK'
-            END as stockStatus,
-            CASE 
-                WHEN p.stock = 0 AND COALESCE(sales.total_sold, 0) > 0 THEN 100.00
-                WHEN p.stock > 0 THEN 
-                    (COALESCE(sales.total_sold, 0) * 100.00) / NULLIF(p.stock + COALESCE(sales.total_sold, 0), 0)
-                ELSE 0.00
-            END as turnoverRate
-        FROM products p
-        LEFT JOIN (
-            SELECT 
-                od.product_id,
-                SUM(od.quantity) as total_sold,
-                SUM(od.price * od.quantity) as total_revenue
-            FROM order_details od
-            JOIN orders o ON od.order_id = o.id
-            WHERE o.date BETWEEN :startDate AND :endDate
-            AND o.status = 'DELIVERED'
-            GROUP BY od.product_id
-        ) sales ON p.id = sales.product_id
-        WHERE p.active = true
-        ORDER BY inventoryValue DESC
-        """, nativeQuery = true)
+            od.product_id,
+            SUM(od.quantity) as total_sold,
+            SUM(od.price * od.quantity) as total_revenue
+        FROM order_details od
+        JOIN orders o ON od.order_id = o.id
+        WHERE o.date BETWEEN :startDate AND :endDate
+        AND o.status = 'DELIVERED'
+        GROUP BY od.product_id
+    ) sales ON p.id = sales.product_id
+    WHERE p.active = true
+    ORDER BY COALESCE(sales.total_sold, 0) DESC, COALESCE(sales.total_revenue, 0) DESC, p.name ASC
+    LIMIT 10 
+    """, nativeQuery = true)
     List<Object[]> getInventoryReport(
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
@@ -315,5 +316,48 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
     GROUP BY TO_CHAR(o.date, 'YYYY-MM')
     ORDER BY month
 """, nativeQuery = true)
-    List<Object[]> getTTMonthSales();
+    List<Object[]> getTTMonthSales(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    /**
+     * Producto top por período (día/semana/mes)
+     */
+    @Query(value = """
+    WITH PeriodData AS (
+        SELECT 
+            p.id as productId,
+            p.name as productName,
+            DATE_TRUNC(:periodType, o.date) as period,
+            SUM(od.quantity) as totalQuantity,
+            SUM(od.price * od.quantity) as totalSales
+        FROM orders o
+        JOIN order_details od ON o.id = od.order_id
+        JOIN products p ON od.product_id = p.id
+        WHERE o.date BETWEEN :startDate AND :endDate
+        AND o.status NOT IN ('CANCELLED', 'PENDING')
+        GROUP BY p.id, p.name, DATE_TRUNC(:periodType, o.date), o.date
+    ),
+    LatestPeriod AS (
+        SELECT MAX(period) as latest_period
+        FROM PeriodData
+    )
+    SELECT 
+        pd.productId,
+        pd.productName,
+        pd.totalQuantity,
+        pd.totalSales,
+        pd.period
+    FROM PeriodData pd
+    CROSS JOIN LatestPeriod lp
+    WHERE pd.period = lp.latest_period
+    ORDER BY pd.totalSales DESC
+    LIMIT 1
+""", nativeQuery = true)
+    List<Object[]> getTopProductByPeriod(
+            @Param("periodType") String periodType,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
 }
