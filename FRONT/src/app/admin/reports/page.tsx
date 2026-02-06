@@ -1488,16 +1488,19 @@ const ReportsPage = () => {
                           interval={0}
                           fontSize={12}
                         />
-                        <YAxis />
+                        <YAxis yAxisId="left" orientation="left" stroke="#3b82f6" />
+                        <YAxis yAxisId="right" orientation="right" stroke="#10b981" />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend />
                         <Bar 
+                          yAxisId="left"
                           dataKey="totalSales" 
                           name="Total Sales" 
                           fill="#3b82f6"
                           radius={[4, 4, 0, 0]}
                         />
                         <Bar 
+                          yAxisId="right"
                           dataKey="totalQuantity" 
                           name="Quantity Sold" 
                           fill="#10b981"
@@ -1554,10 +1557,12 @@ const ReportsPage = () => {
                           dataKey="period"
                           fontSize={12}
                         />
-                        <YAxis />
+                        <YAxis yAxisId="left" orientation="left" stroke="#3b82f6" />
+                        <YAxis yAxisId="right" orientation="right" stroke="#10b981" />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend />
                         <Line 
+                          yAxisId="left"
                           dataKey="totalSales" 
                           name="Total Sales" 
                           stroke="#3b82f6" 
@@ -1566,6 +1571,7 @@ const ReportsPage = () => {
                           activeDot={{ r: 6 }}
                         />
                         <Line 
+                          yAxisId="right"
                           type="monotone" 
                           dataKey="orderCount" 
                           name="Order Count" 
@@ -1793,17 +1799,20 @@ const ReportsPage = () => {
                           interval={0}
                           fontSize={12}
                         />
-                        <YAxis />
+                        <YAxis yAxisId="left" orientation="left" stroke="#f59e0b" />
+                        <YAxis yAxisId="right" orientation="right" stroke="#8b5cf6" />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend />
                         <Bar 
+                          yAxisId="left"
                           dataKey="totalSpent" 
                           name="Total Spent" 
                           fill="#f59e0b"
                           radius={[4, 4, 0, 0]}
                         />
                         <Bar 
-                          dataKey="orderCount" 
+                          yAxisId="right"
+                          dataKey="totalOrders" 
                           name="Order Count" 
                           fill="#8b5cf6"
                           radius={[4, 4, 0, 0]}
@@ -1968,7 +1977,7 @@ const ReportsPage = () => {
                         <Legend />
                         <Bar 
                           yAxisId="left"
-                          dataKey="soldQuantity" 
+                          dataKey="totalSold" 
                           name="Sold Quantity" 
                           fill="#3b82f6"
                           radius={[4, 4, 0, 0]}
@@ -2035,7 +2044,7 @@ const ReportsPage = () => {
                 </div>
               )}
 
-              {/* Inventory Reports Tab - Agregar esto después del reporte general de inventario */}
+              {/* Inventory Reports Tab */}
               {productsWithoutMovementData.length > 0 && (
                 <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
                   <div className="flex items-center gap-3 mb-6">
