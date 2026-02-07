@@ -136,7 +136,7 @@ public interface ReportRepository extends Repository<OrderEntity, Long> {
     ) sales ON p.id = sales.product_id
     WHERE p.active = true
     ORDER BY COALESCE(sales.total_sold, 0) DESC, COALESCE(sales.total_revenue, 0) DESC, p.name ASC
-    LIMIT 10 
+    LIMIT 100 
     """, nativeQuery = true)
     List<Object[]> getInventoryReport(
             @Param("startDate") LocalDateTime startDate,

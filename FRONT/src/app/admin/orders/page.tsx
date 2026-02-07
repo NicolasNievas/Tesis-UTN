@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { withAdmin } from '@/hoc/isAdmin';
-import OrderService from '@/services/OrderService';
+import OrderService, { OrderKPIs } from '@/services/OrderService';
 import { OrderResponse } from '@/interfaces/data.interfaces';
 import { toast } from 'react-toastify';
 import OrderDetailsModal from '@/components/organisms/OrderDetailsModal';
@@ -9,7 +9,7 @@ import ShipmentModal from '@/components/organisms/ShipmentModal';
 import { 
   Package, Truck, Calendar, Mail, Clock, DollarSign, 
   ChevronLeft, ChevronRight, ChevronDown, Search, X,
-  ShoppingBag, ClockIcon, CheckCircle, PackageCheck, 
+  ShoppingBag, ClockIcon, CheckCircle, PackageCheck,
 } from 'lucide-react';
 import Line from '@/components/atoms/Line';
 
@@ -35,10 +35,20 @@ const AdminOrders = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
+    const [kpisLoading, setKpisLoading] = useState(true);
+
     const STATUS_OPTIONS = ['ALL', 'PENDING', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
 
     const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+     const [kpis, setKpis] = useState<OrderKPIs>({
+        totalOrders: 0,
+        pendingOrders: 0,
+        paidOrders: 0,
+        shippedOrders: 0,
+        deliveredOrders: 0
+    });
+    
     useEffect(() => {
         if (searchTimeoutRef.current) {
             clearTimeout(searchTimeoutRef.current);
@@ -55,6 +65,19 @@ const AdminOrders = () => {
             }
         };
     }, [searchQuery]);
+
+    const loadKPIs = useCallback(async () => {
+        try {
+            setKpisLoading(true);
+            const kpisData = await OrderService.getOrderKPIs();
+            setKpis(kpisData);
+        } catch (error) {
+            console.error('Error loading KPIs:', error);
+            toast.error('Error loading statistics');
+        } finally {
+            setKpisLoading(false);
+        }
+    }, []);
 
     const loadOrders = useCallback(async () => {
         try {
@@ -80,6 +103,10 @@ const AdminOrders = () => {
             setLoading(false);
         }
     }, [currentPage, selectedStatus, startDate, endDate, debouncedSearchQuery]);
+
+     useEffect(() => {
+        loadKPIs();
+    }, [loadKPIs]);
 
     useEffect(() => {
         loadOrders();
@@ -235,14 +262,18 @@ const AdminOrders = () => {
                     <h1 className="text-3xl font-bold text-gray-800">Orders Management</h1>
                 </div>
 
-                {/* KPI Cards */}
+                {/* KPI Cards - SOLO 5 originales */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                     {/* Total Orders */}
                     <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
                         <div className="flex items-start justify-between">
                             <div>
                                 <p className="text-xs font-medium text-gray-600 mb-1">Total Orders</p>
-                                <p className="text-2xl font-bold text-gray-900">{totalElements}</p>
+                                {kpisLoading ? (
+                                    <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
+                                ) : (
+                                    <p className="text-2xl font-bold text-gray-900">{kpis.totalOrders}</p>
+                                )}
                                 <p className="text-xs text-gray-500 mt-1">All time orders</p>
                             </div>
                             <div className="p-2 bg-blue-50 rounded-lg">
@@ -256,7 +287,11 @@ const AdminOrders = () => {
                         <div className="flex items-start justify-between">
                             <div>
                                 <p className="text-xs font-medium text-gray-600 mb-1">Pending</p>
-                                <p className="text-2xl font-bold text-gray-900">0</p>
+                                {kpisLoading ? (
+                                    <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
+                                ) : (
+                                    <p className="text-2xl font-bold text-gray-900">{kpis.pendingOrders}</p>
+                                )}
                                 <p className="text-xs text-gray-500 mt-1">Awaiting payment</p>
                             </div>
                             <div className="p-2 bg-yellow-50 rounded-lg">
@@ -270,7 +305,11 @@ const AdminOrders = () => {
                         <div className="flex items-start justify-between">
                             <div>
                                 <p className="text-xs font-medium text-gray-600 mb-1">Paid</p>
-                                <p className="text-2xl font-bold text-gray-900">13</p>
+                                {kpisLoading ? (
+                                    <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
+                                ) : (
+                                    <p className="text-2xl font-bold text-gray-900">{kpis.paidOrders}</p>
+                                )}
                                 <p className="text-xs text-gray-500 mt-1">Confirmed payments</p>
                             </div>
                             <div className="p-2 bg-green-50 rounded-lg">
@@ -284,7 +323,11 @@ const AdminOrders = () => {
                         <div className="flex items-start justify-between">
                             <div>
                                 <p className="text-xs font-medium text-gray-600 mb-1">Shipped</p>
-                                <p className="text-2xl font-bold text-gray-900">1</p>
+                                {kpisLoading ? (
+                                    <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
+                                ) : (
+                                    <p className="text-2xl font-bold text-gray-900">{kpis.shippedOrders}</p>
+                                )}
                                 <p className="text-xs text-gray-500 mt-1">In transit</p>
                             </div>
                             <div className="p-2 bg-purple-50 rounded-lg">
@@ -298,7 +341,11 @@ const AdminOrders = () => {
                         <div className="flex items-start justify-between">
                             <div>
                                 <p className="text-xs font-medium text-gray-600 mb-1">Delivered</p>
-                                <p className="text-2xl font-bold text-gray-900">8</p>
+                                {kpisLoading ? (
+                                    <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
+                                ) : (
+                                    <p className="text-2xl font-bold text-gray-900">{kpis.deliveredOrders}</p>
+                                )}
                                 <p className="text-xs text-gray-500 mt-1">Successfully delivered</p>
                             </div>
                             <div className="p-2 bg-emerald-50 rounded-lg">

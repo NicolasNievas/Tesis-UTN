@@ -159,7 +159,7 @@ export const AuthProvider = ({ children }: IDataProvideProps) => {
 
     const updatedCart = await CartService.addToCart(productId);
     setCart(updatedCart);
-    toast.success('Product added to cart');
+    //toast.success('Product added to cart');
   } catch (error: any) {
     console.error('Error adding to cart:', error);
     
@@ -213,7 +213,7 @@ export const AuthProvider = ({ children }: IDataProvideProps) => {
       setCartLoading(true);
       await CartService.removeCartItem(productId);
       await getCart(); 
-      toast.success('Product removed from cart');
+      //toast.success('Product removed from cart');
     } catch (error) {
       console.error('Error removing from cart:', error);
       toast.error('Error removing product from cart');

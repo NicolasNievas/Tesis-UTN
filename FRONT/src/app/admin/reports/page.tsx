@@ -71,6 +71,8 @@ const ReportsPage = () => {
   const [includeZeroStock, setIncludeZeroStock] = useState<boolean>(false);
   const [monthlyTrendsData, setMonthlyTrendsData] = useState<MonthlyTrends[]>([]);
   const [topProductPeriodData, setTopProductPeriodData] = useState<TopProductByPeriod | null>(null);
+  const [inventoryDisplayLimit, setInventoryDisplayLimit] = useState<number>(15);
+  const [showAllInventory, setShowAllInventory] = useState<boolean>(false);
 
   const tabs = [
     {
@@ -1066,20 +1068,28 @@ const ReportsPage = () => {
   };
 
   // Función para obtener color según estado
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'COMPLETED':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'IN_PROCESS':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'CANCELLED':
-        return 'bg-red-100 text-red-800 border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'COMPLETED':
+      return 'bg-green-100 text-green-800 border-green-200';
+    case 'PENDING':
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    case 'IN_PROCESS':
+      return 'bg-blue-100 text-blue-800 border-blue-200';
+    case 'CANCELLED':
+      return 'bg-red-100 text-red-800 border-red-200';
+    case 'SHIPPED':
+      return 'bg-purple-100 text-purple-800 border-purple-200';
+    case 'DELIVERED':
+      return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+    case 'RETURNED':
+      return 'bg-orange-100 text-orange-800 border-orange-200';
+    case 'REFUNDED':
+      return 'bg-pink-100 text-pink-800 border-pink-200';
+    default:
+      return 'bg-gray-100 text-gray-800 border-gray-200';
+  }
+};
 
   // Agrega esta función en tu componente o utils
   const formatPeriod = (periodString: string, periodType: string): string => {
@@ -1259,7 +1269,6 @@ const ReportsPage = () => {
                       onChange={(e) => setMaxStock(e.target.value ? parseInt(e.target.value) : '')}
                       className="w-20 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <label className="text-sm text-gray-600">Show:</label>
                      
                   </div>
                   
@@ -1897,6 +1906,7 @@ const ReportsPage = () => {
           )}
 
           {/* Inventory Reports Tab */}
+          {/* Inventory Reports Tab - IMPROVED VERSION */}
           {activeTab === 'inventory' && (
             <>
               {/* Inventory Summary */}
@@ -1945,13 +1955,33 @@ const ReportsPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-orange-100 rounded-lg">
-                      <Package className="w-6 h-6 text-orange-600" />
+                  <div className="flex items-center justify-between mb-6 mt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-orange-100 rounded-lg">
+                        <Package className="w-6 h-6 text-orange-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-semibold text-gray-900">Inventory Report</h2>
+                        <p className="text-sm text-gray-600">Stock status and product performance</p>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="text-xl font-semibold text-gray-900">Inventory Report</h2>
-                      <p className="text-sm text-gray-600">Stock status and product performance</p>
+
+                    {/* Control de límite de visualización */}
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm font-medium text-gray-700">
+                        Show products:
+                      </label>
+                      <select
+                        value={inventoryDisplayLimit}
+                        onChange={(e) => setInventoryDisplayLimit(Number(e.target.value))}
+                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      >
+                        <option value={10}>10</option>
+                        <option value={15}>15</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
                     </div>
                   </div>
 
@@ -1959,7 +1989,7 @@ const ReportsPage = () => {
                   <div className="h-96 mb-6">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
-                        data={inventoryData.slice(0, 15)}
+                        data={inventoryData.slice(0, inventoryDisplayLimit)}
                         margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" />
@@ -1993,6 +2023,16 @@ const ReportsPage = () => {
                     </ResponsiveContainer>
                   </div>
 
+                  {/* Indicador de productos restantes */}
+                  {inventoryData.length > inventoryDisplayLimit && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 text-center">
+                      <p className="text-sm text-blue-700">
+                        Showing {inventoryDisplayLimit} of {inventoryData.length} products. 
+                        <span className="font-medium"> {inventoryData.length - inventoryDisplayLimit} more products available.</span>
+                      </p>
+                    </div>
+                  )}
+
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead className="bg-gray-50 border-b border-gray-200">
@@ -2006,7 +2046,7 @@ const ReportsPage = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
-                        {inventoryData.map((item) => (
+                        {inventoryData.slice(0, showAllInventory ? inventoryData.length : inventoryDisplayLimit).map((item) => (
                           <tr key={item.productId} className="hover:bg-gray-50">
                             <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.productName}</td>
                             <td className={`px-6 py-4 text-sm ${getStockColor(item.currentStock)}`}>
@@ -2038,13 +2078,35 @@ const ReportsPage = () => {
                         ))}
                       </tbody>
                     </table>
+
+                    {/* Botón para mostrar más/menos */}
+                    {inventoryData.length > inventoryDisplayLimit && (
+                      <div className="flex justify-center mt-4">
+                        <button
+                          onClick={() => setShowAllInventory(!showAllInventory)}
+                          className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2"
+                        >
+                          {showAllInventory ? (
+                            <>
+                              <TrendingDown className="w-4 h-4" />
+                              Show Less
+                            </>
+                          ) : (
+                            <>
+                              <TrendingUp className="w-4 h-4" />
+                              Show All ({inventoryData.length} products)
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   
                 </div>
               )}
 
-              {/* Inventory Reports Tab */}
+              {/* Products Without Movement - También con límite */}
               {productsWithoutMovementData.length > 0 && (
                 <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
                   <div className="flex items-center gap-3 mb-6">
@@ -2053,7 +2115,9 @@ const ReportsPage = () => {
                     </div>
                     <div>
                       <h2 className="text-xl font-semibold text-gray-900">Products Without Movement</h2>
-                      <p className="text-sm text-gray-600">Products that haven&apos;t been sold recently</p>
+                      <p className="text-sm text-gray-600">
+                        Products that haven&apos;t been sold recently ({productsWithoutMovementData.length} total)
+                      </p>
                     </div>
                   </div>
 
@@ -2069,7 +2133,7 @@ const ReportsPage = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
-                        {productsWithoutMovementData.map((product) => (
+                        {productsWithoutMovementData.slice(0, inventoryDisplayLimit).map((product) => (
                           <tr key={product.productId} className="hover:bg-gray-50">
                             <td className="px-6 py-4 text-sm font-medium text-gray-900">{product.productName}</td>
                             <td className={`px-6 py-4 text-sm ${getStockColor(product.stock)}`}>
@@ -2088,6 +2152,14 @@ const ReportsPage = () => {
                         ))}
                       </tbody>
                     </table>
+
+                    {productsWithoutMovementData.length > inventoryDisplayLimit && (
+                      <div className="bg-gray-50 border-t border-gray-200 p-3 text-center">
+                        <p className="text-sm text-gray-600">
+                          Showing {inventoryDisplayLimit} of {productsWithoutMovementData.length} products without movement
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -2103,6 +2175,7 @@ const ReportsPage = () => {
           )}
 
           {/* Analytics Reports Tab */}
+        {/* Analytics Reports Tab - IMPROVED VERSION */}
         {activeTab === 'analytics' && (
           <>
             {/* Order Statistics Summary */}
@@ -2250,99 +2323,134 @@ const ReportsPage = () => {
             )}
 
             {/* Conversion Rate Report */}
-            {conversionRateData && (
+            {ordersByStatusData.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-2 bg-green-100 rounded-lg">
                     <Target className="w-6 h-6 text-green-600" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-900">Conversion Rate Analysis</h2>
-                    <p className="text-sm text-gray-600">Order completion and cancellation rates</p>
+                    <h2 className="text-xl font-semibold text-gray-900">Order Flow Analysis</h2>
+                    <p className="text-sm text-gray-600">Complete journey tracking from order creation to completion</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                  <div className="bg-green-50 p-6 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Target className="w-5 h-5 text-green-600" />
-                        <span className="text-sm font-medium text-green-900">Completion Rate</span>
-                      </div>
-                      <span className="text-2xl font-bold text-green-600">
-                        {formatPercentage(conversionRateData.completionRate)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-green-700">
-                      {conversionRateData.completed} completed orders
-                    </p>
-                  </div>
+                {/* Métricas clave calculadas desde ordersByStatusData */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  {(() => {
+                    const totalOrders = ordersByStatusData.reduce((sum, item) => sum + item.orderCount, 0);
+                    const completed = ordersByStatusData.find(s => s.status === 'DELIVERED')?.orderCount || 0;
+                    const cancelled = ordersByStatusData.find(s => s.status === 'CANCELLED')?.orderCount || 0;
+                    const pending = ordersByStatusData.find(s => s.status === 'PENDING')?.orderCount || 0;
+                    const inProcess = ordersByStatusData.find(s => s.status === 'PROCESSING')?.orderCount || 0;
 
-                  <div className="bg-red-50 p-6 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <AlertCircle className="w-5 h-5 text-red-600" />
-                        <span className="text-sm font-medium text-red-900">Cancellation Rate</span>
-                      </div>
-                      <span className="text-2xl font-bold text-red-600">
-                        {formatPercentage(conversionRateData.cancellationRate)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-red-700">
-                      {conversionRateData.cancelled} cancelled orders
-                    </p>
-                  </div>
+                    const completionRate = totalOrders > 0 ? (completed / totalOrders) * 100 : 0;
+                    const cancellationRate = totalOrders > 0 ? (cancelled / totalOrders) * 100 : 0;
+                    const processingRate = totalOrders > 0 ? (inProcess / totalOrders) * 100 : 0;
+                    const pendingRate = totalOrders > 0 ? (pending / totalOrders) * 100 : 0;
 
-                  <div className="bg-blue-50 p-6 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-5 h-5 text-blue-600" />
-                        <span className="text-sm font-medium text-blue-900">Pending Orders</span>
-                      </div>
-                      <span className="text-2xl font-bold text-blue-600">
-                        {conversionRateData.pending}
-                      </span>
-                    </div>
-                    <p className="text-sm text-blue-700">
-                      Orders awaiting processing
-                    </p>
-                  </div>
+                    return (
+                      <>
+                        <div className="bg-green-50 p-6 rounded-lg border-2 border-green-200">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Target className="w-5 h-5 text-green-600" />
+                              <span className="text-sm font-medium text-green-900">Delivered</span>
+                            </div>
+                            <span className="text-2xl font-bold text-green-600">
+                              {completionRate.toFixed(1)}%
+                            </span>
+                          </div>
+                          <p className="text-sm text-green-700">
+                            {completed} orders successfully completed
+                          </p>
+                        </div>
+
+                        <div className="bg-blue-50 p-6 rounded-lg border-2 border-blue-200">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Activity className="w-5 h-5 text-blue-600" />
+                              <span className="text-sm font-medium text-blue-900">In Process</span>
+                            </div>
+                            <span className="text-2xl font-bold text-blue-600">
+                              {processingRate.toFixed(1)}%
+                            </span>
+                          </div>
+                          <p className="text-sm text-blue-700">
+                            {inProcess} orders currently being processed
+                          </p>
+                        </div>
+
+                        <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-200">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-5 h-5 text-yellow-600" />
+                              <span className="text-sm font-medium text-yellow-900">Pending</span>
+                            </div>
+                            <span className="text-2xl font-bold text-yellow-600">
+                              {pendingRate.toFixed(1)}%
+                            </span>
+                          </div>
+                          <p className="text-sm text-yellow-700">
+                            {pending} orders awaiting processing
+                          </p>
+                        </div>
+
+                        <div className="bg-red-50 p-6 rounded-lg border-2 border-red-200">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <AlertCircle className="w-5 h-5 text-red-600" />
+                              <span className="text-sm font-medium text-red-900">Cancelled</span>
+                            </div>
+                            <span className="text-2xl font-bold text-red-600">
+                              {cancellationRate.toFixed(1)}%
+                            </span>
+                          </div>
+                          <p className="text-sm text-red-700">
+                            {cancelled} orders cancelled
+                          </p>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
 
-                {/* Gráfico de barras para conversion rate */}
-                <div className="h-64">
+                {/* Gráfico de flujo de pedidos */}
+                <div className="h-80 mb-6">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
-                      data={[
-                        { name: 'Completed', value: conversionRateData.completed, color: '#10b981' },
-                        { name: 'Cancelled', value: conversionRateData.cancelled, color: '#ef4444' },
-                        { name: 'Pending', value: conversionRateData.pending, color: '#3b82f6' }
-                      ]}
+                      data={ordersByStatusData}
                       margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
+                      <XAxis dataKey="status" />
+                      <YAxis yAxisId="left" />
+                      <YAxis yAxisId="right" orientation="right" />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend />
                       <Bar 
-                        dataKey="value" 
+                        yAxisId="left"
+                        dataKey="orderCount" 
+                        name="Order Count"
+                        fill="#8b5cf6"
                         radius={[4, 4, 0, 0]}
-                      >
-                        {[
-                          { name: 'Completed', value: conversionRateData.completed, color: '#10b981' },
-                          { name: 'Cancelled', value: conversionRateData.cancelled, color: '#ef4444' },
-                          { name: 'Pending', value: conversionRateData.pending, color: '#3b82f6' }
-                        ].map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Bar>
+                      />
+                      <Bar 
+                        yAxisId="right"
+                        dataKey="totalAmount" 
+                        name="Total Amount"
+                        fill="#10b981"
+                        radius={[4, 4, 0, 0]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
+
+                
               </div>
             )}
 
-            {!orderStatsData && ordersByStatusData.length === 0 && !conversionRateData && (
+            {!orderStatsData && ordersByStatusData.length === 0 && (
               <div className="bg-white rounded-lg shadow-sm p-12 text-center">
                 <BarChart2 className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                 <p className="text-lg text-gray-500 mb-2">No analytics data available</p>

@@ -35,7 +35,6 @@ const ShipmentModal: React.FC<ShipmentModalProps> = ({ orderId, isOpen, onClose,
                 setShipment(null);
             } else {
                 toast.error('Error loading shipment');
-                console.error('Error loading shipment:', error);
             }
         }
     };
