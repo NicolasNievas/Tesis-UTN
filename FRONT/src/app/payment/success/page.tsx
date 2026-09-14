@@ -1,3 +1,4 @@
+"use client";
 // pages/payment/success.tsx (and similar for pending/failure)
 import { Suspense } from "react";
 import dynamic from 'next/dynamic';
